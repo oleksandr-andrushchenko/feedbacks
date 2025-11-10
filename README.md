@@ -2,11 +2,31 @@
 * https://t.me/Anonimni_Vidhuky_Ukraina_Bot
 * If you like it - give me a star, thank you
 
+## Available commands
+
+```
+  be-function-login    Open shell inside backend container
+  be-function-logs     View backend function logs
+  cache-clear          Clear Symfony cache inside backend container
+  cache-warmup         Warm up Symfony cache inside backend container
+  composer-install     Run composer install inside backend container
+  generate-migration   Generate a new Doctrine migration file
+  help                 Show this help
+  import-bots          Import Telegram bots from CSV file
+  logs                 Tail Symfony development logs
+  ngrok-tunnel         Start ngrok tunnel for backend function
+  rdbms-login          Open MySQL shell inside database container
+  rdbms-logs           View database (MySQL) container logs
+  restart              Restart all Docker containers and show status
+  run-migrations       Execute pending Doctrine migrations
+  search               Search for a Telegram user by name
+  start                Build and start all Docker containers
+  stop                 Stop and remove all Docker containers
+  sync-bot-webhook     Synchronize Telegram bot webhook
+```
+
 # Serverless
 * https://bref.sh/docs/
-
-# Run ngrok tunnel
-`ngrok http --host-header=rewrite http://localhost:8000`
 
 # Refresh db
 * php bin/console doctrine:database:drop --force
