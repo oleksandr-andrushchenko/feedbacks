@@ -13,26 +13,26 @@ class CountryNormalizer implements NormalizerInterface, DenormalizerInterface
     public const LEVEL_1_REGIONS_DUMPED_KEY = 'l1rd';
 
     /**
-     * @param Country $object
+     * @param mixed $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'internal') {
             return array_filter([
-                'c' => $object->getCode(),
-                'cu' => $object->getCurrencyCode(),
-                'l' => $object->getLocaleCodes(),
-                'p' => $object->getPhoneCode(),
-                't' => $object->getTimezones(),
-                self::LEVEL_1_REGIONS_DUMPED_KEY => $object->level1RegionsDumped() ? true : null,
+                'c' => $data->getCode(),
+                'cu' => $data->getCurrencyCode(),
+                'l' => $data->getLocaleCodes(),
+                'p' => $data->getPhoneCode(),
+                't' => $data->getTimezones(),
+                self::LEVEL_1_REGIONS_DUMPED_KEY => $data->level1RegionsDumped() ? true : null,
             ]);
         }
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Country && in_array($format, ['internal'], true);
     }
@@ -51,8 +51,15 @@ class CountryNormalizer implements NormalizerInterface, DenormalizerInterface
         }
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === Country::class && in_array($format, ['internal'], true);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Country::class => false,
+        ];
     }
 }

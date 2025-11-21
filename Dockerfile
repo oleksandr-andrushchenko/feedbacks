@@ -1,4 +1,4 @@
-FROM bref/php-82-fpm-dev:latest AS php
+FROM bref/php-83-fpm-dev:latest AS php
 
 #ENV APP_ENV=dev
 

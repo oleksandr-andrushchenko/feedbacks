@@ -12,23 +12,23 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class FeedbackSubscriptionPlanNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**
-     * @param FeedbackSubscriptionPlan $object
+     * @param FeedbackSubscriptionPlan $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         return [
-            'name' => $object->getName()->value,
-            'datetime_modifier' => $object->getDatetimeModifier(),
-            'default_price' => $object->getDefaultPrice(),
-            'prices' => $object->getPrices() === null ? null : $object->getPrices(),
-            'countries' => $object->getCountries() === null ? null : $object->getCountries(),
+            'name' => $data->getName()->value,
+            'datetime_modifier' => $data->getDatetimeModifier(),
+            'default_price' => $data->getDefaultPrice(),
+            'prices' => $data->getPrices() === null ? null : $data->getPrices(),
+            'countries' => $data->getCountries() === null ? null : $data->getCountries(),
         ];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof FeedbackSubscriptionPlan;
     }
@@ -44,8 +44,15 @@ class FeedbackSubscriptionPlanNormalizer implements NormalizerInterface, Denorma
         );
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === FeedbackSubscriptionPlan::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            FeedbackSubscriptionPlan::class => false,
+        ];
     }
 }

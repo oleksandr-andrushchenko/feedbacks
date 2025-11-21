@@ -11,27 +11,27 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class CurrencyNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**
-     * @param Currency $object
+     * @param Currency $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'internal') {
             return [
-                'c' => $object->getCode(),
-                'r' => $object->getRate(),
-                'e' => $object->getExp(),
+                'c' => $data->getCode(),
+                'r' => $data->getRate(),
+                'e' => $data->getExp(),
 //            's' => $object->getSymbol(),
-                'n' => $object->getNative(),
-                'sl' => $object->isSymbolLeft(),
-                'sb' => $object->isSpaceBetween(),
+                'n' => $data->getNative(),
+                'sl' => $data->isSymbolLeft(),
+                'sb' => $data->isSpaceBetween(),
             ];
         }
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Currency && in_array($format, ['internal'], true);
     }
@@ -51,8 +51,15 @@ class CurrencyNormalizer implements NormalizerInterface, DenormalizerInterface
         }
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === Currency::class && in_array($format, ['internal'], true);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Currency::class => false,
+        ];
     }
 }

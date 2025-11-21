@@ -10,40 +10,47 @@ use App\Entity\Feedback\FeedbackNotification;
 class FeedbackNotificationNormalizer implements NormalizerInterface
 {
     /**
-     * @param FeedbackNotification $object
+     * @param FeedbackNotification $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'activity') {
-            $data = [];
+            $result = [];
 
-            $data['type'] = $object->getType()->name;
+            $result['type'] = $data->getType()->name;
 
-            $user = $object->getMessengerUser();
+            $user = $data->getMessengerUser();
 
             if (!empty($user->getUsername())) {
-                $data['user'] = sprintf('@%s', $user->getUsername());
+                $result['user'] = sprintf('@%s', $user->getUsername());
             }
 
-            $searchTerm = $object->getFeedbackSearchTerm();
+            $searchTerm = $data->getFeedbackSearchTerm();
 
             if ($searchTerm !== null) {
-                $data[$searchTerm->getType()->name] = $searchTerm->getText();
+                $result[$searchTerm->getType()->name] = $searchTerm->getText();
             }
 
-            $data['bot'] = sprintf('@%s', $object->getTelegramBot()->getUsername());
+            $result['bot'] = sprintf('@%s', $data->getTelegramBot()->getUsername());
 
-            return $data;
+            return $result;
         }
 
         return [];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof FeedbackNotification && in_array($format, ['activity'], true);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            FeedbackNotification::class => false,
+        ];
     }
 }

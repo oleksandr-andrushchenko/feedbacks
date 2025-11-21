@@ -25,24 +25,24 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
     }
 
     /**
-     * @param CreateFeedbackTelegramBotConversationState $object
+     * @param CreateFeedbackTelegramBotConversationState $data
      * @param string|null $format
      * @param array $context
      * @return array
      * @throws ExceptionInterface
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         $searchTermCallback = fn (SearchTermTransfer $searchTerm): array => $this->searchTermTransferNormalizer->normalize($searchTerm, $format, $context);
-        return array_merge($this->baseConversationStateNormalizer->normalize($object, $format, $context), [
-            'search_terms' => $object->getSearchTerms()->hasItems() ? array_map($searchTermCallback, $object->getSearchTerms()->getItems()) : null,
-            'rating' => $object->getRating()?->value,
-            'description' => $object->getDescription(),
-            'created_id' => $object->getCreatedId(),
+        return array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
+            'search_terms' => $data->getSearchTerms()->hasItems() ? array_map($searchTermCallback, $data->getSearchTerms()->getItems()) : null,
+            'rating' => $data->getRating()?->value,
+            'description' => $data->getDescription(),
+            'created_id' => $data->getCreatedId(),
         ]);
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof CreateFeedbackTelegramBotConversationState;
     }
@@ -63,8 +63,15 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         return $object;
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === CreateFeedbackTelegramBotConversationState::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            CreateFeedbackTelegramBotConversationState::class => false,
+        ];
     }
 }

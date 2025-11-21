@@ -26,24 +26,24 @@ class SubscribeTelegramBotConversationStateNormalizer implements NormalizerInter
     }
 
     /**
-     * @param SubscribeTelegramBotConversationState $object
+     * @param SubscribeTelegramBotConversationState $data
      * @param string|null $format
      * @param array $context
      * @return array
      * @throws ExceptionInterface
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
-        return array_merge($this->baseConversationStateNormalizer->normalize($object, $format, $context), [
-            'currency' => $object->getCurrency() === null ? null : $object->getCurrency()->getCode(),
-            'currency_step' => $object->currencyStep(),
-            'subscription_plan' => $object->getSubscriptionPlan() === null ? null : $this->subscriptionPlanNormalizer->normalize($object->getSubscriptionPlan(), $format, $context),
-            'payment_method' => $object->getPaymentMethod() === null ? null : $object->getPaymentMethod()->getId(),
-            'payment_method_step' => $object->paymentMethodStep(),
+        return array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
+            'currency' => $data->getCurrency() === null ? null : $data->getCurrency()->getCode(),
+            'currency_step' => $data->currencyStep(),
+            'subscription_plan' => $data->getSubscriptionPlan() === null ? null : $this->subscriptionPlanNormalizer->normalize($data->getSubscriptionPlan(), $format, $context),
+            'payment_method' => $data->getPaymentMethod() === null ? null : $data->getPaymentMethod()->getId(),
+            'payment_method_step' => $data->paymentMethodStep(),
         ]);
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof SubscribeTelegramBotConversationState;
     }
@@ -64,8 +64,15 @@ class SubscribeTelegramBotConversationStateNormalizer implements NormalizerInter
         return $object;
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === SubscribeTelegramBotConversationState::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            SubscribeTelegramBotConversationState::class => false,
+        ];
     }
 }

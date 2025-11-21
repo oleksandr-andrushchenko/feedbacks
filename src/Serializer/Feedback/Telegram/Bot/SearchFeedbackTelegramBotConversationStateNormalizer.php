@@ -23,20 +23,20 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
     }
 
     /**
-     * @param SearchFeedbackTelegramBotConversationState $object
+     * @param SearchFeedbackTelegramBotConversationState $data
      * @param string|null $format
      * @param array $context
      * @return array
      * @throws ExceptionInterface
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
-        return array_merge($this->baseConversationStateNormalizer->normalize($object, $format, $context), [
-            'search_term' => $object->getSearchTerm() === null ? null : $this->searchTermTransferNormalizer->normalize($object->getSearchTerm(), $format, $context),
+        return array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
+            'search_term' => $data->getSearchTerm() === null ? null : $this->searchTermTransferNormalizer->normalize($data->getSearchTerm(), $format, $context),
         ]);
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof SearchFeedbackTelegramBotConversationState;
     }
@@ -53,8 +53,15 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         return $object;
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === SearchFeedbackTelegramBotConversationState::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            SearchFeedbackTelegramBotConversationState::class => false,
+        ];
     }
 }

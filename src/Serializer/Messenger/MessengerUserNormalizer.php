@@ -10,35 +10,42 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class MessengerUserNormalizer implements NormalizerInterface
 {
     /**
-     * @param MessengerUser $object
+     * @param MessengerUser $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'activity') {
             return array_filter([
-                'messenger' => $object->getMessenger()->name,
-                'username' => $object->getUsername() === null ? null : sprintf('@%s', $object->getUsername()),
-                'name' => $object->getName() ?? null,
-                'bot_ids' => $object->getBotIds() === null ? null : implode(', ', $object->getBotIds()),
-                'created_at' => $object->getCreatedAt()?->format('d.m.Y H:i'),
+                'messenger' => $data->getMessenger()->name,
+                'username' => $data->getUsername() === null ? null : sprintf('@%s', $data->getUsername()),
+                'name' => $data->getName() ?? null,
+                'bot_ids' => $data->getBotIds() === null ? null : implode(', ', $data->getBotIds()),
+                'created_at' => $data->getCreatedAt()?->format('d.m.Y H:i'),
             ]);
         }
 
         return array_filter([
-            'messenger' => $object->getMessenger()->value,
-            'identifier' => $object->getIdentifier(),
-            'username' => $object->getUsername() ?? null,
-            'name' => $object->getName() ?? null,
-            'bot_ids' => $object->getBotIds() === null ? null : implode(', ', $object->getBotIds()),
-            'username_history' => $object->getUsernameHistory() === null ? null : implode(', ', $object->getUsernameHistory()),
+            'messenger' => $data->getMessenger()->value,
+            'identifier' => $data->getIdentifier(),
+            'username' => $data->getUsername() ?? null,
+            'name' => $data->getName() ?? null,
+            'bot_ids' => $data->getBotIds() === null ? null : implode(', ', $data->getBotIds()),
+            'username_history' => $data->getUsernameHistory() === null ? null : implode(', ', $data->getUsernameHistory()),
         ]);
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof MessengerUser;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            MessengerUser::class => false,
+        ];
     }
 }

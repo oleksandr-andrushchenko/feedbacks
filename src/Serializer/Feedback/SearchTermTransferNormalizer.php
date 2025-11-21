@@ -20,23 +20,23 @@ class SearchTermTransferNormalizer implements NormalizerInterface, DenormalizerI
     }
 
     /**
-     * @param SearchTermTransfer $object
+     * @param SearchTermTransfer $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         return [
-            'text' => $object->getText(),
-            'normalized_text' => $object->getNormalizedText(),
-            'type' => $object->getType()?->value,
-            'messenger_user' => $object->getMessengerUser() === null ? null : $this->messengerUserTransferNormalizer->normalize($object->getMessengerUser(), $format, $context),
-            'types' => $object->getTypes() === null ? null : array_map(static fn ($type): int => $type->value, $object->getTypes()),
+            'text' => $data->getText(),
+            'normalized_text' => $data->getNormalizedText(),
+            'type' => $data->getType()?->value,
+            'messenger_user' => $data->getMessengerUser() === null ? null : $this->messengerUserTransferNormalizer->normalize($data->getMessengerUser(), $format, $context),
+            'types' => $data->getTypes() === null ? null : array_map(static fn ($type): int => $type->value, $data->getTypes()),
         ];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof SearchTermTransfer;
     }
@@ -56,8 +56,15 @@ class SearchTermTransferNormalizer implements NormalizerInterface, DenormalizerI
         return $object;
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === SearchTermTransfer::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            SearchTermTransfer::class => false,
+        ];
     }
 }

@@ -10,34 +10,41 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class FeedbackLookupNormalizer implements NormalizerInterface
 {
     /**
-     * @param FeedbackLookup $object
+     * @param FeedbackLookup $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'activity') {
-            $user = $object->getMessengerUser();
+            $user = $data->getMessengerUser();
 
-            $data = [];
+            $result = [];
 
             if (!empty($user->getUsername())) {
-                $data['user'] = sprintf('@%s', $user->getUsername());
+                $result['user'] = sprintf('@%s', $user->getUsername());
             }
 
-            $data[$object->getSearchTerm()->getType()->name] = $object->getSearchTerm()->getText();
+            $result[$data->getSearchTerm()->getType()->name] = $data->getSearchTerm()->getText();
 
-            $data['bot'] = sprintf('@%s', $object->getTelegramBot()->getUsername());
+            $result['bot'] = sprintf('@%s', $data->getTelegramBot()->getUsername());
 
-            return $data;
+            return $result;
         }
 
         return [];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof FeedbackLookup && in_array($format, ['activity'], true);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            FeedbackLookup::class => false,
+        ];
     }
 }

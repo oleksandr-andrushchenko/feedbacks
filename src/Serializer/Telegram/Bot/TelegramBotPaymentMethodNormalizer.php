@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer\Telegram\Bot;
 
+use App\Entity\Telegram\TelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -12,21 +13,21 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class TelegramBotPaymentMethodNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**
-     * @param TelegramBotPaymentMethod $object
+     * @param TelegramBotPaymentMethod $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         return [
-            'name' => $object->getName()->value,
-            'currency' => $object->getCurrency(),
-            'countries' => $object->getCountries() === null ? null : $object->getCountries(),
+            'name' => $data->getName()->value,
+            'currency' => $data->getCurrency(),
+            'countries' => $data->getCountries() === null ? null : $data->getCountries(),
         ];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof TelegramBotPaymentMethod;
     }
@@ -41,8 +42,15 @@ class TelegramBotPaymentMethodNormalizer implements NormalizerInterface, Denorma
         );
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === TelegramBotPaymentMethod::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            TelegramBotPaymentMethod::class => false,
+        ];
     }
 }

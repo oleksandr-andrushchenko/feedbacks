@@ -1,92 +1,87 @@
 {
-    "name": "symfony/skeleton",
-    "type": "project",
-    "license": "MIT",
-    "description": "A minimal Symfony project recommended to create bare bones applications",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require": {
-        "php": ">=8.2.1",
-        "ext-ctype": "*",
-        "ext-dom": "*",
-        "ext-iconv": "*",
-        "ext-libxml": "*",
-        "ext-simplexml": "*",
-        "bref/bref": "^2.4",
-        "bref/symfony-bridge": "^1.1",
-        "doctrine/doctrine-bundle": "^2.8",
-        "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "^2.14",
-        "longman/telegram-bot": "^0.80.0",
-        "symfony/cache": "6.2.*",
-        "symfony/console": "6.2.*",
-        "symfony/css-selector": "6.2.*",
-        "symfony/dom-crawler": "6.2.*",
-        "symfony/dotenv": "6.2.*",
-        "symfony/flex": "^2",
-        "symfony/framework-bundle": "6.2.*",
-        "symfony/http-client": "6.2.*",
-        "symfony/messenger": "6.2.*",
-        "symfony/monolog-bundle": "*",
-        "symfony/process": "6.2.*",
-        "symfony/property-access": "6.2.*",
-        "symfony/runtime": "6.2.*",
-        "symfony/serializer": "6.2.*",
-        "symfony/translation": "6.2.*",
-        "symfony/twig-bridge": "6.2.*",
-        "symfony/twig-bundle": "6.2.*",
-        "symfony/validator": "6.2.*",
-        "symfony/yaml": "6.2.*",
-        "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^3.21"
+  "name": "symfony/skeleton",
+  "type": "project",
+  "license": "MIT",
+  "description": "A minimal Symfony project recommended to create bare bones applications",
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.3",
+    "ext-ctype": "*",
+    "ext-dom": "*",
+    "ext-iconv": "*",
+    "ext-libxml": "*",
+    "ext-simplexml": "*",
+    "bref/bref": "^2.4",
+    "bref/symfony-bridge": "^1.1",
+    "doctrine/doctrine-bundle": "^2.8",
+    "doctrine/doctrine-migrations-bundle": "^3.2",
+    "doctrine/orm": "^2.14",
+    "longman/telegram-bot": "^0.80.0",
+    "symfony/cache": "^7.4",
+    "symfony/console": "^7.4",
+    "symfony/css-selector": "^7.4",
+    "symfony/dom-crawler": "^7.4",
+    "symfony/dotenv": "^7.4",
+    "symfony/flex": "^2.10",
+    "symfony/framework-bundle": "^7.4",
+    "symfony/http-client": "^7.4",
+    "symfony/messenger": "^7.4",
+    "symfony/monolog-bundle": "^3.10",
+    "symfony/process": "^7.4",
+    "symfony/property-access": "^7.4",
+    "symfony/runtime": "^7.4",
+    "symfony/serializer": "^7.4",
+    "symfony/translation": "^7.4",
+    "symfony/twig-bridge": "^7.4",
+    "symfony/twig-bundle": "^7.4",
+    "symfony/validator": "^7.4",
+    "symfony/yaml": "^7.4",
+    "twig/extra-bundle": "^3.0",
+    "twig/twig": "^3.21"
+  },
+  "config": {
+    "allow-plugins": {
+      "symfony/flex": true,
+      "symfony/runtime": true
     },
-    "config": {
-        "allow-plugins": {
-            "symfony/flex": true,
-            "symfony/runtime": true
-        },
-        "sort-packages": true
-    },
-    "autoload": {
-        "psr-4": {
-            "App\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "App\\Tests\\": "tests/"
-        }
-    },
-    "replace": {
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-iconv": "*",
-        "symfony/polyfill-php72": "*",
-        "symfony/polyfill-php73": "*",
-        "symfony/polyfill-php74": "*",
-        "symfony/polyfill-php80": "*",
-        "symfony/polyfill-php81": "*"
-    },
-    "scripts": {
-        "test": "php bin/phpunit"
-    },
-    "conflict": {
-        "symfony/symfony": "*"
-    },
-    "extra": {
-        "symfony": {
-            "allow-contrib": false,
-            "require": "6.2.*",
-            "docker": true
-        }
-    },
-    "require-dev": {
-        "dms/phpunit-arraysubset-asserts": "^0.5.0",
-        "doctrine/doctrine-fixtures-bundle": "^3.4",
-        "phpunit/phpunit": "^9.5",
-        "symfony/browser-kit": "6.2.*",
-        "symfony/maker-bundle": "^1.48",
-        "symfony/panther": "^2.0",
-        "symfony/phpunit-bridge": "^6.2",
-        "theofidry/alice-data-fixtures": "^1.6"
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "App\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "php bin/phpunit",
+    "auto-scripts": {
+      "cache:clear": "symfony-cmd",
+      "assets:install %PUBLIC_DIR%": "symfony-cmd"
+    }
+  },
+  "conflict": {
+    "symfony/symfony": "*"
+  },
+  "extra": {
+    "symfony": {
+      "allow-contrib": false,
+      "require": "7.4.*",
+      "docker": true
+    }
+  },
+  "require-dev": {
+    "dms/phpunit-arraysubset-asserts": "^0.5.0",
+    "doctrine/doctrine-fixtures-bundle": "^3.4",
+    "phpunit/phpunit": "^9.5",
+    "symfony/browser-kit": "^7.4",
+    "symfony/maker-bundle": "^1.48",
+    "symfony/panther": "^2.2",
+    "symfony/phpunit-bridge": "^7.4",
+    "theofidry/alice-data-fixtures": "^1.6"
+  }
 }

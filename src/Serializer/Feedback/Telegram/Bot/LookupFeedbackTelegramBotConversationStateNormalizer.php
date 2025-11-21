@@ -20,18 +20,18 @@ class LookupFeedbackTelegramBotConversationStateNormalizer implements Normalizer
     }
 
     /**
-     * @param LookupFeedbackTelegramBotConversationState $object
+     * @param LookupFeedbackTelegramBotConversationState $data
      * @param string|null $format
      * @param array $context
      * @return array
      * @throws ExceptionInterface
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
-        return $this->searchConversationStateNormalizer->normalize($object, $format, $context);
+        return $this->searchConversationStateNormalizer->normalize($data, $format, $context);
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof LookupFeedbackTelegramBotConversationState;
     }
@@ -41,8 +41,15 @@ class LookupFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         return $this->searchConversationStateDenormalizer->denormalize($data, $type, $format, $context);
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === LookupFeedbackTelegramBotConversationState::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            LookupFeedbackTelegramBotConversationState::class => false,
+        ];
     }
 }

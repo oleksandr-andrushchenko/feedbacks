@@ -10,21 +10,28 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class MoneyNormalizer implements NormalizerInterface
 {
     /**
-     * @param Money $object
+     * @param Money $data
      * @param string|null $format
      * @param array $context
      * @return string[]
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         return [
-            'amount' => $object->getAmount(),
-            'currency' => $object->getCurrency(),
+            'amount' => $data->getAmount(),
+            'currency' => $data->getCurrency(),
         ];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof Money;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            Money::class => false,
+        ];
     }
 }

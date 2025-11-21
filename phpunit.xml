@@ -27,10 +27,10 @@
         <env name="KERNEL_CLASS" value="App\Tests\Kernel"/>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="disabled"/>
 
-<!--        should be synced with:-->
-<!--        1) .env-->
-<!--        2) .env.dist-->
-<!--        3) serverless.yml-->
+        <!--        should be synced with:-->
+        <!--        1) .env-->
+        <!--        2) .env.dist-->
+        <!--        3) serverless.yml-->
 
         <env name="APP_STATE" value="local"/>
         <env name="APP_ENV" value="test"/>
@@ -53,6 +53,12 @@
         <!-- MESSENGER_TRANSPORT_DSN=redis://localhost:6379/messages -->
         <env name="MESSENGER_TRANSPORT_DSN" value="doctrine://default?auto_setup=0"/>
         <!-- ###- symfony/messenger ### -->
+
+        <!-- ###+ symfony/framework-bundle ### -->
+        <env name="APP_ENV" value="dev"/>
+        <env name="APP_SECRET" value=""/>
+        <env name="APP_SHARE_DIR" value="$APP_PROJECT_DIR/var/share"/>
+        <!-- ###- symfony/framework-bundle ### -->
     </php>
 
     <testsuites>

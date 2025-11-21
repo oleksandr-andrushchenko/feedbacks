@@ -11,19 +11,19 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class TelegramBotConversationStateNormalizer implements NormalizerInterface, DenormalizerInterface
 {
     /**
-     * @param TelegramBotConversationState $object
+     * @param TelegramBotConversationState $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         return [
-            'step' => $object->getStep(),
+            'step' => $data->getStep(),
         ];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof TelegramBotConversationState;
     }
@@ -40,8 +40,15 @@ class TelegramBotConversationStateNormalizer implements NormalizerInterface, Den
         return $object;
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && ($type === TelegramBotConversationState::class || get_parent_class($type) === TelegramBotConversationState::class);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            TelegramBotConversationState::class => false,
+        ];
     }
 }

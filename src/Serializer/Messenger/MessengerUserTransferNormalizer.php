@@ -11,19 +11,19 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class MessengerUserTransferNormalizer implements NormalizerInterface, DenormalizerInterface
 {
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
-        /** @var MessengerUserTransfer $object */
+        /** @var MessengerUserTransfer $data */
         return [
-            'messenger' => $object->getMessenger()->value,
-            'identifier' => $object->getId(),
-            'username' => $object->getUsername(),
-            'name' => $object->getName(),
-            'locale' => $object->getLocaleCode(),
+            'messenger' => $data->getMessenger()->value,
+            'identifier' => $data->getId(),
+            'username' => $data->getUsername(),
+            'name' => $data->getName(),
+            'locale' => $data->getLocaleCode(),
         ];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof MessengerUserTransfer;
     }
@@ -39,8 +39,15 @@ class MessengerUserTransferNormalizer implements NormalizerInterface, Denormaliz
         );
     }
 
-    public function supportsDenormalization(mixed $data, string $type, string $format = null): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data) && $type === MessengerUserTransfer::class;
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            MessengerUserTransfer::class => false,
+        ];
     }
 }

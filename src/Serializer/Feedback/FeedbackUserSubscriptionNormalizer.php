@@ -10,38 +10,45 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 class FeedbackUserSubscriptionNormalizer implements NormalizerInterface
 {
     /**
-     * @param FeedbackUserSubscription $object
+     * @param FeedbackUserSubscription $data
      * @param string|null $format
      * @param array $context
      * @return array
      */
-    public function normalize(mixed $object, string $format = null, array $context = []): array
+    public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'activity') {
-            $user = $object->getMessengerUser();
+            $user = $data->getMessengerUser();
 
-            $data = [];
+            $result = [];
 
             if (!empty($user?->getUsername())) {
-                $data['user'] = sprintf('@%s', $user->getUsername());
+                $result['user'] = sprintf('@%s', $user->getUsername());
             }
 
-            $data['plan'] = $object->getSubscriptionPlan()->name;
+            $result['plan'] = $data->getSubscriptionPlan()->name;
 
-            $telegramBot = $object->getTelegramPayment()?->getBot();
+            $telegramBot = $data->getTelegramPayment()?->getBot();
 
             if (!empty($telegramBot)) {
-                $data['telegram_bot'] = sprintf('@%s', $telegramBot->getUsername());
+                $result['telegram_bot'] = sprintf('@%s', $telegramBot->getUsername());
             }
 
-            return $data;
+            return $result;
         }
 
         return [];
     }
 
-    public function supportsNormalization(mixed $data, string $format = null): bool
+    public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
         return $data instanceof FeedbackUserSubscription && in_array($format, ['activity'], true);
+    }
+
+    public function getSupportedTypes(?string $format): array
+    {
+        return [
+            FeedbackUserSubscription::class => false,
+        ];
     }
 }
