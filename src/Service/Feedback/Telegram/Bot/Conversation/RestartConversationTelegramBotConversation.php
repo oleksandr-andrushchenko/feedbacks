@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Telegram\TelegramBotConversation as Entity;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\Bot\Chat\StartTelegramCommandHandler;
 use App\Service\Intl\CountryProvider;
@@ -106,7 +106,8 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
 
         $tg->getBot()->getMessengerUser()
             ?->setShowExtendedKeyboard(false)
-            ?->getUser()
+        ;
+        $tg->getBot()->getUser()
             ?->setCountryCode($country->getCode())
             ?->setLocaleCode($tg->getBot()->getEntity()->getLocaleCode())
             ?->setCurrencyCode($country->getCurrencyCode())

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Service\Google\Api;
 
-use App\Entity\Address\AddressComponent;
-use App\Entity\Address\Address;
-use App\Entity\Location;
 use App\Exception\AddressGeocodeFailedException;
+use App\Model\Address\Address;
+use App\Model\Address\AddressComponent;
+use App\Model\Location;
 use App\Service\AddressGeocoderInterface;
 
 class GoogleAddressGeocoder implements AddressGeocoderInterface

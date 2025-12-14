@@ -4,37 +4,42 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback;
 
-use App\Entity\Feedback\Command\FeedbackCommandOptions;
 use App\Entity\Feedback\Feedback;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\Feedback\FeedbackOnOneselfException;
 use App\Exception\ValidatorException;
+use App\Factory\Feedback\FeedbackFactory;
+use App\Factory\Feedback\SearchTermFeedbackFactory;
 use App\Message\Event\ActivityEvent;
 use App\Message\Event\Feedback\FeedbackCreatedEvent;
+use App\Model\Feedback\Command\FeedbackCommandOptions;
 use App\Service\Feedback\Command\FeedbackCommandLimitsChecker;
-use App\Service\Feedback\SearchTerm\FeedbackSearchTermUpserter;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
+use App\Service\Feedback\SearchTerm\SearchTermUpserter;
 use App\Service\Feedback\Statistic\FeedbackUserStatisticProviderInterface;
-use App\Service\Feedback\Subscription\FeedbackSubscriptionManager;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
-use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class FeedbackCreator
 {
     public function __construct(
         private readonly FeedbackCommandOptions $feedbackCommandOptions,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly Validator $validator,
         private readonly FeedbackUserStatisticProviderInterface $feedbackCommandStatisticProvider,
         private readonly FeedbackCommandLimitsChecker $feedbackCommandLimitsChecker,
-        private readonly FeedbackSubscriptionManager $feedbackSubscriptionManager,
-        private readonly FeedbackSearchTermUpserter $feedbackSearchTermUpserter,
+        private readonly SearchTermUpserter $searchTermUpserter,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
         private readonly SearchTermMessengerProvider $searchTermMessengerProvider,
+        private readonly MessengerUserService $messengerUserService,
+        private readonly SearchTermFeedbackFactory $searchTermFeedbackFactory,
+        private readonly FeedbackFactory $feedbackFactory,
     )
     {
     }
@@ -50,6 +55,7 @@ class FeedbackCreator
      * @throws FeedbackCommandLimitExceededException
      * @throws FeedbackOnOneselfException
      * @throws ValidatorException
+     * @throws ExceptionInterface
      */
     public function createFeedback(FeedbackTransfer $transfer): Feedback
     {
@@ -58,17 +64,32 @@ class FeedbackCreator
         $this->checkSearchTermUser($transfer);
 
         $messengerUser = $transfer->getMessengerUser();
-        $hasActiveSubscription = $this->feedbackSubscriptionManager->hasActiveSubscription($messengerUser);
+        $user = $this->messengerUserService->getUser($messengerUser);
 
-        if (!$hasActiveSubscription) {
+        if (!$user->hasActiveSubscription()) {
             $this->feedbackCommandLimitsChecker->checkCommandLimits(
-                $messengerUser->getUser(),
+                $user,
                 $this->feedbackCommandStatisticProvider
             );
         }
 
         $feedback = $this->constructFeedback($transfer);
         $this->entityManager->persist($feedback);
+
+        if ($this->entityManager->getConfig()->isDynamodb()) {
+            $searchTerms = $feedback->getSearchTerms()->toArray();
+            foreach ($searchTerms as $searchTerm) {
+                $extraSearchTerms = array_values(array_filter($searchTerms, static fn ($otherSearchTerm) => $otherSearchTerm->getId() !== $searchTerm->getId()));
+
+                $searchTermFeedback = $this->searchTermFeedbackFactory
+                    ->createSearchTermFeedback(
+                        $searchTerm, $feedback, $user, $messengerUser, $transfer->getTelegramBot(),
+                        empty($extraSearchTerms) ? null : $extraSearchTerms
+                    )
+                ;
+                $this->entityManager->persist($searchTermFeedback);
+            }
+        }
 
         $this->eventBus->dispatch(new ActivityEvent(entity: $feedback, action: 'created'));
         $this->eventBus->dispatch(new FeedbackCreatedEvent(feedback: $feedback));
@@ -79,25 +100,21 @@ class FeedbackCreator
     public function constructFeedback(FeedbackTransfer $transfer): Feedback
     {
         $messengerUser = $transfer->getMessengerUser();
-        $hasActiveSubscription = $this->feedbackSubscriptionManager->hasActiveSubscription($messengerUser);
+        $user = $this->messengerUserService->getUser($messengerUser);
 
         $searchTerms = [];
-
         foreach ($transfer->getSearchTerms()->getItemsAsArray() as $searchTerm) {
-            $searchTerms[] = $this->feedbackSearchTermUpserter->upsertFeedbackSearchTerm($searchTerm);
+            $searchTerms[] = $this->searchTermUpserter->upsertSearchTerm($searchTerm);
         }
 
-        return new Feedback(
+        return $this->feedbackFactory->createFeedback(
             $this->idGenerator->generateId(),
-            $messengerUser->getUser(),
+            $user,
             $messengerUser,
             $searchTerms,
             $transfer->getRating(),
-            description: $transfer->getDescription(),
-            hasActiveSubscription: $hasActiveSubscription,
-            countryCode: $messengerUser->getUser()->getCountryCode(),
-            localeCode: $messengerUser->getUser()->getLocaleCode(),
-            telegramBot: $transfer->getTelegramBot()
+            $transfer->getDescription(),
+            $transfer->getTelegramBot()
         );
     }
 

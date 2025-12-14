@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Serializer\Feedback\Telegram\Bot;
 
-use App\Entity\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;

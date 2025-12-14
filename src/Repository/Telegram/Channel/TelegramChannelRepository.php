@@ -7,52 +7,21 @@ namespace App\Repository\Telegram\Channel;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
 use App\Enum\Telegram\TelegramBotGroupName;
-use App\Repository\Repository;
+use App\Repository\EntityRepository;
 
 /**
- * @extends Repository<TelegramChannel>
- * @method TelegramChannelDoctrineRepository doctrine()
- * @property TelegramChannelDoctrineRepository doctrine
- * @method TelegramChannelDynamodbRepository dynamodb()
- * @property TelegramChannelDynamodbRepository dynamodb
+ * @extends EntityRepository<TelegramChannel>
+ * @method TelegramChannelDoctrineRepository getDoctrine()
+ * @property TelegramChannelDoctrineRepository $doctrine
+ * @method TelegramChannelDynamodbRepository getDynamodb()
+ * @property TelegramChannelDynamodbRepository $dynamodb
+ * @method TelegramChannel[] findAll()
+ * @method TelegramChannel|null findOneByUsername(string $username)
+ * @method TelegramChannel|null findOneNonDeletedByUsername(string $username)
+ * @method TelegramChannel|null findOnePrimaryNonDeletedByBot(TelegramBot $bot)
+ * @method TelegramChannel|null findOnePrimaryNonDeletedByChannel(TelegramChannel $channel)
+ * @method TelegramChannel[] findPrimaryNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode)
  */
-class TelegramChannelRepository extends Repository
+class TelegramChannelRepository extends EntityRepository
 {
-    public function __construct(
-        TelegramChannelDoctrineRepository $telegramChannelDoctrineRepository,
-        TelegramChannelDynamodbRepository $telegramChannelDynamodbRepository,
-    )
-    {
-        parent::__construct($telegramChannelDoctrineRepository, $telegramChannelDynamodbRepository);
-    }
-
-    public function findAll(): array
-    {
-        return $this->dynamodb->findAll();
-    }
-
-    public function findAnyOneByUsername(string $username): ?TelegramChannel
-    {
-        return $this->dynamodb->findAnyOneByUsername($username);
-    }
-
-    public function findOneByUsername(string $username): ?TelegramChannel
-    {
-        return $this->dynamodb->findOneByUsername($username);
-    }
-
-    public function findOnePrimaryByBot(TelegramBot $bot): ?TelegramChannel
-    {
-        return $this->dynamodb->findOnePrimaryByBot($bot);
-    }
-
-    public function findOnePrimaryByChannel(TelegramChannel $channel): ?TelegramChannel
-    {
-        return $this->dynamodb->findOnePrimaryByChannel($channel);
-    }
-
-    public function findPrimaryByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
-    {
-        return $this->dynamodb->findPrimaryByGroupAndCountry($group, $countryCode);
-    }
 }

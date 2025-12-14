@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot;
 
-use App\Entity\ImportResult;
 use App\Enum\Telegram\TelegramBotGroupName;
+use App\Model\ImportResult;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
 use App\Service\CsvFileWalker;
 use App\Service\Intl\CountryProvider;
@@ -67,7 +67,7 @@ class TelegramBotImporter
                 ->setAdminOnly($data['admin_only'] === '1')
             ;
 
-            $bot = $this->telegramBotRepository->findAnyOneByUsername($transfer->getUsername());
+            $bot = $this->telegramBotRepository->findOneByUsername($transfer->getUsername());
 
             $message = $transfer->getUsername();
             $message .= ': [OK] ';

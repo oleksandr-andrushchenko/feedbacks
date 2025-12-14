@@ -45,6 +45,6 @@ class TelegramBotProvider
      */
     public function getTelegramBotsByGroup(TelegramBotGroupName $group): array
     {
-        return $this->telegramBotRepository->findPrimaryByGroup($group);
+        return $this->telegramBotRepository->findPrimaryNonDeletedByGroup($group);
     }
 }

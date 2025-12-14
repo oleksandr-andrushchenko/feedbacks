@@ -22,7 +22,7 @@ class TelegramBotCreator
     public function createTelegramBot(TelegramBotTransfer $botTransfer): TelegramBot
     {
         $bot = new TelegramBot(
-            $this->idGenerator->generateUuid(),
+            $this->idGenerator->generateId(),
             $botTransfer->getUsername(),
             $botTransfer->getGroup(),
             $botTransfer->getName(),
@@ -39,7 +39,7 @@ class TelegramBotCreator
 
         $this->telegramBotValidator->validateTelegramBot($bot);
 
-        $this->entityManager->dynamodb()->persist($bot);
+        $this->entityManager->persist($bot);
 
         return $bot;
     }

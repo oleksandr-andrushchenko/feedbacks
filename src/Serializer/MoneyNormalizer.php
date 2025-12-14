@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer;
 
-use App\Entity\Money;
+use App\Model\Money;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class MoneyNormalizer implements NormalizerInterface

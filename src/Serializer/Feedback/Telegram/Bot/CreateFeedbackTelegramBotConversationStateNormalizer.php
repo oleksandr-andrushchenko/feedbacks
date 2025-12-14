@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Serializer\Feedback\Telegram\Bot;
 
-use App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
-use App\Entity\Telegram\TelegramBotConversationState;
 use App\Enum\Feedback\Rating;
+use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;

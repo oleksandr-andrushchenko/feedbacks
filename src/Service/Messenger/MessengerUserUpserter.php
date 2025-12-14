@@ -8,8 +8,9 @@ use App\Entity\Messenger\MessengerUser;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Messenger\MessengerUserRepository;
 use App\Service\IdGenerator;
-use App\Transfer\Messenger\MessengerUserTransfer;
 use App\Service\ORM\EntityManager;
+use App\Transfer\Messenger\MessengerUserTransfer;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class MessengerUserUpserter
@@ -19,17 +20,21 @@ class MessengerUserUpserter
         private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
+        private readonly ?LoggerInterface $logger = null,
     )
     {
     }
 
-    public function upsertMessengerUser(MessengerUserTransfer $transfer, bool $withUser = false): MessengerUser
+    public function upsertMessengerUser(MessengerUserTransfer $transfer): MessengerUser
     {
         $messengerUser = $this->messengerUserRepository->findOneByMessengerAndIdentifier(
             $transfer->getMessenger(),
             $transfer->getId(),
-            withUser: $withUser,
         );
+
+        $this->logger?->debug(__METHOD__, [
+            'messengerUser' => $messengerUser,
+        ]);
 
         $created = false;
 
@@ -40,6 +45,9 @@ class MessengerUserUpserter
                 $transfer->getMessenger(),
                 $transfer->getId()
             );
+            $this->logger?->debug(__METHOD__, [
+                'messengerUser' => $messengerUser,
+            ]);
             $this->entityManager->persist($messengerUser);
         }
 
@@ -52,6 +60,10 @@ class MessengerUserUpserter
         if (!empty($transfer->getBotId())) {
             $messengerUser->addBotId($transfer->getBotId());
         }
+
+        $this->logger?->debug(__METHOD__, [
+            'messengerUser' => $messengerUser,
+        ]);
 
         if ($created) {
             $this->eventBus->dispatch(new ActivityEvent(entity: $messengerUser, action: 'created'));

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Feedback\Feedback;
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramBotConversation;
@@ -14,14 +13,15 @@ use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Messenger\Messenger;
+use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
 use App\Tests\Fixtures;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;
 use App\Tests\Traits\Feedback\FeedbackRatingProviderTrait;
 use App\Tests\Traits\Feedback\FeedbackRepositoryProviderTrait;
-use App\Tests\Traits\Feedback\FeedbackSearchTermRepositoryProviderTrait;
 use App\Tests\Traits\Feedback\FeedbackSearchTermTypeProviderTrait;
+use App\Tests\Traits\Feedback\SearchTermRepositoryProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserProfileUrlProviderTrait;
 use App\Tests\Traits\User\UserRepositoryProviderTrait;
 use App\Transfer\Feedback\SearchTermsTransfer;
@@ -35,7 +35,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
     use FeedbackRatingProviderTrait;
     use FeedbackSearchTermTypeProviderTrait;
     use MessengerUserProfileUrlProviderTrait;
-    use FeedbackSearchTermRepositoryProviderTrait;
+    use SearchTermRepositoryProviderTrait;
 
     /**
      * @param string $input
@@ -1964,11 +1964,11 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
             User::class,
             MessengerUser::class,
             TelegramBot::class,
-            FeedbackSearchTerm::class,
+            SearchTerm::class,
             Feedback::class,
         ]);
 
-        $feedbackSearchTermRepository = $this->getFeedbackSearchTermRepository();
+        $feedbackSearchTermRepository = $this->getSearchTermRepository();
         $feedbackSearchTermPrevCount = $feedbackSearchTermRepository->count([]);
         $feedbackRepository = $this->getFeedbackRepository();
         $feedbackPrevCount = $feedbackRepository->count([]);
@@ -1991,7 +1991,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         $this->assertNotNull($feedback);
 
         $searchTerms = $feedback->getSearchTerms()->toArray();
-        usort($searchTerms, static fn (FeedbackSearchTerm $a, FeedbackSearchTerm $b): int => $a->getId() <=> $b->getId());
+        usort($searchTerms, static fn (SearchTerm $a, SearchTerm $b): int => $a->getId() <=> $b->getId());
 
         foreach ($searchTerms as $index => $searchTerm) {
             $this->assertEquals($searchTerms[$index]->getText(), $searchTerm->getText());
@@ -2015,7 +2015,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         }
 
         $this->assertEquals($rating, $feedback->getRating());
-        $this->assertEquals($description, $feedback->getDescription());
+        $this->assertEquals($description, $feedback->getText());
 
         $this->shouldSeeReply('reply.created');
     }
@@ -2074,7 +2074,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
             User::class,
             MessengerUser::class,
             TelegramBot::class,
-            FeedbackSearchTerm::class,
+            SearchTerm::class,
             Feedback::class,
         ]);
 

@@ -9,13 +9,28 @@ use App\Enum\Messenger\Messenger;
 use DateTimeInterface;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
 
 #[Entity(
-    new PartitionKey('MESS_USER', ['id']),
+    new PartitionKey('MESSENGER_USER', ['id']),
     new SortKey('META'),
+    [
+        new GlobalIndex(
+            'MESSENGER_USERS_BY_MESSENGER_IDENTIFIER',
+            new PartitionKey(null, ['messenger', 'identifier'], 'messenger_user_messenger_identifier_pk')
+        ),
+        new GlobalIndex(
+            'MESSENGER_USERS_BY_MESSENGER_USERNAME',
+            new PartitionKey(null, ['messenger', 'username'], 'messenger_user_messenger_username_pk')
+        ),
+        new GlobalIndex(
+            'MESSENGER_USERS_BY_USER',
+            new PartitionKey(null, ['userId'], 'messenger_user_user_pk')
+        ),
+    ]
 )]
 class MessengerUser implements Stringable
 {
@@ -31,14 +46,12 @@ class MessengerUser implements Stringable
         #[Attribute]
         private ?string $name = null,
         private ?User $user = null,
-        #[Attribute]
-        private bool $showExtendedKeyboard = false,
-        /**
-         * @var array<string>|null
-         */
-        #[Attribute]
+        #[Attribute('show_extended_keyboard')]
+        private ?bool $showExtendedKeyboard = null,
+        /** @var array<string>|null */
+        #[Attribute('bot_ids')]
         private ?array $botIds = null,
-        #[Attribute]
+        #[Attribute('username_history')]
         private ?array $usernameHistory = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
@@ -104,12 +117,12 @@ class MessengerUser implements Stringable
         return $this;
     }
 
-    public function showExtendedKeyboard(): bool
+    public function showExtendedKeyboard(): ?bool
     {
         return $this->showExtendedKeyboard;
     }
 
-    public function setShowExtendedKeyboard(bool $showExtendedKeyboard): self
+    public function setShowExtendedKeyboard(?bool $showExtendedKeyboard): self
     {
         $this->showExtendedKeyboard = $showExtendedKeyboard;
 
@@ -191,6 +204,12 @@ class MessengerUser implements Stringable
     public function __toString(): string
     {
         return $this->getId();
+    }
+
+    public function setUserId(string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
     }
 
     public function getUserId(): ?string

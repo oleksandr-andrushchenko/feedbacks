@@ -10,9 +10,19 @@ use Attribute as PHPAttribute;
 class Attribute
 {
     public function __construct(
-        public ?string $name = null,
-        public bool $ignoreIfNull = true,
+        protected ?string $name = null,
+        protected bool $ignoreIfNull = true,
     )
     {
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function ignoreIfNull(): bool
+    {
+        return $this->ignoreIfNull;
     }
 }

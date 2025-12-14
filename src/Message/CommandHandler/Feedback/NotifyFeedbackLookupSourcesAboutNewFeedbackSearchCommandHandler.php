@@ -7,7 +7,7 @@ namespace App\Message\CommandHandler\Feedback;
 use App\Entity\Feedback\FeedbackLookup;
 use App\Entity\Feedback\FeedbackNotification;
 use App\Entity\Feedback\FeedbackSearch;
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Enum\Feedback\FeedbackNotificationType;
@@ -18,11 +18,12 @@ use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackSearchRepository;
 use App\Service\Feedback\FeedbackLookupSearcher;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
 use App\Service\Search\Viewer\Telegram\SearchRegistryTelegramSearchViewer;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\TelegramBotProvider;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -38,8 +39,9 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommandHandler
         private readonly SearchRegistryTelegramSearchViewer $searchRegistryTelegramSearchViewer,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
         private readonly IdGenerator $idGenerator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
     }
@@ -72,7 +74,7 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommandHandler
 
     private function notify(
         MessengerUser $messengerUser,
-        FeedbackSearchTerm $searchTerm,
+        SearchTerm $searchTerm,
         FeedbackSearch $feedbackSearch,
         FeedbackLookup $feedbackLookup
     ): void
@@ -110,7 +112,8 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommandHandler
 
     private function getNotifyMessage(MessengerUser $messengerUser, TelegramBot $bot, FeedbackSearch $feedbackSearch): string
     {
-        $localeCode = $messengerUser->getUser()->getLocaleCode();
+        $user = $this->messengerUserService->getUser($messengerUser);
+        $localeCode = $user->getLocaleCode();
         $message = '👋 ' . $this->translator->trans('might_be_interesting', domain: 'feedbacks.tg.notify', locale: $localeCode);
         $message = '<b>' . $message . '</b>';
         $message .= ':';
@@ -118,7 +121,7 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommandHandler
         $message .= $this->searchRegistryTelegramSearchViewer->getFeedbackSearchTelegramView(
             $bot,
             $feedbackSearch,
-            addSecrets: $messengerUser->getUser()?->getSubscriptionExpireAt() < new DateTimeImmutable(),
+            addSecrets: $user?->getSubscriptionExpireAt() < new DateTimeImmutable(),
             addCountry: true,
             addTime: true,
             addQuotes: true,

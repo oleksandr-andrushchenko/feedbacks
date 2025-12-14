@@ -6,8 +6,8 @@ namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
-use App\Entity\Telegram\TelegramBotConversationState;
 use App\Entity\User\User;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\RestartConversationTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;

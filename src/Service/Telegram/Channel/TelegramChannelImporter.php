@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Channel;
 
-use App\Entity\ImportResult;
-use App\Entity\Location;
 use App\Enum\Telegram\TelegramBotGroupName;
 use App\Exception\AddressGeocodeFailedException;
 use App\Exception\TimezoneGeocodeFailedException;
+use App\Model\ImportResult;
+use App\Model\Location;
 use App\Repository\Telegram\Channel\TelegramChannelRepository;
 use App\Service\CsvFileWalker;
 use App\Service\Intl\CountryProvider;
 use App\Service\Intl\Level1RegionProvider;
 use App\Service\Intl\LocaleProvider;
+use App\Service\ORM\EntityManager;
 use App\Transfer\Telegram\TelegramChannelTransfer;
-use Doctrine\ORM\EntityManagerInterface;
 
 class TelegramChannelImporter
 {
@@ -28,7 +28,7 @@ class TelegramChannelImporter
         private readonly CountryProvider $countryProvider,
         private readonly LocaleProvider $localeProvider,
         private readonly CsvFileWalker $walker,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly string $stage,
     )
     {
@@ -142,7 +142,7 @@ class TelegramChannelImporter
                 ->setPrimary($data['primary'] === '1')
             ;
 
-            $channel = $this->repository->findAnyOneByUsername($transfer->getUsername());
+            $channel = $this->repository->findOneByUsername($transfer->getUsername());
 
             if ($channel === null) {
                 $this->creator->createTelegramChannel($transfer);

@@ -6,15 +6,15 @@ namespace App\Service\Telegram\Bot\Payment;
 
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Exception\Intl\CurrencyNotFoundException;
-use App\Transfer\Telegram\TelegramBotPaymentMethodTransfer;
 use App\Service\Intl\CurrencyProvider;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ORM\EntityManager;
+use App\Transfer\Telegram\TelegramBotPaymentMethodTransfer;
 
 class TelegramBotPaymentMethodCreator
 {
     public function __construct(
         private readonly CurrencyProvider $currencyProvider,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
     }

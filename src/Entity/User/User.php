@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity\User;
 
-use App\Entity\Location;
+use App\Model\Location;
+use DateTimeImmutable;
 use DateTimeInterface;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
@@ -32,7 +33,7 @@ class User
         #[Attribute('country_code')]
         private ?string $countryCode = null,
         ?Location $location = null,
-        #[Attribute('level1_region_id')]
+        #[Attribute('level_1_region_id')]
         private ?string $level1RegionId = null,
         #[Attribute('locale_code')]
         private ?string $localeCode = null,
@@ -244,5 +245,19 @@ class User
         $this->purgedAt = $purgedAt;
 
         return $this;
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        if ($this->getSubscriptionExpireAt() === null) {
+            return false;
+        }
+
+        return new DateTimeImmutable() < $this->getSubscriptionExpireAt();
+    }
+
+    public function hasSubscription(): bool
+    {
+        return $this->getSubscriptionExpireAt() !== null;
     }
 }

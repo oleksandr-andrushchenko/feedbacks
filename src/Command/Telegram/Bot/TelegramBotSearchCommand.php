@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command\Telegram\Bot;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
 use App\Service\Search\Searcher;
@@ -49,7 +49,7 @@ class TelegramBotSearchCommand extends Command
         $term = $input->getArgument('term');
         $termType = SearchTermType::fromName($input->getArgument('type'));
 
-        $searchTerm = new FeedbackSearchTerm($term, $term, $termType);
+        $searchTerm = new SearchTerm($term, $term, $termType);
         $render = static fn (string $message) => $io->text($message);
         $context = [
             'countryCode' => $input->getOption('country'),

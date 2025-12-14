@@ -16,7 +16,7 @@ class FeedbackNotification implements Stringable
         private readonly string $id,
         private readonly FeedbackNotificationType $type,
         private readonly MessengerUser $messengerUser,
-        private readonly ?FeedbackSearchTerm $feedbackSearchTerm = null,
+        private readonly ?SearchTerm $feedbackSearchTerm = null,
         private readonly ?Feedback $feedback = null,
         private readonly ?Feedback $targetFeedback = null,
         private readonly ?FeedbackSearch $feedbackSearch = null,
@@ -45,7 +45,7 @@ class FeedbackNotification implements Stringable
         return $this->messengerUser;
     }
 
-    public function getFeedbackSearchTerm(): ?FeedbackSearchTerm
+    public function getFeedbackSearchTerm(): ?SearchTerm
     {
         return $this->feedbackSearchTerm;
     }

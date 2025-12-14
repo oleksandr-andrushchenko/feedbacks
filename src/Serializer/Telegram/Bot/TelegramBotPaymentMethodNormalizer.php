@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Serializer\Telegram\Bot;
 
-use App\Entity\Telegram\TelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;

@@ -30,7 +30,7 @@ class TelegramSiteViewResponseFactory
 
     public function createViewResponse(SitePage $page, string $username, bool $switcher = false): Response
     {
-        $bot = $this->telegramBotRepository->findOneByUsername($username);
+        $bot = $this->telegramBotRepository->findOneNonDeletedByUsername($username);
 
         if ($bot === null) {
             throw new NotFoundHttpException();
@@ -58,7 +58,7 @@ class TelegramSiteViewResponseFactory
                 'locale_icon' => $this->localeProvider->getLocaleIcon($this->localeProvider->getLocale($bot->getLocaleCode())),
             ];
 
-            $bots = $this->telegramBotRepository->findByGroup($group);
+            $bots = $this->telegramBotRepository->findNonDeletedByGroup($group);
         } else {
             $botMap = static fn (TelegramBot $bot): array => [
                 'username' => $bot->getUsername(),

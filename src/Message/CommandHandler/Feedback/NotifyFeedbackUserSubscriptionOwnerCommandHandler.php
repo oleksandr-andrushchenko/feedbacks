@@ -16,10 +16,11 @@ use App\Repository\Messenger\MessengerUserRepository;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionPlanProvider;
 use App\Service\IdGenerator;
 use App\Service\Intl\TimeProvider;
+use App\Service\Messenger\MessengerUserService;
 use App\Service\Modifier;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\TelegramBotProvider;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -33,12 +34,13 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
         private readonly TranslatorInterface $translator,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
         private readonly IdGenerator $idGenerator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly TimeProvider $timeProvider,
         private readonly FeedbackSubscriptionPlanProvider $feedbackSubscriptionPlanProvider,
         private readonly MessengerUserRepository $messengerUserRepository,
         private readonly Modifier $modifier,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
     }
@@ -98,7 +100,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
 
     private function getNotifyMessage(MessengerUser $messengerUser, FeedbackUserSubscription $subscription): string
     {
-        $user = $messengerUser->getUser();
+        $user = $this->messengerUserService->getUser($messengerUser);
         $locale = $user->getLocaleCode();
 
         $plan = $this->feedbackSubscriptionPlanProvider->getSubscriptionPlanName(

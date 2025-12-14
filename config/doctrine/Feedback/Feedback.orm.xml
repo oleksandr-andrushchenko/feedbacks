@@ -4,7 +4,7 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="App\Entity\Feedback\Feedback" repository-class="App\Repository\Feedback\FeedbackRepository"
+    <entity name="App\Entity\Feedback\Feedback" repository-class="App\Repository\Feedback\FeedbackDoctrineRepository"
             table="feedbacks">
 
         <indexes>
@@ -16,7 +16,7 @@
         <many-to-one field="user" target-entity="App\Entity\User\User"/>
         <many-to-one field="messengerUser" target-entity="App\Entity\Messenger\MessengerUser"/>
 
-        <many-to-many field="searchTerms" target-entity="App\Entity\Feedback\FeedbackSearchTerm">
+        <many-to-many field="searchTerms" target-entity="App\Entity\Feedback\SearchTerm">
             <join-table name="feedbacks_feedback_search_terms">
                 <join-columns>
                     <join-column name="feedback_id"/>
@@ -28,11 +28,11 @@
         </many-to-many>
 
         <field name="rating" column="rating" type="smallint" enum-type="App\Enum\Feedback\Rating"/>
-        <field name="description" column="description" type="text" nullable="true"/>
+        <field name="text" column="description" type="text" nullable="true"/>
         <field name="hasActiveSubscription" column="has_active_subscription" type="boolean"/>
         <field name="countryCode" column="country_code" length="2" nullable="true"/>
         <field name="localeCode" column="locale_code" length="2" nullable="true"/>
-        <field name="channelMessageIds" column="channel_message_ids" type="simple_array" nullable="true"/>
+        <field name="telegramChannelMessageIds" column="channel_message_ids" type="simple_array" nullable="true"/>
 
         <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot"/>
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\UkrMissedCar\UkrMissedCar;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\UkrMissedCar\UkrMissedCar;
 use App\Service\CrawlerProvider;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -29,7 +29,7 @@ class UkrMissedCarSearchProvider extends SearchProvider implements SearchProvide
         return SearchProviderName::ukr_missed_cars;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
 
@@ -46,7 +46,7 @@ class UkrMissedCarSearchProvider extends SearchProvider implements SearchProvide
         return true;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $term = $searchTerm->getNormalizedText();
 

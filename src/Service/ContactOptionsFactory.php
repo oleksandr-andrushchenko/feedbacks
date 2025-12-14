@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\ContactOptions;
 use App\Entity\Telegram\TelegramBot;
 use App\Exception\ContactOptionsNotFoundException;
-use App\Service\Telegram\Bot\View\TelegramBotLinkViewProvider;
+use App\Model\ContactOptions;
 use App\Service\Telegram\TelegramLinkProvider;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

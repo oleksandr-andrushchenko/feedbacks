@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Bot\Payment;
 
 use App\Entity\Messenger\MessengerUser;
-use App\Entity\Money;
 use App\Entity\Telegram\TelegramBotPayment;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Entity\User\User;
@@ -14,16 +13,18 @@ use App\Exception\Telegram\Bot\Payment\TelegramBotInvalidCurrencyBotException;
 use App\Exception\Telegram\Bot\Payment\TelegramBotPaymentNotFoundException;
 use App\Exception\Telegram\Bot\Payment\TelegramBotUnknownPaymentException;
 use App\Message\Event\ActivityEvent;
+use App\Model\Money;
 use App\Repository\Telegram\Bot\TelegramBotPaymentRepository;
+use App\Service\IdGenerator;
 use App\Service\Intl\CurrencyProvider;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotInvoiceSenderInterface;
 use App\Service\Telegram\Bot\TelegramBot;
-use App\Service\IdGenerator;
-use Doctrine\ORM\EntityManagerInterface;
 use Longman\TelegramBot\Entities\Payments\LabeledPrice;
 use Longman\TelegramBot\Entities\Payments\OrderInfo;
 use Longman\TelegramBot\Entities\Payments\PreCheckoutQuery;
 use Longman\TelegramBot\Entities\Payments\SuccessfulPayment;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class TelegramBotPaymentManager
@@ -31,7 +32,7 @@ class TelegramBotPaymentManager
     public function __construct(
         private readonly TelegramBotInvoiceSenderInterface $telegramBotInvoiceSender,
         private readonly CurrencyProvider $currencyProvider,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly TelegramBotPaymentRepository $telegramBotPaymentRepository,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
@@ -51,6 +52,7 @@ class TelegramBotPaymentManager
      * @param array $payload
      * @param Money $price
      * @return TelegramBotPayment
+     * @throws ExceptionInterface
      * @throws TelegramBotInvalidCurrencyBotException
      */
     public function sendPaymentRequest(
@@ -110,13 +112,14 @@ class TelegramBotPaymentManager
      * @return TelegramBotPayment
      * @throws TelegramBotPaymentNotFoundException
      * @throws TelegramBotUnknownPaymentException
+     * @throws ExceptionInterface
      */
     public function acceptPreCheckoutQuery(TelegramBot $bot, PreCheckoutQuery $preCheckoutQuery): TelegramBotPayment
     {
         $payment = $this->getPaymentByPayload($preCheckoutQuery->getInvoicePayload());
         $payment->setPreCheckoutQuery($preCheckoutQuery->jsonSerialize());
 
-        $this->updateUserByOrderInfo($bot->getMessengerUser()->getUser(), $preCheckoutQuery->getOrderInfo());
+        $this->updateUserByOrderInfo($bot->getUser(), $preCheckoutQuery->getOrderInfo());
 
         $bot->answerPreCheckoutQuery([
             'pre_checkout_query_id' => $preCheckoutQuery->getId(),
@@ -134,6 +137,7 @@ class TelegramBotPaymentManager
      * @param TelegramBot $bot
      * @param SuccessfulPayment $successfulPayment
      * @return TelegramBotPayment
+     * @throws ExceptionInterface
      * @throws TelegramBotPaymentNotFoundException
      * @throws TelegramBotUnknownPaymentException
      */
@@ -142,7 +146,7 @@ class TelegramBotPaymentManager
         $payment = $this->getPaymentByPayload($successfulPayment->getInvoicePayload());
         $payment->setSuccessfulPayment($successfulPayment->jsonSerialize());
 
-        $this->updateUserByOrderInfo($bot->getMessengerUser()->getUser(), $successfulPayment->getOrderInfo());
+        $this->updateUserByOrderInfo($bot->getUser(), $successfulPayment->getOrderInfo());
 
         $payment->setStatus(TelegramBotPaymentStatus::SUCCESSFUL_PAYMENT_RECEIVED);
 

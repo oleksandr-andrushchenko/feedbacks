@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Intl;
 
-use App\Entity\Intl\Country;
+use App\Model\Intl\Country;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 

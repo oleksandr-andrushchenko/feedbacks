@@ -22,7 +22,7 @@ class TelegramChannelCreator
     public function createTelegramChannel(TelegramChannelTransfer $channelTransfer): TelegramChannel
     {
         $channel = new TelegramChannel(
-            $this->idGenerator->generateUuid(),
+            $this->idGenerator->generateId(),
             $channelTransfer->getUsername(),
             $channelTransfer->getGroup(),
             $channelTransfer->getName(),

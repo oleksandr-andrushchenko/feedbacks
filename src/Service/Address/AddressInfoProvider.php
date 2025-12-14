@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Address;
 
-use App\Entity\Address\Address;
+use App\Model\Address\Address;
 
 class AddressInfoProvider
 {

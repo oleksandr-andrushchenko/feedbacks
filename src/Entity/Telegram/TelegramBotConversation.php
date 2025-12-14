@@ -12,8 +12,8 @@ use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 
 #[Entity(
-    new PartitionKey('TG_BOT_CONV', ['hash']),
-    new SortKey('META')),
+    new PartitionKey('TELEGRAM_BOT_CONVERSATION', ['hash']),
+    new SortKey('META', ['createdAt'])),
 ]
 class TelegramBotConversation
 {
@@ -34,14 +34,14 @@ class TelegramBotConversation
         private ?DateTimeInterface $createdAt = null,
         #[Attribute('updated_at')]
         private ?DateTimeInterface $updatedAt = null,
+        #[Attribute('deleted_at')]
+        private ?DateTimeInterface $deletedAt = null,
         #[Attribute('expire_at')]
         private ?DateTimeInterface $expireAt = null,
-        private ?int $id = null,
+        private ?string $id = null,
     )
     {
-        if ($this->expireAt === null) {
-            $this->expireAt = (new DateTimeImmutable())->setTimestamp(time() + 365 * 24 * 60 * 60);
-        }
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getHash(): string
@@ -105,8 +105,25 @@ class TelegramBotConversation
         return $this;
     }
 
-    public function getExpireAt(): DateTimeInterface
+    public function getExpireAt(): ?DateTimeInterface
     {
         return $this->expireAt;
+    }
+
+    public function setDeletedAt(?DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
+        return $this;
+    }
+
+    public function getDeletedAt(): ?DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setExpireAt(?DateTimeInterface $expireAt): self
+    {
+        $this->expireAt = $expireAt;
+        return $this;
     }
 }

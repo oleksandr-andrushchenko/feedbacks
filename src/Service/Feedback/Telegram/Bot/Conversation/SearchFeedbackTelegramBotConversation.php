@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\Command\FeedbackCommandLimit;
-use App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
-use App\Entity\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
+use App\Model\Feedback\Command\FeedbackCommandLimit;
+use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
+use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
 use App\Service\Feedback\FeedbackSearchCreator;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
 use App\Service\Feedback\SearchTerm\SearchTermTypeProvider;
@@ -27,6 +27,7 @@ use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use DateTimeImmutable;
 use Longman\TelegramBot\Entities\KeyboardButton;
+use Psr\Log\LoggerInterface;
 
 /**
  * @property SearchFeedbackTelegramBotConversationState $state
@@ -48,6 +49,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly SearchTermTypeProvider $searchTermTypeProvider,
         private readonly FeedbackSearchCreator $feedbackSearchCreator,
         private readonly Searcher $searcher,
+        private readonly LoggerInterface $logger,
         private readonly bool $searchTermTypeStep,
         private readonly bool $confirmStep,
         private readonly bool $createConfirmStep,
@@ -59,6 +61,9 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
     public function invoke(TelegramBotAwareHelper $tg, Entity $entity): null
     {
+        $this->logger->critical(__METHOD__, [
+            'step' => $this->state->getStep(),
+        ]);
         return match ($this->state->getStep()) {
             default => $this->start($tg),
             self::STEP_SEARCH_TERM_QUERIED => $this->gotSearchTerm($tg, $entity),
@@ -454,7 +459,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $context = [
                 'bot' => $tg->getBot()->getEntity(),
                 'countryCode' => $tg->getBot()->getEntity()->getCountryCode(),
-                'full' => $tg->getBot()->getMessengerUser()?->getUser()?->getSubscriptionExpireAt() > new DateTimeImmutable(),
+                'full' => $tg->getBot()->getUser()?->getSubscriptionExpireAt() > new DateTimeImmutable(),
                 'skipFirstItem' => true,
                 'addCountry' => true,
                 'addTime' => true,
@@ -568,6 +573,9 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
     public function gotCreateConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
     {
+        $this->logger->critical(__METHOD__, [
+            'input' => $tg->getInput(),
+        ]);
         if ($tg->matchInput($tg->noButton()->getText())) {
             $tg->stopConversation($entity);
 

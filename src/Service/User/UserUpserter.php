@@ -7,21 +7,23 @@ namespace App\Service\User;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\User\User;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
 use App\Transfer\Messenger\MessengerUserTransfer;
-use Doctrine\ORM\EntityManagerInterface;
 
 class UserUpserter
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
     }
 
     public function upsertUserByMessengerUser(MessengerUser $messengerUser, MessengerUserTransfer $transfer): User
     {
-        $user = $messengerUser->getUser();
+        $user = $this->messengerUserService->getUser($messengerUser);
 
         if ($user === null) {
             $user = new User(

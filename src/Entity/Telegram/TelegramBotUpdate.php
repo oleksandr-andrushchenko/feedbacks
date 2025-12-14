@@ -12,20 +12,20 @@ use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 
 #[Entity(
-    new PartitionKey('TG_BOT_UPDATE', ['id']),
+    new PartitionKey('TELEGRAM_BOT_UPDATE', ['id']),
     new SortKey('META'),
 )]
 class TelegramBotUpdate
 {
     public function __construct(
-        #[Attribute('tg_bot_update_id')]
+        #[Attribute('telegram_bot_update_id')]
         private readonly string $id,
         #[Attribute]
         private readonly array $data,
         private readonly TelegramBot $bot,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        #[Attribute('tg_bot_id')]
+        #[Attribute('telegram_bot_id')]
         private ?string $botId = null,
         #[Attribute('expire_at')]
         private ?DateTimeInterface $expireAt = null,

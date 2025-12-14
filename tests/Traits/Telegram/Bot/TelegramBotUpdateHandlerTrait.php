@@ -20,7 +20,7 @@ trait TelegramBotUpdateHandlerTrait
     private function handleTelegramBotUpdate(?TelegramBot $bot, Update $update): void
     {
         if ($bot === null) {
-            $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+            $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
         }
 
         $this->getTelegramBotUpdateHandler()->handleTelegramBotUpdate($bot, new Request(content: $update->toJson()));

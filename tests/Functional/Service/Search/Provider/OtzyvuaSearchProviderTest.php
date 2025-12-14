@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\Otzyvua\OtzyvuaFeedback;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedbackSearchTerm;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedbackSearchTerms;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedbacks;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\Otzyvua\OtzyvuaFeedback;
+use App\Model\Search\Otzyvua\OtzyvuaFeedbacks;
+use App\Model\Search\Otzyvua\OtzyvuaFeedbackSearchTerm;
+use App\Model\Search\Otzyvua\OtzyvuaFeedbackSearchTerms;
 use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Generator;
 use DateTimeImmutable;
+use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class OtzyvuaSearchProviderTest extends KernelTestCase
 {

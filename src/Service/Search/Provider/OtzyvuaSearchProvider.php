@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedback;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedbackSearchTerm;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedbackSearchTerms;
-use App\Entity\Search\Otzyvua\OtzyvuaFeedbacks;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\Otzyvua\OtzyvuaFeedback;
+use App\Model\Search\Otzyvua\OtzyvuaFeedbacks;
+use App\Model\Search\Otzyvua\OtzyvuaFeedbackSearchTerm;
+use App\Model\Search\Otzyvua\OtzyvuaFeedbackSearchTerms;
 use App\Service\CrawlerProvider;
 use DateTimeImmutable;
 use Symfony\Component\DomCrawler\Crawler;
@@ -35,7 +35,7 @@ class OtzyvuaSearchProvider extends SearchProvider implements SearchProviderInte
         return SearchProviderName::otzyvua;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
 
@@ -57,7 +57,7 @@ class OtzyvuaSearchProvider extends SearchProvider implements SearchProviderInte
         return false;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $term = $searchTerm->getNormalizedText();
         $searchTerms = $this->searchFeedbackSearchTerms($term);

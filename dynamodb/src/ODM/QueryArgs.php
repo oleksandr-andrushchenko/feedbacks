@@ -6,17 +6,15 @@ namespace OA\Dynamodb\ODM;
 
 class QueryArgs extends AbstractOpArgs
 {
-    public function keyConditionExpression(string $expression): static
+    public function keyConditionExpression(array $expression): static
     {
         $this->args['KeyConditionExpression'] = $expression;
-
         return $this;
     }
 
     public function scanIndexForward(bool $asc = true): static
     {
         $this->args['ScanIndexForward'] = $asc;
-
         return $this;
     }
 

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotConversation;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Location;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Telegram\Bot\Api\TelegramBotChatActionSenderInterface;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationManager;
 use Longman\TelegramBot\ChatAction;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Entities\KeyboardButton;
-use App\Entity\Location;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
@@ -84,22 +84,22 @@ class TelegramBotAwareHelper
 
     public function getLocaleCode(): ?string
     {
-        return $this->getBot()->getMessengerUser()?->getUser()->getLocaleCode();
+        return $this->getBot()->getUser()?->getLocaleCode();
     }
 
     public function getCountryCode(): ?string
     {
-        return $this->getBot()->getMessengerUser()?->getUser()->getCountryCode();
+        return $this->getBot()->getUser()?->getCountryCode();
     }
 
     public function getCurrencyCode(): ?string
     {
-        return $this->getBot()->getMessengerUser()?->getUser()->getCurrencyCode();
+        return $this->getBot()->getUser()?->getCurrencyCode();
     }
 
     public function getTimezone(): ?string
     {
-        return $this->getBot()->getMessengerUser()?->getUser()->getTimezone();
+        return $this->getBot()->getUser()?->getTimezone();
     }
 
     public function startConversation(string $class): static

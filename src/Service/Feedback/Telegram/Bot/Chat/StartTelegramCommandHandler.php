@@ -42,7 +42,7 @@ class StartTelegramCommandHandler
         $message .= "\n\n";
         $message .= '💫 ' . $tg->trans('title', domain: $domain);
 
-        $channel = $this->telegramChannelRepository->findOnePrimaryByBot($tg->getBot()->getEntity());
+        $channel = $this->telegramChannelRepository->findOnePrimaryNonDeletedByBot($tg->getBot()->getEntity());
 
         if ($channel !== null) {
             $message .= "\n\n";

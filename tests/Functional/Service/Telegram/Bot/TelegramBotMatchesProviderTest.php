@@ -90,7 +90,7 @@ class TelegramBotMatchesProviderTest extends TestCase
         $repository = $this->createMock(TelegramBotDoctrineRepository::class);
         $repository
             ->expects($this->once())
-            ->method('findPrimaryByGroup')
+            ->method('findPrimaryNonDeletedByGroup')
             ->willReturn($bots)
         ;
         $provider = new TelegramBotMatchesProvider($repository);

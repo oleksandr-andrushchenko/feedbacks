@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Intl;
 
-use App\Entity\Intl\Currency;
+use App\Model\Intl\Currency;
 
 class TelegramBotCurrenciesProvider implements CurrenciesProviderInterface
 {

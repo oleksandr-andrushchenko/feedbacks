@@ -7,7 +7,9 @@ namespace App\Message\EventHandler\Feedback;
 use App\Entity\Telegram\TelegramChannel;
 use App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent;
 use App\Repository\Feedback\FeedbackRepository;
+use App\Service\Feedback\FeedbackService;
 use App\Service\Feedback\Telegram\View\MultipleSearchTermTelegramViewProvider;
+use App\Service\Messenger\MessengerUserService;
 use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Channel\TelegramChannelMatchesProvider;
@@ -26,6 +28,8 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
         private readonly TelegramChannelLinkViewProvider $telegramChannelLinkViewProvider,
         private readonly TranslatorInterface $translator,
         private readonly LoggerInterface $logger,
+        private readonly MessengerUserService $messengerUserService,
+        private readonly FeedbackService $feedbackService,
     )
     {
     }
@@ -48,7 +52,8 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
 
         $addTime = $event->addTime();
         $notifyUser = $event->notifyUser();
-        $channels = $this->telegramChannelMatchesProvider->getCachedTelegramChannelMatches($feedback->getUser(), $bot);
+        $user = $this->feedbackService->getUser($feedback);
+        $channels = $this->telegramChannelMatchesProvider->getCachedTelegramChannelMatches($user, $bot);
 
         foreach ($channels as $channel) {
             $message = $this->feedbackTelegramSearchViewer->getFeedbackTelegramView(
@@ -74,15 +79,17 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
             $messageId = $response->getResult()?->getMessageId();
 
             if ($messageId !== null) {
-                $feedback->addChannelMessageId($messageId);
+                $feedback->addTelegramChannelMessageId($messageId);
             }
         }
 
         if ($notifyUser) {
-            $messengerUser = $feedback->getMessengerUser();
-            $userLocaleCode = $messengerUser->getUser()->getLocaleCode();
+            $messengerUser = $this->feedbackService->getMessengerUser($feedback);
+            $user = $this->messengerUserService->getUser($messengerUser);
+            $userLocaleCode = $user->getLocaleCode();
             $userChatId = $messengerUser->getIdentifier();
-            $searchTermView = $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView($feedback->getSearchTerms()->toArray(), locale: $userLocaleCode);
+            $searchTerms = $this->feedbackService->getSearchTerms($feedback);
+            $searchTermView = $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView($searchTerms, locale: $userLocaleCode);
             $channelViews = implode(
                 ', ',
                 array_map(

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\BusinessGuide\BusinessGuideEnterprise;
-use App\Entity\Search\BusinessGuide\BusinessGuideEnterprises;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\BusinessGuide\BusinessGuideEnterprise;
+use App\Model\Search\BusinessGuide\BusinessGuideEnterprises;
 use App\Service\CrawlerProvider;
 use App\Service\Intl\Ukr\UkrPersonNameProvider;
 use DOMNode;
@@ -34,7 +34,7 @@ class BusinessGuideSearchProvider extends SearchProvider implements SearchProvid
         return SearchProviderName::business_guide;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
 
@@ -75,7 +75,7 @@ class BusinessGuideSearchProvider extends SearchProvider implements SearchProvid
         return false;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $type = $searchTerm->getType();
         $term = $searchTerm->getNormalizedText();

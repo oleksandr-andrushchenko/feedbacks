@@ -29,6 +29,9 @@ readonly class OpArgsBuilder
         $serializedArgs = [];
 
         foreach ($normalizedArgs as $arg => $value) {
+            if (in_array($arg, ['KeyConditionExpression', 'FilterExpression'])) {
+                $value = join(' AND ', $value);
+            }
             if (in_array($arg, ['ExpressionAttributeValues', 'ExclusiveStartKey'])) {
                 $value = $this->marshaler->marshalItem($value);
             }

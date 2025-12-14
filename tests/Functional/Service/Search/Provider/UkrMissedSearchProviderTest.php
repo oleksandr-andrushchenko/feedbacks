@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\UkrMissed\UkrMissedDisappearedPersons;
-use App\Entity\Search\UkrMissed\UkrMissedPerson;
-use App\Entity\Search\UkrMissed\UkrMissedWantedPersons;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
-use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Generator;
+use App\Model\Search\UkrMissed\UkrMissedDisappearedPersons;
+use App\Model\Search\UkrMissed\UkrMissedPerson;
+use App\Model\Search\UkrMissed\UkrMissedWantedPersons;
 use DateTimeImmutable;
+use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class UkrMissedSearchProviderTest extends KernelTestCase
 {

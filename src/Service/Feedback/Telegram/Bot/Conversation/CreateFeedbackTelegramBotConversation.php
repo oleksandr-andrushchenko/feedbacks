@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\Command\FeedbackCommandLimit;
-use App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Entity\Telegram\TelegramChannel;
 use App\Enum\Feedback\Rating;
@@ -14,6 +12,8 @@ use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\Feedback\FeedbackOnOneselfException;
 use App\Exception\ValidatorException;
 use App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent;
+use App\Model\Feedback\Command\FeedbackCommandLimit;
+use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackCreator;
 use App\Service\Feedback\Rating\FeedbackRatingProvider;
@@ -33,6 +33,7 @@ use App\Transfer\Feedback\FeedbackTransfer;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use Longman\TelegramBot\Entities\KeyboardButton;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
@@ -63,6 +64,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly FeedbackTelegramSearchViewer $feedbackTelegramSearchViewer,
         private readonly TelegramChannelMatchesProvider $telegramChannelMatchesProvider,
         private readonly TelegramChannelLinkViewProvider $telegramChannelLinkViewProvider,
+        private readonly LoggerInterface $logger,
         private readonly bool $searchTermTypeStep,
         private readonly bool $extraSearchTermStep,
         private readonly bool $descriptionStep,
@@ -688,6 +690,9 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
     public function gotDescription(TelegramBotAwareHelper $tg, Entity $entity): null
     {
+        $this->logger->critical(__METHOD__, [
+            'input' => $tg->getInput(),
+        ]);
         if ($tg->matchInput(null)) {
             $tg->replyWrong(true);
 
@@ -810,7 +815,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
     {
         $query = $this->getStep(5);
         $channels = $this->telegramChannelMatchesProvider->getTelegramChannelMatches(
-            $tg->getBot()->getMessengerUser()->getUser(),
+            $tg->getBot()->getUser(),
             $tg->getBot()->getEntity()
         );
         $channelNamesView = implode(
@@ -877,6 +882,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
     public function createAndReply(TelegramBotAwareHelper $tg, Entity $entity): null
     {
+        $this->logger->critical(__METHOD__);
         try {
             $this->validator->validate($this->state);
 
@@ -900,7 +906,11 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
                 $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent($this->state->getCreatedId(), addTime: true));
             }
 
-            return $this->chooseActionTelegramChatSender->sendActions($tg);
+            $sent= $this->chooseActionTelegramChatSender->sendActions($tg);
+
+            $this->logger->critical(__METHOD__, ['sent']);
+
+            return $sent;
         } catch (ValidatorException $exception) {
             if ($exception->isFirstProperty('rating')) {
                 $tg->replyWarning($tg->queryText($exception->getFirstMessage()));

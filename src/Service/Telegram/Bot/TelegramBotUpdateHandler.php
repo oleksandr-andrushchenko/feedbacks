@@ -93,7 +93,7 @@ class TelegramBotUpdateHandler
             }
 
             if ($bot->deleted() || !$bot->primary()) {
-                $newBot = $this->telegramBotRepository->findOnePrimaryByBot($bot->getEntity());
+                $newBot = $this->telegramBotRepository->findOnePrimaryNonDeletedByBot($bot->getEntity());
 
                 if ($newBot === null) {
                     $this->logger->warning('Primary bot has not been found to replace deleted/non-primary one', [
@@ -116,12 +116,29 @@ class TelegramBotUpdateHandler
             }
 
             if ($handler = $this->telegramBotHandlerFinder->findOneHandler($bot->getUpdate(), $handlers, force: true)) {
+                $this->logger->critical(__METHOD__, [
+                    'num' => 1,
+                ]);
                 call_user_func($handler->getCallback());
             } elseif ($conversation = $this->telegramBotConversationManager->getCurrentTelegramConversation($bot)) {
+                $this->logger->critical(__METHOD__, [
+                    'num' => 2,
+                    'conv_hash' => $conversation->getHash(),
+                    'class' => $conversation->getClass(),
+                    'state' => $conversation->getState(),
+                    'chat_id' => $conversation->getChatId(),
+                    'mess_user_id' => $conversation->getMessengerUserId(),
+                ]);
                 $this->telegramBotConversationManager->continueTelegramConversation($bot, $conversation);
             } elseif ($handler = $this->telegramBotHandlerFinder->findOneHandler($bot->getUpdate(), $handlers)) {
+                $this->logger->critical(__METHOD__, [
+                    'num' => 3,
+                ]);
                 call_user_func($handler->getCallback());
             } elseif ($handler = $this->telegramBotHandlerFinder->findOneFallbackHandler($handlers)) {
+                $this->logger->critical(__METHOD__, [
+                    'num' => 4,
+                ]);
                 call_user_func($handler->getCallback());
             }
         } catch (Throwable $exception) {

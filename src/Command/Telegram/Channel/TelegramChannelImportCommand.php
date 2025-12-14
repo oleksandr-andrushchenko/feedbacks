@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command\Telegram\Channel;
 
-use App\Entity\ImportResult;
+use App\Model\ImportResult;
 use App\Service\Doctrine\DryRunner;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Channel\TelegramChannelImporter;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,7 +22,7 @@ class TelegramChannelImportCommand extends Command
         private readonly string $dataDir,
         private readonly TelegramChannelImporter $telegramChannelImporter,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();

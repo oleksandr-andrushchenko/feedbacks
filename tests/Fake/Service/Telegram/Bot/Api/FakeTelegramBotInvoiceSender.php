@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Fake\Service\Telegram\Bot\Api;
 
-use App\Entity\Telegram\TelegramBotInvoicePhoto;
+use App\Model\Telegram\TelegramBotInvoicePhoto;
 use App\Service\Telegram\Bot\Api\TelegramBotInvoiceSenderInterface;
 use App\Service\Telegram\Bot\TelegramBot;
 use Longman\TelegramBot\Entities\ServerResponse;

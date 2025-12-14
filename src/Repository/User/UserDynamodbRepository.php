@@ -17,4 +17,14 @@ class UserDynamodbRepository extends EntityRepository
     {
         parent::__construct($em, User::class);
     }
+
+    public function find(string $id): ?User
+    {
+        return $this->getOne(['id' => $id]);
+    }
+
+    public function findByIds(array $ids): array
+    {
+        return $this->getMany(array_map(static fn (string $id): array => ['id' => $id], $ids));
+    }
 }

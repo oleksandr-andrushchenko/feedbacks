@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Serializer\Feedback\Telegram\Bot;
 
-use App\Entity\Feedback\FeedbackSubscriptionPlan;
-use App\Entity\Feedback\Telegram\Bot\SubscribeTelegramBotConversationState;
+use App\Model\Feedback\Telegram\Bot\SubscribeTelegramBotConversationState;
+use App\Model\Feedback\Telegram\FeedbackSubscriptionPlan;
 use App\Repository\Telegram\Bot\TelegramBotPaymentMethodRepository;
 use App\Service\Intl\CurrencyProvider;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;

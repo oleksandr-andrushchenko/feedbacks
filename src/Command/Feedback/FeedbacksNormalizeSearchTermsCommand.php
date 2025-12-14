@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Command\Feedback;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
-use App\Repository\Feedback\FeedbackSearchTermRepository;
+use App\Repository\Feedback\SearchTermRepository;
 use App\Service\Doctrine\DryRunner;
 use App\Service\Feedback\SearchTerm\PhoneNumberSearchTermTextNormalizer;
+use App\Service\ORM\EntityManager;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -21,10 +21,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class FeedbacksNormalizeSearchTermsCommand extends Command
 {
     public function __construct(
-        private readonly FeedbackSearchTermRepository $feedbackSearchTermRepository,
+        private readonly SearchTermRepository $searchTermRepository,
         private readonly PhoneNumberSearchTermTextNormalizer $phoneNumberSearchTermTextNormalizer,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -52,7 +52,7 @@ class FeedbacksNormalizeSearchTermsCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         if ($input->getOption('date') === null) {
-            $searchTerms = $this->feedbackSearchTermRepository->findAll();
+            $searchTerms = $this->searchTermRepository->findAll();
         } else {
             $date = $input->getOption('date');
 
@@ -60,7 +60,7 @@ class FeedbacksNormalizeSearchTermsCommand extends Command
             $from = $dateTime->setTime(0, 0);
             $to = $from->modify('+1 day');
 
-            $searchTerms = $this->feedbackSearchTermRepository->findByPeriod($from, $to);
+            $searchTerms = $this->searchTermRepository->findByPeriod($from, $to);
         }
 
         $count = count($searchTerms);
@@ -114,7 +114,7 @@ class FeedbacksNormalizeSearchTermsCommand extends Command
     }
 
     /**
-     * @param FeedbackSearchTerm[] $searchTerms
+     * @param SearchTerm[] $searchTerms
      * @param bool $phones
      * @param array $context
      * @param SymfonyStyle|null $io

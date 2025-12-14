@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Location;
 use App\Exception\TimezoneGeocodeFailedException;
+use App\Model\Location;
 
 interface TimezoneGeocoderInterface
 {

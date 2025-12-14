@@ -13,31 +13,26 @@ use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 
 #[Entity(
-    new PartitionKey('TG_BOT', ['id']),
+    new PartitionKey('TELEGRAM_BOT', ['id']),
     new SortKey('META'),
     [
         new GlobalIndex(
-            'TG_BOTS_BY_USERNAME',
-            new PartitionKey(null, ['username'], 'tg_bot_username_pk')
+            'TELEGRAM_BOTS_BY_USERNAME',
+            new PartitionKey(null, ['username'], 'telegram_bot_username_pk')
         ),
         new GlobalIndex(
-            'TG_BOTS_BY_GROUP_COUNTRY_LOCALE',
-            new PartitionKey('TG_BOT', [], 'tg_bot_pk'),
-            new SortKey(null, ['group', 'countryCode', 'localeCode'], 'tg_bot_group_country_locale_sk'),
-        ),
-        new GlobalIndex(
-            'TG_BOTS_BY_GROUP_PRIMARY',
-            new PartitionKey('TG_BOT', [], 'tg_bot_pk'),
-            new SortKey(null, ['group', 'primary'], 'tg_bot_group_primary_sk'),
+            'TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE',
+            new PartitionKey('TELEGRAM_BOT', [], 'telegram_bot_pk'),
+            new SortKey(null, ['group', 'countryCode', 'localeCode'], 'telegram_bot_group_country_locale_sk'),
         ),
     ]
 )]
 class TelegramBot
 {
     public function __construct(
-        #[Attribute('tg_bot_id')]
-        private readonly string $id,
-        #[Attribute('tg_bot_username_pk')]
+        #[Attribute('telegram_bot_id')]
+        private string $id,
+        #[Attribute]
         private readonly string $username,
         #[Attribute]
         private TelegramBotGroupName $group,
@@ -66,7 +61,7 @@ class TelegramBot
         #[Attribute('commands_synced')]
         private bool $commandsSynced = false,
         #[Attribute]
-        private bool $primary = true,
+        private ?bool $primary = true,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
         #[Attribute('updated_at')]
@@ -75,6 +70,9 @@ class TelegramBot
         private ?DateTimeInterface $deletedAt = null,
     )
     {
+        if ($this->primary !== true) {
+            $this->primary = null;
+        }
     }
 
     public function getId(): string
@@ -253,12 +251,12 @@ class TelegramBot
         return $this;
     }
 
-    public function primary(): bool
+    public function primary(): ?bool
     {
         return $this->primary;
     }
 
-    public function setPrimary(bool $primary): self
+    public function setPrimary(?bool $primary): self
     {
         $this->primary = $primary;
 

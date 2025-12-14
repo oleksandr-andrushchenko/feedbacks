@@ -11,7 +11,7 @@
 
         <many-to-one field="user" target-entity="App\Entity\User\User"/>
         <many-to-one field="messengerUser" target-entity="App\Entity\Messenger\MessengerUser"/>
-        <many-to-one field="searchTerm" target-entity="App\Entity\Feedback\FeedbackSearchTerm"/>
+        <many-to-one field="searchTerm" target-entity="App\Entity\Feedback\SearchTerm"/>
 
         <field name="hasActiveSubscription" column="has_active_subscription" type="boolean"/>
         <field name="countryCode" column="country_code" length="2" nullable="true"/>

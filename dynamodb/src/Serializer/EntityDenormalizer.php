@@ -35,7 +35,7 @@ readonly class EntityDenormalizer
         $normalizedData = [];
 
         foreach ($propertyAttributes as $prop => $attr) {
-            $value = $data[$attr->name ?: $prop] ?? null;
+            $value = $data[$attr->getName() ?: $prop] ?? null;
 
             if (null !== $value) {
                 $normalizedData[$prop] = $value;

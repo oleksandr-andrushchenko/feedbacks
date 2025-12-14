@@ -6,19 +6,19 @@ namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Feedback\Feedback;
 use App\Entity\Feedback\FeedbackSearch;
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Messenger\Messenger;
+use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
 use App\Tests\Fixtures;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;
 use App\Tests\Traits\Feedback\FeedbackSearchRepositoryProviderTrait;
-use App\Tests\Traits\Feedback\FeedbackSearchTermRepositoryProviderTrait;
+use App\Tests\Traits\Feedback\SearchTermRepositoryProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserProfileUrlProviderTrait;
 use App\Transfer\Feedback\SearchTermTransfer;
 use Generator;
@@ -26,7 +26,7 @@ use Generator;
 class SearchFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestCase
 {
     use MessengerUserProfileUrlProviderTrait;
-    use FeedbackSearchTermRepositoryProviderTrait;
+    use SearchTermRepositoryProviderTrait;
     use FeedbackSearchRepositoryProviderTrait;
 
     /**
@@ -402,7 +402,7 @@ class SearchFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
             User::class,
             MessengerUser::class,
             TelegramBot::class,
-            FeedbackSearchTerm::class,
+            SearchTerm::class,
             Feedback::class,
         ]);
 
@@ -539,12 +539,12 @@ class SearchFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
             User::class,
             MessengerUser::class,
             TelegramBot::class,
-            FeedbackSearchTerm::class,
+            SearchTerm::class,
             Feedback::class,
             FeedbackSearch::class,
         ]);
 
-        $feedbackSearchTermRepository = $this->getFeedbackSearchTermRepository();
+        $feedbackSearchTermRepository = $this->getSearchTermRepository();
         $feedbackSearchTermPrevCount = $feedbackSearchTermRepository->count([]);
         $feedbackSearchRepository = $this->getFeedbackSearchRepository();
         $feedbackSearchPrevCount = $feedbackSearchRepository->count([]);

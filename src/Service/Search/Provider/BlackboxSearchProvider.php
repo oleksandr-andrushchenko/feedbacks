@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\Blackbox\BlackboxFeedback;
-use App\Entity\Search\Blackbox\BlackboxFeedbacks;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\Blackbox\BlackboxFeedback;
+use App\Model\Search\Blackbox\BlackboxFeedbacks;
 use App\Service\CrawlerProvider;
 use App\Service\HttpRequester;
 use App\Service\Intl\Ukr\UkrPersonNameProvider;
@@ -37,7 +37,7 @@ class BlackboxSearchProvider extends SearchProvider implements SearchProviderInt
         return SearchProviderName::blackbox;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
 
@@ -67,7 +67,7 @@ class BlackboxSearchProvider extends SearchProvider implements SearchProviderInt
         return false;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $type = $searchTerm->getType();
         $term = $searchTerm->getNormalizedText();

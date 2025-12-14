@@ -16,7 +16,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
             TelegramBot::class,
         ]);
 
-        $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+        $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
         $bot->setDeletedAt(new DateTimeImmutable());
         $this->getEntityManager()->flush();
 
@@ -31,7 +31,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
             TelegramBot::class,
         ]);
 
-        $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+        $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
         $bot->setDeletedAt(new DateTimeImmutable());
         $entityManager = $this->getEntityManager();
         $newBot = $this->copyBot($bot);
@@ -53,7 +53,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
             TelegramBot::class,
         ]);
 
-        $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+        $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
         $bot->setPrimary(false);
         $this->getEntityManager()->flush();
 
@@ -68,7 +68,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
             TelegramBot::class,
         ]);
 
-        $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+        $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
         $bot->setPrimary(false);
         $entityManager = $this->getEntityManager();
         $newBot = $this->copyBot($bot);

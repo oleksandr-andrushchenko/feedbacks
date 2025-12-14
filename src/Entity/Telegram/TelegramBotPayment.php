@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Entity\Telegram;
 
 use App\Entity\Messenger\MessengerUser;
-use App\Entity\Money;
 use App\Enum\Telegram\TelegramBotPaymentStatus;
+use App\Model\Money;
 use DateTimeInterface;
 use Stringable;
 

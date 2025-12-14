@@ -5,18 +5,13 @@ declare(strict_types=1);
 namespace App\Repository\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotRequest;
-use App\Entity\Telegram\TelegramBotRequestLimits;
+use App\Model\Telegram\TelegramBotRequestLimits;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<TelegramBotRequest>
- *
- * @method TelegramBotRequest|null find($id, $lockMode = null, $lockVersion = null)
- * @method TelegramBotRequest|null findOneBy(array $criteria, array $orderBy = null)
- * @method TelegramBotRequest[]    findAll()
- * @method TelegramBotRequest[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class TelegramBotRequestDoctrineRepository extends ServiceEntityRepository
 {

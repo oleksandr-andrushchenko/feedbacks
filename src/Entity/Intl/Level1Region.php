@@ -11,20 +11,20 @@ use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 
 #[Entity(
-    new PartitionKey('LVL_1_RGN', ['id']),
+    new PartitionKey('LEVEL_1_REGION', ['id']),
     new SortKey('META'),
     [
         new GlobalIndex(
-            'LVL_1_RGN_BY_COUNTRY_NAME',
-            new PartitionKey('LVL_1_RGN', [], 'lvl_1_rgn_pk'),
-            new SortKey(null, ['countryCode', 'name'], 'lvl_1_rgn_country_name_sk'),
+            'LEVEL_1_REGIONS_BY_COUNTRY_NAME',
+            new PartitionKey('LEVEL_1_REGION', [], 'level_1_region_pk'),
+            new SortKey(null, ['countryCode', 'name'], 'level_1_region_country_code_name_sk'),
         ),
     ]
 )]
 class Level1Region
 {
     public function __construct(
-        #[Attribute('lvl_1_rgn_id')]
+        #[Attribute('level_1_region_id')]
         private string $id,
         #[Attribute('country_code')]
         private readonly string $countryCode,

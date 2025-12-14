@@ -20,6 +20,6 @@ class TelegramBotUpdateDynamodbRepository extends EntityRepository
 
     public function findOneByUpdateId($updateId): ?TelegramBotUpdate
     {
-        return $this->get(['id' => $updateId]);
+        return $this->getOne(['id' => $updateId]);
     }
 }

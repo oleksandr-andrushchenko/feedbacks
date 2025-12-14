@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command\Dynamodb;
 
-use App\Entity\User\User;
 use App\Repository\Intl\Level1RegionRepository;
+use App\Repository\Messenger\MessengerUserRepository;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
 use App\Repository\Telegram\Channel\TelegramChannelRepository;
 use App\Repository\User\UserRepository;
@@ -41,6 +41,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
         private readonly LocaleProvider $localeProvider,
         private readonly Level1RegionProvider $level1RegionProvider,
         private readonly IdGenerator $idGenerator,
+        private readonly MessengerUserRepository $messengerUserRepository,
     )
     {
         parent::__construct();
@@ -68,10 +69,11 @@ class DynamodbFromDoctrineTransferCommand extends Command
             'users' => $this->transferUsers($level1RegionIdMap, $userIdMap),
             'telegram_bots' => $this->transferTelegramBots(),
             'telegram_channels' => $this->transferTelegramChannels(),
+            'messenger_users' => $this->transferMessengerUsers($userIdMap),
             // todo: telegram_payment_methods, users
         ];
 
-        $this->entityManager->dynamodb()->flush();
+        $this->entityManager->getDynamodb()->flush();
 
         $io->section('Transfer Summary');
         $io->table(
@@ -90,13 +92,13 @@ class DynamodbFromDoctrineTransferCommand extends Command
     private function transferLevel1Regions(array &$level1RegionIdMap): int
     {
         $affectedRows = 0;
-        foreach ($this->level1RegionRepository->doctrine()->findAll() as $level1Region) {
+        foreach ($this->level1RegionRepository->getDoctrine()->findAll() as $level1Region) {
             $oldId = $level1Region->getId();
-            $newId = $this->idGenerator->generateUuid();
+            $newId = $this->idGenerator->generateId();
             $level1RegionIdMap[$oldId] = $newId;
             $level1RegionCopy = clone $level1Region;
             $level1RegionCopy->setId($newId);
-            $this->entityManager->dynamodb()->persist($level1RegionCopy);
+            $this->entityManager->persist($level1RegionCopy);
             $affectedRows++;
         }
 
@@ -106,16 +108,13 @@ class DynamodbFromDoctrineTransferCommand extends Command
     private function transferUsers(array $level1RegionIdMap, array &$userIdMap): int
     {
         $affectedRows = 0;
-        foreach ($this->userRepository->doctrine()->findAll() as $user) {
-            /** @var User $user */
+        foreach ($this->userRepository->getDoctrine()->findAll() as $user) {
             $oldId = $user->getId();
-            $newId = $this->idGenerator->generateUuid();
+            $newId = $this->idGenerator->generateId();
             $userIdMap[$oldId] = $newId;
             $userCopy = (clone $user);
-            $userCopy->setId($newId)
-                ->setLevel1RegionId($level1RegionIdMap[$user->getLevel1RegionId()])
-            ;
-            $this->entityManager->dynamodb()->persist($userCopy);
+            $userCopy->setId($newId)->setLevel1RegionId($level1RegionIdMap[$user->getLevel1RegionId()] ?? null);
+            $this->entityManager->persist($userCopy);
             $affectedRows++;
         }
 
@@ -125,7 +124,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
     private function transferTelegramBots(): int
     {
         $affectedRows = 0;
-        foreach ($this->telegramBotRepository->doctrine()->findAll() as $telegramBot) {
+        foreach ($this->telegramBotRepository->getDoctrine()->findAll() as $telegramBot) {
             $telegramBotTransfer = new TelegramBotTransfer(
                 username: $telegramBot->getUsername(),
                 group: $telegramBot->getGroup(),
@@ -161,7 +160,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
     private function transferTelegramChannels(): int
     {
         $affectedRows = 0;
-        foreach ($this->telegramChannelRepository->doctrine()->findAll() as $telegramChannel) {
+        foreach ($this->telegramChannelRepository->getDoctrine()->findAll() as $telegramChannel) {
             $telegramChannelTransfer = new TelegramChannelTransfer(
                 username: $telegramChannel->getUsername(),
                 group: $telegramChannel->getGroup(),
@@ -180,6 +179,21 @@ class DynamodbFromDoctrineTransferCommand extends Command
                 primaryPassed: true,
             );
             $this->telegramChannelCreator->createTelegramChannel($telegramChannelTransfer);
+            $affectedRows++;
+        }
+
+        return $affectedRows;
+    }
+
+    private function transferMessengerUsers(array $userIdMap): int
+    {
+        $affectedRows = 0;
+        foreach ($this->messengerUserRepository->getDoctrine()->findAll() as $messengerUser) {
+            $oldUserId = $messengerUser->getUser()->getId();
+            $newUserId = $userIdMap[$oldUserId];
+            $messengerUserCopy = (clone $messengerUser);
+            $messengerUserCopy->setUserId($newUserId);
+            $this->entityManager->persist($messengerUserCopy);
             $affectedRows++;
         }
 

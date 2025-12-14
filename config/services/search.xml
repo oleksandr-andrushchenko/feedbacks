@@ -103,6 +103,7 @@
                  parent="app.search_viewer_telegram" lazy="true">
             <argument type="service" id="app.feedback_multiple_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_telegram_reply_sign_view_provider"/>
+            <argument type="service" id="app.feedback_service"/>
             <tag name="app.search_viewer_telegram" provider="feedbacks"/>
         </service>
         <service id="app.search_viewer_telegram_searches"

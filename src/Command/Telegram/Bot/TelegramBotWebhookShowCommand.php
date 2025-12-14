@@ -42,7 +42,7 @@ class TelegramBotWebhookShowCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $username = $input->getArgument('username');
-        $bot = $this->telegramBotRepository->findOneByUsername($username);
+        $bot = $this->telegramBotRepository->findOneNonDeletedByUsername($username);
 
         if ($bot === null) {
             throw new TelegramBotNotFoundException($username);

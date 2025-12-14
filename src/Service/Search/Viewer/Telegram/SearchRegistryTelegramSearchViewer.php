@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Search\Viewer\Telegram;
 
 use App\Entity\Feedback\FeedbackSearch;
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
 use App\Service\Feedback\SearchTerm\SearchTermProvider;
@@ -30,7 +30,7 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
         parent::__construct($searchViewerCompose->withTransDomain('search'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         $full = $context['full'] ?? false;
         $this->showLimits = !$full;

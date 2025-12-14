@@ -29,15 +29,24 @@ class EntityRepository
      * @return T|null
      * @throws EntityManagerException
      */
-    public function get(array $keyFieldValues): ?object
+    public function getOne(array $keyFieldValues): ?object
     {
-        return $this->em->get($this->entityClass, $keyFieldValues);
+        return $this->em->getOne($this->entityClass, $keyFieldValues);
+    }
+
+    /**
+     * @param array<array> $keyFieldValuesSet
+     * @return array<T>
+     * @throws EntityManagerException
+     */
+    public function getMany(array $keyFieldValuesSet): array
+    {
+        return $this->em->getMany($this->entityClass, $keyFieldValuesSet);
     }
 
     /**
      * @param QueryArgs $queryArgs
      * @return T|null
-     * @throws EntityManagerException
      */
     public function queryOne(QueryArgs $queryArgs): ?object
     {
@@ -47,7 +56,6 @@ class EntityRepository
     /**
      * @param QueryArgs $queryArgs
      * @return array<T>
-     * @throws EntityManagerException
      */
     public function queryMany(QueryArgs $queryArgs): array
     {

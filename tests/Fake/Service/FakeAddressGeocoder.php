@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Fake\Service;
 
-use App\Entity\Address\Address;
-use App\Entity\Location;
+use App\Model\Address\Address;
+use App\Model\Location;
 use App\Service\AddressGeocoderInterface;
 
 class FakeAddressGeocoder implements AddressGeocoderInterface

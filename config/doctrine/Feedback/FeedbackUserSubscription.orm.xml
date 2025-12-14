@@ -5,7 +5,7 @@
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="App\Entity\Feedback\FeedbackUserSubscription"
-            repository-class="App\Repository\Feedback\FeedbackUserSubscriptionRepository"
+            repository-class="App\Repository\Feedback\FeedbackUserSubscriptionDoctrineRepository"
             table="feedback_user_subscriptions">
 
         <id name="id" column="id" type="string" length="32"/>

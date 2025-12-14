@@ -5,7 +5,7 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="app.check_feedbacks_limits">true</parameter>
+        <parameter key="app.check_feedbacks_limits">false</parameter>
 
         <parameter key="app.feedbacks_contact_options" type="collection">
             <parameter key="website">%app.site_base_url%</parameter>
@@ -77,7 +77,7 @@
             <parameter>clarity</parameter>
             <parameter>searches</parameter>
             <parameter>ukr_corrupts</parameter>
-<!--            <parameter>ukr_missed</parameter>-->
+            <!--            <parameter>ukr_missed</parameter>-->
             <parameter>ukr_missed_cars</parameter>
             <parameter>business_guide</parameter>
             <parameter>ukr_wanted_persons</parameter>
@@ -92,26 +92,79 @@
     </parameters>
 
     <services>
-        <service id="app.feedback_repository" class="App\Repository\Feedback\FeedbackRepository">
-            <argument type="service" id="doctrine"/>
+        <service id="app.feedback_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Feedback\FeedbackDoctrineRepository"/>
+        <service id="app.feedback_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\FeedbackDynamodbRepository"/>
+        <service id="app.feedback_repository" parent="app.entity_repository"
+                 class="App\Repository\Feedback\FeedbackRepository">
+            <argument type="service" id="app.feedback_doctrine_repository"/>
+            <argument type="service" id="app.feedback_dynamodb_repository"/>
         </service>
-        <service id="app.feedback_search_repository" class="App\Repository\Feedback\FeedbackSearchRepository">
-            <argument type="service" id="doctrine"/>
+
+        <service id="app.feedback_search_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Feedback\FeedbackSearchDoctrineRepository"/>
+        <service id="app.feedback_search_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\FeedbackSearchDynamodbRepository"/>
+        <service id="app.feedback_search_repository" parent="app.entity_repository"
+                 class="App\Repository\Feedback\FeedbackSearchRepository">
+            <argument type="service" id="app.feedback_search_doctrine_repository"/>
+            <argument type="service" id="app.feedback_search_dynamodb_repository"/>
         </service>
-        <service id="app.feedback_lookup_repository" class="App\Repository\Feedback\FeedbackLookupRepository">
-            <argument type="service" id="doctrine"/>
+
+        <service id="app.feedback_lookup_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Feedback\FeedbackLookupDoctrineRepository"/>
+        <service id="app.feedback_lookup_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\FeedbackLookupDynamodbRepository"/>
+        <service id="app.feedback_lookup_repository" parent="app.entity_repository"
+                 class="App\Repository\Feedback\FeedbackLookupRepository">
+            <argument type="service" id="app.feedback_lookup_doctrine_repository"/>
+            <argument type="service" id="app.feedback_lookup_dynamodb_repository"/>
         </service>
-        <service id="app.feedback_user_subscription_repository"
+
+        <service id="app.feedback_user_subscription_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\FeedbackUserSubscriptionDynamodbRepository"/>
+        <service id="app.feedback_user_subscription_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Feedback\FeedbackUserSubscriptionDoctrineRepository"/>
+        <service id="app.feedback_user_subscription_repository" parent="app.entity_repository"
                  class="App\Repository\Feedback\FeedbackUserSubscriptionRepository">
-            <argument type="service" id="doctrine"/>
+            <argument type="service" id="app.feedback_user_subscription_doctrine_repository"/>
+            <argument type="service" id="app.feedback_user_subscription_dynamodb_repository"/>
         </service>
-        <service id="app.feedback_search_term_repository" class="App\Repository\Feedback\FeedbackSearchTermRepository">
-            <argument type="service" id="doctrine"/>
+
+        <service id="app.search_term_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Feedback\SearchTermDoctrineRepository"/>
+        <service id="app.search_term_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\SearchTermDynamodbRepository"/>
+        <service id="app.search_term_repository" parent="app.entity_repository"
+                 class="App\Repository\Feedback\SearchTermRepository">
+            <argument type="service" id="app.search_term_doctrine_repository"/>
+            <argument type="service" id="app.search_term_dynamodb_repository"/>
         </service>
-        <service id="app.feedback_notification_repository"
+
+        <service id="app.feedback_notification_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Feedback\FeedbackNotificationDoctrineRepository"/>
+        <service id="app.feedback_notification_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\FeedbackNotificationDynamodbRepository"/>
+        <service id="app.feedback_notification_repository" parent="app.entity_repository"
                  class="App\Repository\Feedback\FeedbackNotificationRepository">
-            <argument type="service" id="doctrine"/>
+            <argument type="service" id="app.feedback_notification_doctrine_repository"/>
+            <argument type="service" id="app.feedback_notification_dynamodb_repository"/>
         </service>
+
+        <service id="app.search_term_feedback_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\SearchTermFeedbackDynamodbRepository"/>
+        <service id="app.search_term_feedback_search_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\SearchTermFeedbackSearchDynamodbRepository"/>
+        <service id="app.search_term_feedback_lookup_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Feedback\SearchTermFeedbackLookupDynamodbRepository"/>
+
+        <service id="app.feedback_factory" class="App\Factory\Feedback\FeedbackFactory"/>
+        <service id="app.feedback_search_factory" class="App\Factory\Feedback\FeedbackSearchFactory"/>
+        <service id="app.search_term_feedback_factory" class="App\Factory\Feedback\SearchTermFeedbackFactory"/>
+        <service id="app.search_term_feedback_search_factory" class="App\Factory\Feedback\SearchTermFeedbackSearchFactory"/>
+        <service id="app.search_term_feedback_lookup_factory" class="App\Factory\Feedback\SearchTermFeedbackLookupFactory"/>
+
         <service id="app.feedback_search_term_validator" class="App\Validator\Feedback\SearchTermTransferValidator"
                  lazy="true">
             <argument type="service" id="app.validator_helper"/>
@@ -147,6 +200,7 @@
             <tag name="serializer.normalizer" priority="-987"/>
         </service>
         <service id="app.feedback_normalizer" class="App\Serializer\Feedback\FeedbackNormalizer" lazy="true">
+            <argument type="service" id="app.feedback_service"/>
             <tag name="serializer.normalizer" priority="-986"/>
         </service>
         <service id="app.feedback_search_normalizer" class="App\Serializer\Feedback\FeedbackSearchNormalizer"
@@ -219,44 +273,52 @@
         </service>
         <service id="app.feedback_creator" class="App\Service\Feedback\FeedbackCreator" lazy="true">
             <argument type="service" id="app.feedback_create_command_options"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.validator"/>
             <argument type="service" id="app.feedback_statistic_provider"/>
             <argument type="service" id="app.feedback_command_limits_checker"/>
-            <argument type="service" id="app.feedback_subscription_manager"/>
-            <argument type="service" id="app.feedback_search_term_upserter"/>
+            <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.feedback_search_term_messenger_provider"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.search_term_feedback_factory"/>
+            <argument type="service" id="app.feedback_factory"/>
         </service>
         <service id="app.feedback_search_creator" class="App\Service\Feedback\FeedbackSearchCreator" lazy="true">
             <argument type="service" id="app.feedback_search_command_options"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.validator"/>
             <argument type="service" id="app.feedback_search_statistic_provider"/>
             <argument type="service" id="app.feedback_command_limits_checker"/>
-            <argument type="service" id="app.feedback_subscription_manager"/>
-            <argument type="service" id="app.feedback_search_term_upserter"/>
+            <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.search_term_feedback_search_factory"/>
+            <argument type="service" id="app.feedback_search_factory"/>
         </service>
         <service id="app.feedback_lookup_creator" class="App\Service\Feedback\FeedbackLookupCreator"
                  lazy="true">
             <argument type="service" id="app.feedback_lookup_command_options"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.validator"/>
             <argument type="service" id="app.feedback_lookup_statistic_provider"/>
             <argument type="service" id="app.feedback_command_limits_checker"/>
             <argument type="service" id="app.feedback_subscription_manager"/>
-            <argument type="service" id="app.feedback_search_term_upserter"/>
+            <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
         </service>
         <service id="app.feedback_searcher" class="App\Service\Feedback\FeedbackSearcher" lazy="true">
             <argument type="service" id="app.feedback_repository"/>
+            <argument type="service" id="app.search_term_feedback_dynamodb_repository"/>
+            <argument type="service" id="app.user_repository"/>
         </service>
         <service id="app.feedback_search_searcher" class="App\Service\Feedback\FeedbackSearchSearcher" lazy="true">
             <argument type="service" id="app.feedback_search_repository"/>
+            <argument type="service" id="app.search_term_feedback_search_dynamodb_repository"/>
+            <argument type="service" id="app.user_repository"/>
         </service>
         <service id="app.feedback_search_term_parser_instagram"
                  class="App\Service\Feedback\SearchTerm\InstagramSearchTermParser" lazy="true">
@@ -351,9 +413,10 @@
                  class="App\Service\Feedback\Subscription\FeedbackSubscriptionManager" lazy="true">
             <argument type="service" id="app.feedback_subscription_plan_provider"/>
             <argument type="service" id="app.feedback_user_subscription_repository"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
         </service>
         <service id="app.feedback_search_statistic_provider"
                  class="App\Service\Feedback\Statistic\FeedbackSearchUserStatisticProvider" lazy="true">
@@ -368,7 +431,9 @@
             <tag name="app.feedback_user_statistic_provider"/>
         </service>
         <service id="app.feedback_search_term_provider" class="App\Service\Feedback\SearchTerm\SearchTermProvider"
-                 lazy="true"/>
+                 lazy="true">
+            <argument type="service" id="app.messenger_user_service"/>
+        </service>
         <service id="app.feedback_search_term_telegram_view_provider"
                  class="App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider" lazy="true">
             <argument type="service" id="app.feedback_search_term_type_provider"/>
@@ -389,15 +454,15 @@
             <argument type="service" id="app.feedback_subscription_plan_provider"/>
             <argument type="service" id="app.feedback_subscription_manager"/>
         </service>
-        <service id="app.feedback_create_command_options" class="App\Entity\FeedbackCommandOptions">
+        <service id="app.feedback_create_command_options" class="App\Model\FeedbackCommandOptions">
             <factory service="app.feedback_command_options_factory"/>
             <argument>%app.feedback_create_command_options%</argument>
         </service>
-        <service id="app.feedback_search_command_options" class="App\Entity\FeedbackCommandOptions">
+        <service id="app.feedback_search_command_options" class="App\Model\FeedbackCommandOptions">
             <factory service="app.feedback_command_options_factory"/>
             <argument>%app.feedback_search_command_options%</argument>
         </service>
-        <service id="app.feedback_lookup_command_options" class="App\Entity\FeedbackCommandOptions">
+        <service id="app.feedback_lookup_command_options" class="App\Model\FeedbackCommandOptions">
             <factory service="app.feedback_command_options_factory"/>
             <argument>%app.feedback_lookup_command_options%</argument>
         </service>
@@ -482,6 +547,7 @@
             <argument type="service" id="app.search_viewer_telegram_feedbacks"/>
             <argument type="service" id="app.telegram_channel_matches_provider"/>
             <argument type="service" id="app.telegram_channel_link_view_provider"/>
+            <argument type="service" id="logger"/>
             <argument>%app.create.search_term_type_step%</argument>
             <argument>%app.create.extra_search_term_step%</argument>
             <argument>%app.create.description_step%</argument>
@@ -499,6 +565,7 @@
             <argument type="service" id="app.feedback_search_term_type_provider"/>
             <argument type="service" id="app.feedback_search_creator"/>
             <argument type="service" id="app.search_searcher_telegram"/>
+            <argument type="service" id="logger"/>
             <argument>%app.search.search_term_type_step%</argument>
             <argument>%app.search.confirm_step%</argument>
             <argument>%app.search.create_confirm_step%</argument>
@@ -560,12 +627,11 @@
         </service>
         <service id="app.feedback_search_term_text_normalizer"
                  class="App\Service\Feedback\SearchTerm\FeedbackSearchTermTextNormalizer" lazy="true"/>
-        <service id="app.feedback_search_term_upserter"
-                 class="App\Service\Feedback\SearchTerm\FeedbackSearchTermUpserter" lazy="true">
-            <argument type="service" id="app.feedback_search_term_repository"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+        <service id="app.search_term_upserter" class="App\Service\Feedback\SearchTerm\SearchTermUpserter" lazy="true">
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.messenger_user_upserter"/>
             <argument type="service" id="app.feedback_search_term_text_normalizer"/>
+            <argument type="service" id="app.id_generator"/>
         </service>
         <service id="app.feedback_created_event_handler"
                  class="App\Message\EventHandler\Feedback\FeedbackCreatedEventHandler" lazy="true">
@@ -586,6 +652,8 @@
             <argument type="service" id="app.telegram_channel_link_view_provider"/>
             <argument type="service" id="app.translator"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.feedback_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent"
                  bus="app.event_bus"/>
@@ -612,7 +680,8 @@
             <argument type="service" id="logger"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.command_bus"/>
-            <tag name="messenger.message_handler" handles="App\Message\Event\Feedback\FeedbackUserSubscriptionCreatedEvent"
+            <tag name="messenger.message_handler"
+                 handles="App\Message\Event\Feedback\FeedbackUserSubscriptionCreatedEvent"
                  bus="app.event_bus"/>
         </service>
         <service id="app.feedback_search_term_messenger_provider"
@@ -621,15 +690,15 @@
                  class="App\Command\Feedback\Telegram\FeedbacksTelegramPublishUnpublishedCommand" lazy="true">
             <argument type="service" id="app.feedback_repository"/>
             <argument type="service" id="app.event_bus"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <tag name="console.command" command="feedbacks:telegram:publish-unpublished"/>
         </service>
         <service id="app.feedbacks_normalize_search_terms_console_command"
                  class="App\Command\Feedback\FeedbacksNormalizeSearchTermsCommand" lazy="true">
-            <argument type="service" id="app.feedback_search_term_repository"/>
+            <argument type="service" id="app.search_term_repository"/>
             <argument type="service" id="app.feedback_phone_number_search_term_text_normalizer"/>
             <argument type="service" id="app.doctrine_dry_runner"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <tag name="console.command" command="feedbacks:normalize-search-terms"/>
         </service>
         <service id="app.feedbacks_add_user_subscription_console_command"
@@ -637,7 +706,7 @@
             <argument type="service" id="app.user_repository"/>
             <argument type="service" id="app.feedback_subscription_manager"/>
             <argument type="service" id="app.doctrine_dry_runner"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <tag name="console.command" command="feedbacks:subscription:add"/>
         </service>
         <service id="app.notify_feedback_target_about_new_feedback_command_handler"
@@ -652,8 +721,11 @@
             <argument type="service" id="app.search_viewer_telegram_feedbacks"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.search_term_service"/>
+            <argument type="service" id="app.feedback_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackTargetAboutNewFeedbackCommand"
                  bus="app.command_bus"/>
@@ -669,8 +741,10 @@
             <argument type="service" id="app.search_viewer_telegram_feedbacks"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.feedback_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSearchSourcesAboutNewFeedbackCommand"
                  bus="app.command_bus"/>
@@ -686,14 +760,16 @@
             <argument type="service" id="app.search_viewer_telegram_searches"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommand"
                  bus="app.command_bus"/>
         </service>
         <service id="app.feedback_lookup_searcher" class="App\Service\Feedback\FeedbackLookupSearcher" lazy="true">
             <argument type="service" id="app.feedback_lookup_repository"/>
+            <argument type="service" id="app.search_term_feedback_lookup_dynamodb_repository"/>
         </service>
         <service id="app.notify_feedback_search_targets_about_new_feedback_search_command_handler"
                  class="App\Message\CommandHandler\Feedback\NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler"
@@ -707,8 +783,10 @@
             <argument type="service" id="app.search_viewer_telegram_searches"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.search_term_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommand"
                  bus="app.command_bus"/>
@@ -724,8 +802,10 @@
             <argument type="service" id="app.search_viewer_telegram_feedbacks"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.feedback_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSourcesAboutNewFeedbackCommand"
                  bus="app.command_bus"/>
@@ -741,8 +821,9 @@
             <argument type="service" id="app.search_viewer_telegram_searches"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSearchSourcesAboutNewFeedbackSearchCommand"
                  bus="app.command_bus"/>
@@ -769,8 +850,9 @@
             <argument type="service" id="app.feedback_lookup_telegram_view_provider"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommand"
                  bus="app.command_bus"/>
@@ -786,8 +868,9 @@
             <argument type="service" id="app.feedback_lookup_telegram_view_provider"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommand"
                  bus="app.command_bus"/>
@@ -801,15 +884,27 @@
             <argument type="service" id="app.translator"/>
             <argument type="service" id="app.telegram_bot_message_sender"/>
             <argument type="service" id="app.id_generator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.intl_time_provider"/>
             <argument type="service" id="app.feedback_subscription_plan_provider"/>
             <argument type="service" id="app.messenger_user_repository"/>
             <argument type="service" id="app.modifier"/>
+            <argument type="service" id="app.messenger_user_service"/>
             <tag name="messenger.message_handler"
                  handles="App\Message\Command\Feedback\NotifyFeedbackUserSubscriptionOwnerCommand"
                  bus="app.command_bus"/>
+        </service>
+
+        <service id="app.search_term_service" class="App\Service\Feedback\SearchTermService" lazy="true">
+            <argument type="service" id="app.messenger_user_repository"/>
+        </service>
+
+        <service id="app.feedback_service" class="App\Service\Feedback\FeedbackService" lazy="true">
+            <argument type="service" id="app.feedback_repository"/>
+            <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.messenger_user_repository"/>
+            <argument type="service" id="app.search_term_repository"/>
         </service>
     </services>
 </container>

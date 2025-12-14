@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Telegram\TelegramBotConversation as Entity;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationInterface;
@@ -102,7 +102,7 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation i
 
         $this->state->setStep(self::STEP_CONFIRMED);
 
-        $user = $tg->getBot()->getMessengerUser()->getUser();
+        $user = $tg->getBot()->getUser();
 
         $this->userDataPurger->purgeUserData($user);
 

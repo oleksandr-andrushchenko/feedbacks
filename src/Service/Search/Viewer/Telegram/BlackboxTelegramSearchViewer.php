@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\Blackbox\BlackboxFeedback;
-use App\Entity\Search\Blackbox\BlackboxFeedbacks;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
+use App\Model\Search\Blackbox\BlackboxFeedback;
+use App\Model\Search\Blackbox\BlackboxFeedbacks;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class BlackboxTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -21,7 +21,7 @@ class BlackboxTelegramSearchViewer extends SearchViewer implements SearchViewerI
         parent::__construct($searchViewerCompose->withTransDomain('blackbox'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;

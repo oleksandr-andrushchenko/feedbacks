@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Service\Intl;
 
-use App\Entity\Address\Address;
 use App\Entity\Intl\Level1Region;
+use App\Model\Address\Address;
 use App\Repository\Intl\Level1RegionRepository;
 use App\Service\IdGenerator;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ORM\EntityManager;
 
 class Level1RegionUpserter
 {
     public function __construct(
         private readonly Level1RegionRepository $level1RegionRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
     )
     {

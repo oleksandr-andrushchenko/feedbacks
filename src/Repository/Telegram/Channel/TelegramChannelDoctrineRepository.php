@@ -12,11 +12,6 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<TelegramChannel>
- *
- * @method TelegramChannel|null find($id, $lockMode = null, $lockVersion = null)
- * @method TelegramChannel|null findOneBy(array $criteria, array $orderBy = null)
- * @method TelegramChannel[]    findAll()
- * @method TelegramChannel[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class TelegramChannelDoctrineRepository extends ServiceEntityRepository
 {
@@ -25,14 +20,14 @@ class TelegramChannelDoctrineRepository extends ServiceEntityRepository
         parent::__construct($registry, TelegramChannel::class);
     }
 
-    public function findAnyOneByUsername(string $username): ?TelegramChannel
+    public function findOneByUsername(string $username): ?TelegramChannel
     {
         return $this->findOneBy([
             'username' => $username,
         ]);
     }
 
-    public function findOneByUsername(string $username): ?TelegramChannel
+    public function findOneNonDeletedByUsername(string $username): ?TelegramChannel
     {
         return $this->findOneBy([
             'username' => $username,
@@ -40,7 +35,7 @@ class TelegramChannelDoctrineRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function findOnePrimaryByBot(TelegramBot $bot): ?TelegramChannel
+    public function findOnePrimaryNonDeletedByBot(TelegramBot $bot): ?TelegramChannel
     {
         return $this->findOneBy([
             'group' => $bot->getGroup(),
@@ -52,7 +47,7 @@ class TelegramChannelDoctrineRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function findOnePrimaryByChannel(TelegramChannel $channel): ?TelegramChannel
+    public function findOnePrimaryNonDeletedByChannel(TelegramChannel $channel): ?TelegramChannel
     {
         return $this->findOneBy([
             'group' => $channel->getGroup(),
@@ -69,7 +64,7 @@ class TelegramChannelDoctrineRepository extends ServiceEntityRepository
      * @param string $countryCode
      * @return TelegramChannel[]
      */
-    public function findPrimaryByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
+    public function findPrimaryNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
     {
         return $this->findBy([
             'group' => $group,

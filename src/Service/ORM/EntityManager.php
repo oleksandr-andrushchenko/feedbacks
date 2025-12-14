@@ -4,40 +4,46 @@ declare(strict_types=1);
 
 namespace App\Service\ORM;
 
+use App\Model\Repository\EntityRepositoryConfig;
 use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManager;
 use OA\Dynamodb\ODM\EntityManager as DynamodbEntityManager;
 
+/**
+ * @method void persist(object $object)
+ * @method void flush()
+ * @method void remove(object $object)
+ */
 class EntityManager
 {
     public function __construct(
+        private EntityRepositoryConfig $config,
         private DoctrineEntityManager $doctrine,
         private DynamodbEntityManager $dynamodb,
     )
     {
     }
 
-    public function doctrine(): DoctrineEntityManager
+    public function __call(string $name, array $arguments): mixed
+    {
+        if ($this->config->isDynamodb()) {
+            return call_user_func_array([$this->dynamodb, $name], $arguments);
+        }
+
+        return call_user_func_array([$this->doctrine, $name], $arguments);
+    }
+
+    public function getDoctrine(): DoctrineEntityManager
     {
         return $this->doctrine;
     }
 
-    public function dynamodb(): DynamodbEntityManager
+    public function getDynamodb(): DynamodbEntityManager
     {
         return $this->dynamodb;
     }
 
-    public function persist(object $object): void
+    public function getConfig(): EntityRepositoryConfig
     {
-        $this->dynamodb->persist($object);
-    }
-
-    public function flush(): void
-    {
-        $this->dynamodb->flush();
-    }
-
-    public function remove(object $object): void
-    {
-        $this->dynamodb->delete($object);
+        return $this->config;
     }
 }

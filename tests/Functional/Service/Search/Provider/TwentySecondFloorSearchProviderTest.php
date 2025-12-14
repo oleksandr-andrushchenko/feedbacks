@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorBlogger;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorBloggers;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorFeedback;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorFeedbacks;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorBlogger;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorBloggers;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorFeedback;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorFeedbacks;
 use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class TwentySecondFloorSearchProviderTest extends KernelTestCase
 {

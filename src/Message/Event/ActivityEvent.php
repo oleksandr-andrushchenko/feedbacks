@@ -6,6 +6,9 @@ namespace App\Message\Event;
 
 use LogicException;
 
+/**
+ * @see ActivityEventHandler
+ */
 readonly class ActivityEvent
 {
     private ?string $entityClass;

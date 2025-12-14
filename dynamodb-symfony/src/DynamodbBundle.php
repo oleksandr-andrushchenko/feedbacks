@@ -76,6 +76,7 @@ final class DynamodbBundle extends AbstractBundle
         $services->set('oa.dynamodb.entity_normalizer', EntityNormalizer::class)
             ->arg('$metadataLoader', new ReferenceConfigurator('oa.dynamodb.metadata_loader'))
             ->arg('$normalizer', new ReferenceConfigurator($serializerId))
+            ->arg('$logger', new ReferenceConfigurator($loggerId))
             ->autowire()
             ->autoconfigure()
         ;
@@ -91,6 +92,7 @@ final class DynamodbBundle extends AbstractBundle
             ->arg('$entityNormalizer', new ReferenceConfigurator('oa.dynamodb.entity_normalizer'))
             ->arg('$entityDenormalizer', new ReferenceConfigurator('oa.dynamodb.entity_denormalizer'))
             ->arg('$marshaler', new ReferenceConfigurator($marshalerId))
+            ->arg('$logger', new ReferenceConfigurator($loggerId))
             ->autowire()
             ->autoconfigure()
         ;

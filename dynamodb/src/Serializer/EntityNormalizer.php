@@ -10,6 +10,7 @@ use OA\Dynamodb\Attribute\GlobalIndex;
 use OA\Dynamodb\Attribute\LocalIndex;
 use OA\Dynamodb\Metadata\MetadataException;
 use OA\Dynamodb\Metadata\MetadataLoader;
+use Psr\Log\LoggerInterface;
 use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -22,6 +23,7 @@ readonly class EntityNormalizer
     public function __construct(
         protected MetadataLoader $metadataLoader,
         protected NormalizerInterface $normalizer,
+        protected ?LoggerInterface $logger = null,
     )
     {
     }
@@ -37,11 +39,14 @@ readonly class EntityNormalizer
     public function normalize(object $entity, bool $includePrimaryKey = true): array
     {
         $primaryKey = $includePrimaryKey ? $this->normalizePrimaryKey($entity) : [];
+        $indexes = $this->normalizeIndexesFromEntity($entity);
+
+//        $this->logger?->debug(__METHOD__, ['indexes' => $indexes]);
 
         return [
             ...$primaryKey,
             ...$this->normalizeAttributes($entity),
-            ...$this->normalizeIndexesFromEntity($entity),
+            ...$indexes,
         ];
     }
 
@@ -185,10 +190,12 @@ readonly class EntityNormalizer
     /**
      * @template T of object
      * @param T $entity
+     * @param AbstractKey $key
+     * @param bool $skipEmpty
      * @throws ReflectionException
      * @throws ExceptionInterface
      */
-    protected function normalizeKeyValueFromEntity(object $entity, AbstractKey $key): string
+    protected function normalizeKeyValueFromEntity(object $entity, AbstractKey $key, bool $skipEmpty = false): ?string
     {
         $definedFields = $key->getFields();
         $delimiter = $key->getDelimiter();
@@ -217,8 +224,15 @@ readonly class EntityNormalizer
 
             /** @var scalar $currentFieldValue */
             $currentFieldValue = $this->normalizer->normalize($propertyValue);
+            if ($skipEmpty && empty($currentFieldValue)) {
+                continue;
+            }
 
             $finalValue[] = $currentFieldValue;
+        }
+
+        if (empty($finalValue)) {
+            return null;
         }
 
         return implode($delimiter, $finalValue);
@@ -338,8 +352,8 @@ readonly class EntityNormalizer
             $reflectionProperty = $classMetadata->get($prop);
             $propertyValue = $reflectionProperty?->getValue($entity);
 
-            if (false === $attr->ignoreIfNull || null !== $propertyValue) {
-                $attributes[$attr->name ?: $prop] = $this->normalizer->normalize($propertyValue);
+            if (false === $attr->ignoreIfNull() || null !== $propertyValue) {
+                $attributes[$attr->getName() ?: $prop] = $this->normalizer->normalize($propertyValue);
             }
         }
 
@@ -361,9 +375,11 @@ readonly class EntityNormalizer
         $normalized = [];
 
         foreach ($indexes as $index) {
+            $normalizedIndex = $this->normalizeIndexFromEntity($entity, $index);
+//            $this->logger?->debug(__METHOD__, ['$normalizedIndex' => $normalizedIndex]);
             $normalized = [
                 ...$normalized,
-                ...$this->normalizeIndexFromEntity($entity, $index),
+                ...$normalizedIndex,
             ];
         }
 
@@ -382,9 +398,13 @@ readonly class EntityNormalizer
         /** @var LocalIndex|GlobalIndex $index */
         $sortKey = $index->sortKey;
 
-        $sortKeyNormalized = null !== $sortKey
-            ? [$sortKey->getName() => $this->normalizeKeyValueFromEntity($entity, $sortKey)]
-            : [];
+        $sortKeyNormalized = [];
+        if ($sortKey !== null) {
+            $sortKeyNormalizeValue = $this->normalizeKeyValueFromEntity($entity, $sortKey, true);
+            if ($sortKeyNormalizeValue !== null) {
+                $sortKeyNormalized[$sortKey->getName()] = $sortKeyNormalizeValue;
+            }
+        }
 
         if ($index instanceof LocalIndex) {
             return $sortKeyNormalized;
@@ -400,9 +420,15 @@ readonly class EntityNormalizer
             );
         }
 
+        $partitionKeyNormalized = [];
+        $partitionKeyNormalizedValue = $this->normalizeKeyValueFromEntity($entity, $partitionKey, true);
+        if ($partitionKeyNormalizedValue !== null) {
+            $partitionKeyNormalized[$partitionKeyName] = $partitionKeyNormalizedValue;
+        }
+
         return [
             ...$sortKeyNormalized,
-            $partitionKeyName => $this->normalizeKeyValueFromEntity($entity, $partitionKey),
+            ...$partitionKeyNormalized,
         ];
     }
 }

@@ -6,7 +6,7 @@ namespace App\Message\CommandHandler\Feedback;
 
 use App\Entity\Feedback\Feedback;
 use App\Entity\Feedback\FeedbackNotification;
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Enum\Feedback\FeedbackNotificationType;
@@ -16,12 +16,14 @@ use App\Message\Command\Feedback\NotifyFeedbackSourcesAboutNewFeedbackCommand;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackSearcher;
+use App\Service\Feedback\FeedbackService;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
 use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\TelegramBotProvider;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -37,8 +39,10 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
         private readonly FeedbackTelegramSearchViewer $feedbackTelegramSearchViewer,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
         private readonly IdGenerator $idGenerator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
+        private readonly MessengerUserService $messengerUserService,
+        private readonly FeedbackService $feedbackService,
     )
     {
     }
@@ -52,17 +56,17 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
             return;
         }
 
-        foreach ($feedback->getSearchTerms() as $searchTerm) {
+        foreach ($this->feedbackService->getSearchTerms($feedback) as $searchTerm) {
             $feedbacks = $this->feedbackSearcher->searchFeedbacks($searchTerm);
 
             foreach ($feedbacks as $targetFeedback) {
                 // todo: iterate throw all $targetFeedback->getMessengerUser()->getUser()->getMessengerUsers()
-                $messengerUser = $targetFeedback->getMessengerUser();
+                $messengerUser = $this->feedbackService->getMessengerUser($targetFeedback);
 
                 if (
                     $messengerUser !== null
                     && $messengerUser->getMessenger() === Messenger::telegram
-                    && $messengerUser->getId() !== $feedback->getMessengerUser()->getId()
+                    && $messengerUser->getId() !== $this->feedbackService->getMessengerUser($feedback)->getId()
                 ) {
                     $this->notify($messengerUser, $searchTerm, $feedback, $targetFeedback);
                 }
@@ -72,7 +76,7 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
 
     private function notify(
         MessengerUser $messengerUser,
-        FeedbackSearchTerm $searchTerm,
+        SearchTerm $searchTerm,
         Feedback $feedback,
         Feedback $targetFeedback
     ): void
@@ -110,7 +114,8 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
 
     private function getNotifyMessage(MessengerUser $messengerUser, TelegramBot $bot, Feedback $feedback): string
     {
-        $localeCode = $messengerUser->getUser()->getLocaleCode();
+        $user = $this->messengerUserService->getUser($messengerUser);
+        $localeCode = $user->getLocaleCode();
         $message = '👋 ' . $this->translator->trans('might_be_interesting', domain: 'feedbacks.tg.notify', locale: $localeCode);
         $message = '<b>' . $message . '</b>';
         $message .= ':';
@@ -118,7 +123,7 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
         $message .= $this->feedbackTelegramSearchViewer->getFeedbackTelegramView(
             $bot,
             $feedback,
-            addSecrets: $messengerUser->getUser()?->getSubscriptionExpireAt() < new DateTimeImmutable(),
+            addSecrets: $user?->getSubscriptionExpireAt() < new DateTimeImmutable(),
             addCountry: true,
             addTime: true,
             addQuotes: true,

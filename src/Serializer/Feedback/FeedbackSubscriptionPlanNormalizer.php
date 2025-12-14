@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Serializer\Feedback;
 
-use App\Entity\Feedback\FeedbackSubscriptionPlan;
 use App\Enum\Feedback\FeedbackSubscriptionPlanName;
+use App\Model\Feedback\Telegram\FeedbackSubscriptionPlan;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 

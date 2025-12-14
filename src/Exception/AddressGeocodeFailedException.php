@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-use App\Entity\Location;
+use App\Model\Location;
 use Throwable;
 
 class AddressGeocodeFailedException extends Exception

@@ -5,7 +5,7 @@
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="App\Entity\Messenger\MessengerUser"
-            repository-class="App\Repository\Messenger\MessengerUserRepository" table="messenger_users">
+            repository-class="App\Repository\Messenger\MessengerUserDoctrineRepository" table="messenger_users">
 
         <indexes>
             <index fields="identifier"/>

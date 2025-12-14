@@ -9,7 +9,7 @@ use OA\Dynamodb\Attribute\AbstractKey;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
 
-readonly class EntityMetadata
+class EntityMetadata
 {
     public function __construct(
         protected Entity $entityAttribute,
@@ -51,5 +51,19 @@ readonly class EntityMetadata
     public function getPropertyAttributes(): array
     {
         return $this->propertyAttributes;
+    }
+
+    public function hasProperty(string $property): bool
+    {
+        if (array_key_exists($property, $this->propertyAttributes)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function getProperty(string $property): ?Attribute
+    {
+        return $this->propertyAttributes[$property] ?? null;
     }
 }

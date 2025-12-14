@@ -6,16 +6,24 @@ namespace OA\Dynamodb\Serializer;
 
 use Aws\DynamoDb\Marshaler;
 use OA\Dynamodb\Metadata\MetadataException;
+use Psr\Log\LoggerInterface;
 use ReflectionException;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 
-readonly class EntitySerializer
+class EntitySerializer
 {
     public function __construct(
         protected EntityNormalizer $entityNormalizer,
         protected EntityDenormalizer $entityDenormalizer,
         protected Marshaler $marshaler,
-    ) {
+        protected ?LoggerInterface $logger = null,
+    )
+    {
+    }
+
+    public function getEntityNormalizer(): EntityNormalizer
+    {
+        return $this->entityNormalizer;
     }
 
     /**
@@ -29,6 +37,8 @@ readonly class EntitySerializer
     public function serialize(object $entity, bool $includePrimaryKey = true): array
     {
         $normalizedEntity = $this->entityNormalizer->normalize($entity, $includePrimaryKey);
+
+//        $this->logger?->debug(__METHOD__, ['entity' => $normalizedEntity]);
 
         return $this->marshaler->marshalItem($normalizedEntity);
     }

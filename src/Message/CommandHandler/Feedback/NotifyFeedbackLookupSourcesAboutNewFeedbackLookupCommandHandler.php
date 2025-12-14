@@ -6,7 +6,7 @@ namespace App\Message\CommandHandler\Feedback;
 
 use App\Entity\Feedback\FeedbackLookup;
 use App\Entity\Feedback\FeedbackNotification;
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Enum\Feedback\FeedbackNotificationType;
@@ -18,10 +18,11 @@ use App\Repository\Feedback\FeedbackLookupRepository;
 use App\Service\Feedback\FeedbackLookupSearcher;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackLookupTelegramViewProvider;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\TelegramBotProvider;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
@@ -37,8 +38,9 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommandHandler
         private readonly FeedbackLookupTelegramViewProvider $feedbackLookupTelegramViewProvider,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
         private readonly IdGenerator $idGenerator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
     }
@@ -71,7 +73,7 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommandHandler
 
     private function notify(
         MessengerUser $messengerUser,
-        FeedbackSearchTerm $searchTerm,
+        SearchTerm $searchTerm,
         FeedbackLookup $feedbackLookup,
         FeedbackLookup $targetFeedbackLookup
     ): void
@@ -109,7 +111,8 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommandHandler
 
     private function getNotifyMessage(MessengerUser $messengerUser, TelegramBot $bot, FeedbackLookup $feedbackLookup): string
     {
-        $localeCode = $messengerUser->getUser()->getLocaleCode();
+        $user = $this->messengerUserService->getUser($messengerUser);
+        $localeCode = $user->getLocaleCode();
         $message = '👋 ' . $this->translator->trans('might_be_interesting', domain: 'feedbacks.tg.notify', locale: $localeCode);
         $message = '<b>' . $message . '</b>';
         $message .= ':';
@@ -117,7 +120,7 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommandHandler
         $message .= $this->feedbackLookupTelegramViewProvider->getFeedbackLookupTelegramView(
             $bot,
             $feedbackLookup,
-            addSecrets: $messengerUser->getUser()?->getSubscriptionExpireAt() < new DateTimeImmutable(),
+            addSecrets: $user?->getSubscriptionExpireAt() < new DateTimeImmutable(),
             addQuotes: true,
             localeCode: $localeCode
         );

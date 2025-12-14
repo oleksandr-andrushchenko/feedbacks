@@ -44,7 +44,7 @@ class TelegramBotMessengerUserUpserter
             timezone: $country->getTimezones()[0] ?? null,
             botId: $bot->getEntity()->getId()
         );
-        $messengerUser = $this->messengerUserUpserter->upsertMessengerUser($transfer, withUser: true);
+        $messengerUser = $this->messengerUserUpserter->upsertMessengerUser($transfer);
         $this->userUpserter->upsertUserByMessengerUser($messengerUser, $transfer);
 
         return $messengerUser;

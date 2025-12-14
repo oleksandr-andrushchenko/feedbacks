@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Address\Address;
 use App\Entity\Intl\Level1Region;
-use App\Entity\Location;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
-use App\Entity\Telegram\TelegramBotConversationState;
 use App\Entity\User\User;
+use App\Model\Address\Address;
+use App\Model\Location;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\CountryTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
 use App\Tests\Fake\Service\FakeAddressGeocoder;

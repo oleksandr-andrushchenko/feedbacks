@@ -19,39 +19,65 @@ class Level1RegionDynamodbRepository extends EntityRepository
         parent::__construct($em, Level1Region::class);
     }
 
+    public function find(string $id): ?Level1Region
+    {
+        return $this->getOne(['id' => $id]);
+    }
+
     public function findAll(): array
     {
-        $qb = (new QueryArgs())->indexName('LVL_1_RGN_BY_COUNTRY_NAME')
-            ->keyConditionExpression('lvl_1_rgn_pk = :lvl_1_rgn_pk')
-            ->expressionAttributeValues([':lvl_1_rgn_pk' => 'LVL_1_RGN'])
-        ;
-
-        return $this->queryMany($qb);
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('LEVEL_1_REGIONS_BY_COUNTRY_NAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'level_1_region_pk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'LEVEL_1_REGION',
+                ])
+        );
     }
 
     public function findOneByCountryAndName(string $countryCode, string $name): ?Level1Region
     {
-        $args = (new QueryArgs())->indexName('LVL_1_RGN_BY_COUNTRY_NAME')
-            ->keyConditionExpression('lvl_1_rgn_pk = :lvl_1_rgn_pk AND lvl_1_rgn_country_name_sk = :lvl_1_rgn_country_name_sk')
-            ->expressionAttributeValues([
-                ':lvl_1_rgn_pk' => 'LVL_1_RGN',
-                ':lvl_1_rgn_country_name_sk' => $countryCode . '#' . $name,
-            ])
-        ;
-
-        return $this->queryOne($args);
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('LEVEL_1_REGIONS_BY_COUNTRY_NAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    '#sk = :sk',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'level_1_region_pk',
+                    '#sk' => 'level_1_region_country_code_name_sk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'LEVEL_1_REGION',
+                    ':sk' => $countryCode . '#' . $name,
+                ])
+        );
     }
 
     public function findByCountry(string $countryCode): array
     {
-        $args = (new QueryArgs())->indexName('LVL_1_RGN_BY_COUNTRY_NAME')
-            ->keyConditionExpression('lvl_1_rgn_pk = :lvl_1_rgn_pk AND begins_with(lvl_1_rgn_country_name_sk, :lvl_1_rgn_country_name_sk)')
-            ->expressionAttributeValues([
-                ':lvl_1_rgn_pk' => 'LVL_1_RGN',
-                ':lvl_1_rgn_country_name_sk' => $countryCode . '#',
-            ])
-        ;
-
-        return $this->queryMany($args);
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('LEVEL_1_REGIONS_BY_COUNTRY_NAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    'begins_with(#sk, :sk)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'level_1_region_pk',
+                    '#sk' => 'level_1_region_country_code_name_sk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'LEVEL_1_REGION',
+                    ':sk' => $countryCode . '#',
+                ])
+        );
     }
 }

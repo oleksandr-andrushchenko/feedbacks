@@ -41,7 +41,7 @@ abstract class AbstractOpArgs
         return $this;
     }
 
-    public function filterExpression(string $expression): static
+    public function filterExpression(array $expression): static
     {
         $this->args['FilterExpression'] = $expression;
 

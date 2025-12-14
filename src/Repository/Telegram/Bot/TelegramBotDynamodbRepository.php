@@ -22,104 +22,164 @@ class TelegramBotDynamodbRepository extends EntityRepository
 
     public function findAll(): array
     {
-        $qb = (new QueryArgs())->indexName('TG_BOTS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_bot_pk = :tg_bot_pk')
-            ->expressionAttributeValues([':tg_bot_pk' => 'TG_BOT'])
-        ;
-
-        return $this->queryMany($qb);
-    }
-
-    public function findAnyOneByUsername(string $username): ?TelegramBot
-    {
-        $args = (new QueryArgs())->indexName('TG_BOTS_BY_USERNAME')
-            ->keyConditionExpression('tg_bot_username_pk = :username')
-            ->expressionAttributeValues([':username' => $username])
-        ;
-        return $this->queryOne($args);
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_pk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_BOT',
+                ])
+        );
     }
 
     public function findOneByUsername(string $username): ?TelegramBot
     {
-        $bot = $this->findAnyOneByUsername($username);
-
-        if ($bot->getDeletedAt() !== null) {
-            return null;
-        }
-
-        return $bot;
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_USERNAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_username_pk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => $username,
+                ])
+        );
     }
 
-    public function findByGroup(TelegramBotGroupName $group): array
+    public function findOneNonDeletedByUsername(string $username): ?TelegramBot
     {
-        $args = (new QueryArgs())->indexName('TG_BOTS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_bot_pk = :tg_bot_pk AND begins_with(tg_bot_group_country_locale_sk, :tg_bot_group_country_locale_sk)')
-            ->expressionAttributeValues([
-                ':tg_bot_pk' => 'TG_BOT',
-                ':tg_bot_group_country_locale_sk' => $group->name . '#',
-            ])
-        ;
-
-        return $this->skipDeleted($this->queryMany($args));
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_USERNAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->filterExpression([
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_username_pk',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => $username,
+                ])
+        );
     }
 
-    public function findPrimaryByGroup(TelegramBotGroupName $group): array
+    public function findNonDeletedByGroup(TelegramBotGroupName $group): array
     {
-        $args = (new QueryArgs())->indexName('TG_BOTS_BY_GROUP_PRIMARY')
-            ->keyConditionExpression('tg_bot_pk = :tg_bot_pk AND tg_bot_group_primary_sk = :tg_bot_group_primary_sk')
-            ->expressionAttributeValues([
-                ':tg_bot_pk' => 'TG_BOT',
-                ':tg_bot_group_primary_sk' => $group->name . '#' . true,
-            ])
-        ;
-
-        return $this->skipDeleted($this->queryMany($args));
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    'begins_with(#sk, :sk)',
+                ])
+                ->filterExpression([
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_pk',
+                    '#sk' => 'telegram_bot_group_country_locale_sk',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_BOT',
+                    ':sk' => $group->name . '#',
+                ])
+        );
     }
 
-    public function findByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
+    public function findPrimaryNonDeletedByGroup(TelegramBotGroupName $group): array
     {
-        $args = (new QueryArgs())->indexName('TG_BOTS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_bot_pk = :tg_bot_pk AND begins_with(tg_bot_group_country_locale_sk, :tg_bot_group_country_locale_sk)')
-            ->expressionAttributeValues([
-                ':tg_bot_pk' => 'TG_BOT',
-                ':tg_bot_group_country_locale_sk' => $group->name . '#' . $countryCode . '#',
-            ])
-        ;
-
-        return $this->skipDeleted($this->queryMany($args));
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    'begins_with(#sk, :sk)',
+                ])
+                ->filterExpression([
+                    'attribute_exists(#primary)',
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_pk',
+                    '#sk' => 'telegram_bot_group_country_locale_sk',
+                    '#primary' => 'primary',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_BOT',
+                    ':sk' => $group->name . '#',
+                ])
+        );
     }
 
-    public function findOnePrimaryByBot(TelegramBot $bot): ?TelegramBot
+    public function findNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
     {
-        $args = (new QueryArgs())->indexName('TG_BOTS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_bot_pk = :tg_bot_pk AND tg_bot_group_country_locale_sk = :tg_bot_group_country_locale_sk')
-            ->expressionAttributeValues([
-                ':tg_bot_pk' => 'TG_BOT',
-                ':tg_bot_group_country_locale_sk' => $bot->getGroup()->name . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
-            ])
-        ;
-        $bots = $this->queryMany($args);
-        foreach ($bots as $bot) {
-            if ($bot->getDeletedAt() !== null) {
-                continue;
-            }
-            if ($bot->getPrimary() !== true) {
-                continue;
-            }
-            return $bot;
-        }
-
-        return null;
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    'begins_with(#sk, :sk)',
+                ])
+                ->filterExpression([
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_pk',
+                    '#sk' => 'telegram_bot_group_country_locale_sk',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_BOT',
+                    ':sk' => $group->name . '#' . $countryCode . '#',
+                ])
+        );
     }
 
-    public function findPrimaryByGroupAndIds(TelegramBotGroupName $group, array $ids): array
+    public function findOnePrimaryNonDeletedByBot(TelegramBot $bot): ?TelegramBot
     {
-        $bots = $this->findPrimaryByGroup($group);
-        return array_filter($bots, static fn (TelegramBot $bot): bool => in_array($bot->getId(), $ids, true));
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    '#sk = :sk',
+                ])
+                ->filterExpression([
+                    'attribute_exists(#primary)',
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_pk',
+                    '#sk' => 'telegram_bot_group_country_locale_sk',
+                    '#primary' => 'primary',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_BOT',
+                    ':sk' => $bot->getGroup()->name . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
+                ])
+        );
     }
 
-    private function skipDeleted($bots): array
+    public function findPrimaryNonDeletedByGroupAndIds(TelegramBotGroupName $group, array $ids): array
     {
-        return array_filter($bots, static fn (TelegramBot $bot): bool => $bot->getDeletedAt() === null);
+        return array_filter(
+            $this->findPrimaryNonDeletedByGroup($group),
+            static fn (TelegramBot $bot): bool => in_array($bot->getId(), $ids, true)
+        );
     }
 }

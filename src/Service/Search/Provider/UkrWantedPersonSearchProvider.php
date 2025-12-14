@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\UkrWantedPerson\UkrWantedPerson;
-use App\Entity\Search\UkrWantedPerson\UkrWantedPersons;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\UkrWantedPerson\UkrWantedPerson;
+use App\Model\Search\UkrWantedPerson\UkrWantedPersons;
 use App\Service\CrawlerProvider;
 use App\Service\Intl\Ukr\UkrPersonNameProvider;
 use DateTimeImmutable;
@@ -37,7 +37,7 @@ class UkrWantedPersonSearchProvider extends SearchProvider implements SearchProv
         return SearchProviderName::ukr_wanted_persons;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
 
@@ -66,7 +66,7 @@ class UkrWantedPersonSearchProvider extends SearchProvider implements SearchProv
         return true;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $term = $searchTerm->getNormalizedText();
 

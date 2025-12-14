@@ -5,22 +5,17 @@ declare(strict_types=1);
 namespace App\Repository\User;
 
 use App\Entity\User\User;
-use App\Repository\Repository;
+use App\Repository\EntityRepository;
 
 /**
- * @extends Repository<User>
- * @method UserDoctrineRepository doctrine()
- * @property UserDoctrineRepository doctrine
- * @method UserDynamodbRepository dynamodb()
- * @property UserDynamodbRepository dynamodb
+ * @extends EntityRepository<User>
+ * @method UserDoctrineRepository getDoctrine()
+ * @property UserDoctrineRepository $doctrine
+ * @method UserDynamodbRepository getDynamodb()
+ * @property UserDynamodbRepository $dynamodb
+ * @method User|null find(string $id)
+ * @method array<User> findByIds(array<string> $ids)
  */
-class UserRepository extends Repository
+class UserRepository extends EntityRepository
 {
-    public function __construct(
-        UserDoctrineRepository $userDoctrineRepository,
-        UserDynamodbRepository $userDynamodbRepository,
-    )
-    {
-        parent::__construct($userDoctrineRepository, $userDynamodbRepository);
-    }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer\Intl;
 
-use App\Entity\Intl\Currency;
+use App\Model\Intl\Currency;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 

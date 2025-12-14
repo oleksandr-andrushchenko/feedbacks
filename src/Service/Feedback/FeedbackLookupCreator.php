@@ -4,34 +4,37 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback;
 
-use App\Entity\Feedback\Command\FeedbackCommandOptions;
 use App\Entity\Feedback\FeedbackLookup;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
+use App\Factory\Feedback\FeedbackLookupFactory;
 use App\Message\Event\ActivityEvent;
 use App\Message\Event\Feedback\FeedbackLookupCreatedEvent;
+use App\Model\Feedback\Command\FeedbackCommandOptions;
 use App\Service\Feedback\Command\FeedbackCommandLimitsChecker;
-use App\Service\Feedback\SearchTerm\FeedbackSearchTermUpserter;
+use App\Service\Feedback\SearchTerm\SearchTermUpserter;
 use App\Service\Feedback\Statistic\FeedbackUserStatisticProviderInterface;
-use App\Service\Feedback\Subscription\FeedbackSubscriptionManager;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackLookupTransfer;
-use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class FeedbackLookupCreator
 {
     public function __construct(
         private readonly FeedbackCommandOptions $options,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly Validator $validator,
         private readonly FeedbackUserStatisticProviderInterface $statisticProvider,
         private readonly FeedbackCommandLimitsChecker $limitsChecker,
-        private readonly FeedbackSubscriptionManager $subscriptionManager,
-        private readonly FeedbackSearchTermUpserter $termUpserter,
+        private readonly SearchTermUpserter $searchTermUpserter,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
+        private readonly MessengerUserService $messengerUserService,
+        private readonly FeedbackLookupFactory $feedbackLookupFactory,
     )
     {
     }
@@ -46,35 +49,29 @@ class FeedbackLookupCreator
      * @return FeedbackLookup
      * @throws FeedbackCommandLimitExceededException
      * @throws ValidatorException
+     * @throws ExceptionInterface
      */
     public function createFeedbackLookup(FeedbackLookupTransfer $transfer): FeedbackLookup
     {
         $this->validator->validate($transfer);
 
         $messengerUser = $transfer->getMessengerUser();
-        $hasActiveSubscription = $this->subscriptionManager->hasActiveSubscription($messengerUser);
+        $user = $this->messengerUserService->getUser($messengerUser);
 
-        if (!$hasActiveSubscription) {
-            $this->limitsChecker->checkCommandLimits($messengerUser->getUser(), $this->statisticProvider);
+        if (!$user->hasActiveSubscription()) {
+            $this->limitsChecker->checkCommandLimits($user, $this->statisticProvider);
         }
 
-        $searchTerm = $this->termUpserter->upsertFeedbackSearchTerm($transfer->getSearchTerm());
+        $searchTerm = $this->searchTermUpserter->upsertSearchTerm($transfer->getSearchTerm());
 
-        $lookup = new FeedbackLookup(
-            $this->idGenerator->generateId(),
-            $messengerUser->getUser(),
-            $messengerUser,
-            $searchTerm,
-            hasActiveSubscription: $hasActiveSubscription,
-            countryCode: $messengerUser->getUser()->getCountryCode(),
-            localeCode: $messengerUser->getUser()->getLocaleCode(),
-            telegramBot: $transfer->getTelegramBot()
+        $feedbackLookup = $this->feedbackLookupFactory->createFeedbackLookup(
+            $this->idGenerator->generateId(), $searchTerm, $user, $messengerUser, $transfer->getTelegramBot()
         );
-        $this->entityManager->persist($lookup);
+        $this->entityManager->persist($feedbackLookup);
 
-        $this->eventBus->dispatch(new ActivityEvent(entity: $lookup, action: 'created'));
-        $this->eventBus->dispatch(new FeedbackLookupCreatedEvent(lookup: $lookup));
+        $this->eventBus->dispatch(new ActivityEvent(entity: $feedbackLookup, action: 'created'));
+        $this->eventBus->dispatch(new FeedbackLookupCreatedEvent(lookup: $feedbackLookup));
 
-        return $lookup;
+        return $feedbackLookup;
     }
 }

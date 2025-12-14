@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\UkrMissedCar\UkrMissedCar;
+use App\Entity\Feedback\SearchTerm;
+use App\Model\Search\UkrMissedCar\UkrMissedCar;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class UkrMissedCarTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -18,7 +18,7 @@ class UkrMissedCarTelegramSearchViewer extends SearchViewer implements SearchVie
         parent::__construct($searchViewerCompose->withTransDomain('ukr_missed_cars'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         $full = $context['full'] ?? false;
         $this->showLimits = !$full;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\CleanTalk\CleanTalkEmail;
-use App\Entity\Search\CleanTalk\CleanTalkEmails;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\CleanTalk\CleanTalkEmail;
+use App\Model\Search\CleanTalk\CleanTalkEmails;
 use App\Service\CrawlerProvider;
 use DateTimeImmutable;
 use Symfony\Component\DomCrawler\Crawler;
@@ -35,7 +35,7 @@ class CleanTalkSearchProvider extends SearchProvider implements SearchProviderIn
         return SearchProviderName::clean_talk;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $type = $searchTerm->getType();
 
@@ -46,7 +46,7 @@ class CleanTalkSearchProvider extends SearchProvider implements SearchProviderIn
         return false;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $term = $searchTerm->getNormalizedText();
 

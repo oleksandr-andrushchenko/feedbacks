@@ -6,8 +6,8 @@ namespace App\Command\Telegram\Bot;
 
 use App\Exception\Telegram\Bot\TelegramBotNotFoundException;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotWebhookRemover;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +20,7 @@ class TelegramBotWebhookRemoveCommand extends Command
     public function __construct(
         private readonly TelegramBotRepository $telegramBotRepository,
         private readonly TelegramBotWebhookRemover $telegramBotWebhookRemover,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -45,7 +45,7 @@ class TelegramBotWebhookRemoveCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $username = $input->getArgument('username');
-        $bot = $this->telegramBotRepository->findOneByUsername($username);
+        $bot = $this->telegramBotRepository->findOneNonDeletedByUsername($username);
 
         if ($bot === null) {
             throw new TelegramBotNotFoundException($username);

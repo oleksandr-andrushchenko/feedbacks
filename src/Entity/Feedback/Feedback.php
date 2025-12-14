@@ -8,80 +8,134 @@ use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Stringable;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
 
-class Feedback implements Stringable
+#[Entity(
+    new PartitionKey('FEEDBACK', ['id']),
+    new SortKey('META'),
+)]
+class Feedback
 {
     private Collection $searchTerms;
 
     public function __construct(
-        private readonly string $id,
-        private readonly User $user,
-        private readonly MessengerUser $messengerUser,
-        array $searchTerms,
-        private readonly Rating $rating,
-        private readonly ?string $description,
-        private readonly bool $hasActiveSubscription,
-        private readonly ?string $countryCode = null,
-        private readonly ?string $localeCode = null,
-        private ?array $channelMessageIds = null,
-        private readonly ?TelegramBot $telegramBot = null,
+        #[Attribute('feedback_id')]
+        private ?string $id = null,
+        private ?User $user = null,
+        #[Attribute('user_id')]
+        private ?string $userId = null,
+        #[Attribute('country_code')]
+        private ?string $countryCode = null,
+        #[Attribute('local_code')]
+        private ?string $localeCode = null,
+        #[Attribute('has_active_subscription')]
+        private ?bool $hasActiveSubscription = null,
+        private ?MessengerUser $messengerUser = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
+        /** @var array<SearchTerm>|null $searchTerms */
+        ?array $searchTerms = null,
+        #[Attribute('search_term_ids')]
+        private ?array $searchTermIds = null,
+        #[Attribute]
+        private ?Rating $rating = null,
+        #[Attribute('text')]
+        private ?string $text = null,
+        #[Attribute('telegram_channel_message_ids')]
+        private ?array $telegramChannelMessageIds = null,
+        private ?TelegramBot $telegramBot = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
     )
     {
-        $this->searchTerms = new ArrayCollection();
-
-        foreach ($searchTerms as $searchTerm) {
-            $this->addSearchTerm($searchTerm);
-        }
+        $this->searchTerms = new ArrayCollection($searchTerms ?? []);
+        $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms ?? []);
+        $this->userId ??= $this->user?->getId();
+        $this->countryCode = $this->user?->getCountryCode();
+        $this->localeCode = $this->user?->getLocaleCode();
+        $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        $this->messengerUserId ??= $this->messengerUser?->getId();
+        $this->telegramBotId ??= $this->telegramBot?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): string
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function getUser(): User
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getUser(): ?User
     {
         return $this->user;
     }
 
-    public function getMessengerUser(): MessengerUser
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
+    public function setMessengerUser(?MessengerUser $messengerUser): self
+    {
+        $this->messengerUser = $messengerUser;
+        return $this;
+    }
+
+    public function getMessengerUser(): ?MessengerUser
     {
         return $this->messengerUser;
     }
 
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
+    }
+
+    public function setSearchTerms(?array $searchTerms): self
+    {
+        $this->searchTerms = new ArrayCollection($searchTerms ?? []);
+        $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms);
+        return $this;
+    }
+
     /**
-     * @return ArrayCollection|FeedbackSearchTerm[]
+     * @return Collection<SearchTerm>
      */
-    public function getSearchTerms(): iterable
+    public function getSearchTerms(): Collection
     {
         return $this->searchTerms;
     }
 
-    public function addSearchTerm(FeedbackSearchTerm $searchTerm): self
+    public function getSearchTermIds(): ?array
     {
-        if (!$this->searchTerms->contains($searchTerm)) {
-            $this->searchTerms->add($searchTerm);
-        }
-
-        return $this;
+        return $this->searchTermIds;
     }
 
-    public function getRating(): Rating
+    public function getRating(): ?Rating
     {
         return $this->rating;
     }
 
-    public function getDescription(): ?string
+    public function getText(): ?string
     {
-        return $this->description;
+        return $this->text;
     }
 
-    public function hasActiveSubscription(): bool
+    public function hasActiveSubscription(): ?bool
     {
         return $this->hasActiveSubscription;
     }
@@ -96,21 +150,31 @@ class Feedback implements Stringable
         return $this->localeCode;
     }
 
-    public function addChannelMessageId(string|int $channelMessageId): self
+    public function addTelegramChannelMessageId(int $messageId): self
     {
-        if ($this->channelMessageIds === null) {
-            $this->channelMessageIds = [];
+        if ($this->telegramChannelMessageIds === null) {
+            $this->telegramChannelMessageIds = [];
+        }
+        if (!in_array($messageId, $this->telegramChannelMessageIds, true)) {
+            $this->telegramChannelMessageIds[] = $messageId;
         }
 
-        $this->channelMessageIds[] = (int) $channelMessageId;
-        $this->channelMessageIds = array_filter(array_unique($this->channelMessageIds));
-
         return $this;
+    }
+
+    public function getTelegramChannelMessageIds(): ?array
+    {
+        return $this->telegramChannelMessageIds;
     }
 
     public function getTelegramBot(): ?TelegramBot
     {
         return $this->telegramBot;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
     }
 
     public function getCreatedAt(): ?DateTimeInterface
@@ -121,12 +185,6 @@ class Feedback implements Stringable
     public function setCreatedAt(?DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
-
         return $this;
-    }
-
-    public function __toString(): string
-    {
-        return $this->getId();
     }
 }

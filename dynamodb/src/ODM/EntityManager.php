@@ -11,19 +11,19 @@ use OA\Dynamodb\Serializer\EntitySerializer;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-/**
- * @template T of object
- */
-readonly class EntityManager
+class EntityManager
 {
+    private UnitOfWork $unitOfWork;
+
     public function __construct(
-        protected DynamoDbClient $dynamoDbClient,
-        protected MetadataLoader $metadataLoader,
-        protected EntitySerializer $entitySerializer,
-        protected OpArgsBuilder $opArgsBuilder,
-        protected ?LoggerInterface $logger = null,
+        private readonly DynamoDbClient $dynamoDbClient,
+        private readonly MetadataLoader $metadataLoader,
+        private readonly EntitySerializer $entitySerializer,
+        private readonly OpArgsBuilder $opArgsBuilder,
+        private readonly ?LoggerInterface $logger = null,
     )
     {
+        $this->unitOfWork = new UnitOfWork($this);
     }
 
     public function getClient(): DynamoDbClient
@@ -31,44 +31,178 @@ readonly class EntityManager
         return $this->dynamoDbClient;
     }
 
+    public function getMetadataLoader(): MetadataLoader
+    {
+        return $this->metadataLoader;
+    }
+
+    public function getEntitySerializer(): EntitySerializer
+    {
+        return $this->entitySerializer;
+    }
+
+    public function getLogger(): ?LoggerInterface
+    {
+        return $this->logger;
+    }
+
     public function getOpArgsBuilder(): OpArgsBuilder
     {
         return $this->opArgsBuilder;
     }
 
+    public function getUnitOfWork(): UnitOfWork
+    {
+        return $this->unitOfWork;
+    }
+
+    // ---------------------------------------------------------
+    // GET — now with IdentityMap support
+    // ---------------------------------------------------------
+
     /**
+     * @template T
      * @param class-string<T> $class
-     * @param array<string, mixed> $keyFieldValues
+     * @param array<string, mixed> $keyFields
      * @return T|null
      * @throws EntityManagerException
      */
-    public function get(string $class, array $keyFieldValues): ?object
+    public function getOne(string $class, array $keyFields): ?object
     {
         try {
-            $key = $this->entitySerializer->serializePrimaryKey($class, $keyFieldValues);
-            $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
+            // 1. Check IdentityMap first
+            $serializedKey = $this->entitySerializer->serializePrimaryKey($class, $keyFields);
+            $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
 
-            $result = $this->dynamoDbClient->getItem([
-                'TableName' => $table,
-                'Key' => $key,
+            $this->logger->debug(__METHOD__, [
+                'class' => $class,
+                'keyFields' => $keyFields,
+                'serializedKey' => $serializedKey,
+                'cached' => $cached,
             ]);
 
-            $rawItem = $result['Item'] ?? null;
+            if ($cached !== null) {
+                return $cached;
+            }
 
-            if (null === $rawItem) {
+            // 2. Fetch from DynamoDB
+            $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
+            $result = $this->dynamoDbClient->getItem([
+                'TableName' => $table,
+                'Key' => $serializedKey,
+            ]);
+
+            $item = $result['Item'] ?? null;
+
+            if ($item === null) {
                 return null;
             }
 
-            return $this->entitySerializer->deserialize($rawItem, $class);
+            // 3. Deserialize → Register snapshot in IdentityMap
+            $entity = $this->entitySerializer->deserialize($item, $class);
+
+            $this->logger->debug(__METHOD__, [
+                'entity' => $entity,
+                'item' => $item,
+            ]);
+
+            $this->unitOfWork->registerManaged($entity);
+
+            return $entity;
+
         } catch (Throwable $exception) {
             $this->wrapException($exception);
         }
     }
 
+    // ---------------------------------------------------------
+    // BATCH GET (new)
+    // ---------------------------------------------------------
+
     /**
+     * @template T
      * @param class-string<T> $class
-     * @return T|null
+     * @param array<int, array<string, mixed>> $keyFieldValuesSet
+     * @return array<string, T>  // primaryKey → entity
      * @throws EntityManagerException
+     */
+    public function getMany(string $class, array $keyFieldValuesSet): array
+    {
+        try {
+            $metadata = $this->metadataLoader->getEntityMetadata($class);
+            $table = $metadata->getTable();
+
+            // Prepare batch keys
+            $requestKeys = [];
+            $result = [];
+
+            foreach ($keyFieldValuesSet as $keyFields) {
+                $serializedKey = $this->entitySerializer->serializePrimaryKey($class, $keyFields);
+                $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
+
+                if ($cached !== null) {
+                    $result[$this->serializeKeyToString($serializedKey)] = $cached;
+                    continue;
+                }
+
+                $requestKeys[] = $serializedKey;
+            }
+
+            if (empty($requestKeys)) {
+                return $result;
+            }
+
+            // DynamoDB batchGet (100 keys max per request)
+            $chunks = array_chunk($requestKeys, 100);
+
+            foreach ($chunks as $chunk) {
+                $response = $this->dynamoDbClient->batchGetItem([
+                    'RequestItems' => [
+                        $table => [
+                            'Keys' => $chunk,
+                        ],
+                    ],
+                ]);
+
+                $items = $response['Responses'][$table] ?? [];
+
+                foreach ($items as $item) {
+                    $entity = $this->entitySerializer->deserialize($item, $class);
+                    $this->unitOfWork->registerManaged($entity);
+
+                    $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
+                    $result[$this->serializeKeyToString($serializedKey)] = $entity;
+                }
+
+                // Retry unprocessed keys
+                while (!empty($response['UnprocessedKeys'])) {
+                    $response = $this->dynamoDbClient->batchGetItem([
+                        'RequestItems' => $response['UnprocessedKeys'],
+                    ]);
+                }
+            }
+
+            return $result;
+
+        } catch (Throwable $exception) {
+            $this->wrapException($exception);
+        }
+    }
+
+    private function serializeKeyToString(array $key): string
+    {
+        return json_encode($key, JSON_THROW_ON_ERROR);
+    }
+
+    // ---------------------------------------------------------
+    // QUERY — now with IdentityMap and snapshots
+    // ---------------------------------------------------------
+
+    /**
+     * @template T
+     * @param class-string<T> $class
+     * @param QueryArgs $queryArgs
+     * @return object|null
      */
     public function queryOne(string $class, QueryArgs $queryArgs): ?object
     {
@@ -80,118 +214,121 @@ readonly class EntityManager
         return $result[0] ?? null;
     }
 
-    /**\
+    /**
+     * @template T
      * @param class-string<T> $class
-     * @return ResultStream<T>
-     * @throws EntityManagerException
+     * @param QueryArgs $queryArgs
+     * @return ResultStream
      */
     public function query(string $class, QueryArgs $queryArgs): ResultStream
     {
-        $result = (function () use ($class, $queryArgs): Generator {
+        $generator = (function () use ($class, $queryArgs): Generator {
             try {
                 $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
                 $queryArgs->tableName($table);
-
                 $params = $this->opArgsBuilder->serialize($queryArgs);
+
                 $remainingLimit = $params['Limit'] ?? null;
 
                 do {
-                    if (null !== $remainingLimit) {
+                    if ($remainingLimit !== null) {
                         $params['Limit'] = $remainingLimit;
                     }
 
+                    $this->logger?->debug(__METHOD__, [
+                        'class' => $class,
+                        'params' => $params,
+                    ]);
+
                     $result = $this->dynamoDbClient->query($params);
 
-                    foreach ($result->get('Items') ?? [] as $item) {
-                        yield $this->entitySerializer->deserialize($item, $class);
+                    foreach ($result['Items'] ?? [] as $item) {
+                        $entity = $this->entitySerializer->deserialize($item, $class);
+//                        $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
+//                        $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
 
-                        if (null === $remainingLimit) {
-                            continue;
-                        }
+//                        $this->logger->debug(__METHOD__, [
+//                            'entity' => $entity,
+//                            'serializedKey' => $serializedKey,
+//                            'cached' => $cached,
+//                        ]);
 
-                        if (0 >= --$remainingLimit) {
+//                        if ($cached === null) {
+                            $this->unitOfWork->registerManaged($entity);
+//                        }
+
+                        yield $entity;
+
+                        if ($remainingLimit !== null && --$remainingLimit <= 0) {
                             return;
                         }
                     }
 
-                    $params['ExclusiveStartKey'] = $result->get('LastEvaluatedKey') ?? null;
+                    $params['ExclusiveStartKey'] = $result['LastEvaluatedKey'] ?? null;
+
                 } while (!empty($params['ExclusiveStartKey']));
+
             } catch (Throwable $exception) {
                 $this->wrapException($exception);
             }
         })();
 
-        return new ResultStream($result);
+        return new ResultStream($generator);
     }
 
-    /**
-     * @param class-string<T> $class
-     * @return ResultStream<T>
-     * @throws EntityManagerException
-     */
+    // ---------------------------------------------------------
+    // SCAN — same IdentityMap rules
+    // ---------------------------------------------------------
+
     public function scan(string $class, ScanArgs $scanArgs): ResultStream
     {
-        $result = (function () use ($class, $scanArgs): Generator {
+        $generator = (function () use ($class, $scanArgs): Generator {
             try {
                 $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
                 $scanArgs->tableName($table);
-
                 $params = $this->opArgsBuilder->serialize($scanArgs);
                 $remainingLimit = $params['Limit'] ?? null;
 
                 do {
-                    if (null !== $remainingLimit) {
+                    if ($remainingLimit !== null) {
                         $params['Limit'] = $remainingLimit;
                     }
 
                     $result = $this->dynamoDbClient->scan($params);
 
-                    foreach ($result->get('Items') ?? [] as $item) {
-                        yield $this->entitySerializer->deserialize($item, $class);
+                    foreach ($result['Items'] ?? [] as $item) {
+                        $entity = $this->entitySerializer->deserialize($item, $class);
+//                        $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
+//                        $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
 
-                        if (null === $remainingLimit) {
-                            continue;
-                        }
+//                        if ($cached === null) {
+                            $this->unitOfWork->registerManaged($entity);
+//                        }
 
-                        if (0 >= --$remainingLimit) {
+                        yield $entity;
+
+                        if ($remainingLimit !== null && --$remainingLimit <= 0) {
                             return;
                         }
                     }
 
-                    $params['ExclusiveStartKey'] = $result->get('LastEvaluatedKey') ?? null;
+                    $params['ExclusiveStartKey'] = $result['LastEvaluatedKey'] ?? null;
+
                 } while (!empty($params['ExclusiveStartKey']));
             } catch (Throwable $exception) {
                 $this->wrapException($exception);
             }
         })();
 
-        return new ResultStream($result);
+        return new ResultStream($generator);
     }
 
     /**
-     * @param T $entity
-     * @throws EntityManagerException
-     */
-    public function put(object $entity): void
-    {
-        try {
-            $table = $this->metadataLoader->getEntityMetadata($entity::class)->getTable();
-            $item = $this->entitySerializer->serialize($entity);
-
-            $this->dynamoDbClient->putItem([
-                'TableName' => $table,
-                'Item' => $item,
-            ]);
-        } catch (Throwable $exception) {
-            $this->wrapException($exception);
-        }
-    }
-
-    /**
-     * @param string $class
+     * @template T
+     * @param class-string<T> $class
      * @param UpdateArgs $updateArgs
      * @param array $keyFieldValues
-     * @return T|null
+     * @return object|null
      * @throws EntityManagerException
      */
     public function updateOneByQueryReturn(string $class, UpdateArgs $updateArgs, array $keyFieldValues): ?object
@@ -207,77 +344,48 @@ readonly class EntityManager
 
             $result = $this->dynamoDbClient->updateItem($params);
 
-            $rawItem = $result['Attributes'] ?? null;
-            if (null === $rawItem) {
+            $item = $result['Attributes'] ?? null;
+            if (null === $item) {
                 return null;
             }
 
-            return $this->entitySerializer->deserialize($rawItem, $class);
+            $entity = $this->entitySerializer->deserialize($item, $class);
+//            $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
+//            $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
+
+//            if ($cached === null) {
+                $this->unitOfWork->registerManaged($entity);
+//            }
+
+            return $entity;
         } catch (Throwable $exception) {
             $this->wrapException($exception);
         }
     }
 
-    /**
-     * @param T $entity
-     * @throws EntityManagerException
-     */
-    public function delete(object $entity): void
-    {
-        try {
-            $table = $this->metadataLoader->getEntityMetadata($entity::class)->getTable();
-            $key = $this->entitySerializer->serializePrimaryKey($entity);
+    // ---------------------------------------------------------
+    // WRITE OPERATIONS
+    // ---------------------------------------------------------
 
-            $this->dynamoDbClient->deleteItem([
-                'TableName' => $table,
-                'Key' => $key,
-            ]);
-        } catch (Throwable $exception) {
-            $this->wrapException($exception);
-        }
-    }
-
-    /**
-     * @param class-string $class
-     * @return ResultStream<mixed>
-     * @throws EntityManagerException
-     */
-    public function describe(string $class): ResultStream
-    {
-        $result = (function () use ($class): Generator {
-            try {
-                $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
-                yield from $this->dynamoDbClient->describeTable(['TableName' => $table]);
-            } catch (Throwable $exception) {
-                $this->wrapException($exception);
-            }
-        })();
-
-        return new ResultStream($result);
-    }
-
-    /**
-     * @template T of object
-     * @param T $entity
-     * @throws EntityManagerException
-     * @todo: use implement UoW
-     */
     public function persist(object $entity): void
     {
-        $this->put($entity);
+        $this->unitOfWork->scheduleForInsert($entity);
     }
 
-    /**
-     * @return void
-     * @todo: use implement UoW
-     */
+    public function remove(object $entity): void
+    {
+        $this->unitOfWork->scheduleForDelete($entity);
+    }
+
     public function flush(): void
     {
+        $this->unitOfWork->flush();
     }
 
-    /**
-     * @throws EntityManagerException
-     */
+    // ---------------------------------------------------------
+    // Exception wrapper
+    // ---------------------------------------------------------
+
     private function wrapException(Throwable $exception): never
     {
         $this->logger?->error($exception);

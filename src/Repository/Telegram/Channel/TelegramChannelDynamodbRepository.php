@@ -23,99 +23,146 @@ class TelegramChannelDynamodbRepository extends EntityRepository
 
     public function findAll(): array
     {
-        $qb = (new QueryArgs())->indexName('TG_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_channel_pk = :tg_channel_pk')
-            ->expressionAttributeValues([':tg_channel_pk' => 'TG_CHANNEL'])
-        ;
-
-        return $this->queryMany($qb);
-    }
-
-    public function findAnyOneByUsername(string $username): ?TelegramChannel
-    {
-        $args = (new QueryArgs())->indexName('TG_CHANNELS_BY_USERNAME')
-            ->keyConditionExpression('tg_channel_username_pk = :username')
-            ->expressionAttributeValues([':username' => $username])
-        ;
-        return $this->queryOne($args);
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_channel_pk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_CHANNEL',
+                ])
+        );
     }
 
     public function findOneByUsername(string $username): ?TelegramChannel
     {
-        $channel = $this->findAnyOneByUsername($username);
-
-        if ($channel->getDeletedAt() !== null) {
-            return null;
-        }
-
-        return $channel;
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_CHANNELS_BY_USERNAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_channel_username_pk',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => $username,
+                ])
+        );
     }
 
-    public function findOnePrimaryByBot(TelegramBot $bot): ?TelegramChannel
+    public function findOneNonDeletedByUsername(string $username): ?TelegramChannel
     {
-        $args = (new QueryArgs())->indexName('TG_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_channel_pk = :tg_channel_pk AND tg_channel_group_country_locale_sk = :tg_channel_group_country_locale_sk')
-            ->expressionAttributeValues([
-                ':tg_channel_pk' => 'TG_CHANNEL',
-                ':tg_channel_group_country_locale_sk' => $bot->getGroup()->name . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
-            ])
-        ;
-        $channels = $this->queryMany($args);
-        foreach ($channels as $channel) {
-            if ($channel->getDeletedAt() !== null) {
-                continue;
-            }
-            if ($channel->getPrimary() !== true) {
-                continue;
-            }
-            return $channel;
-        }
-
-        return null;
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_CHANNELS_BY_USERNAME')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                ])
+                ->filterExpression([
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeValues([
+                    '#pk' => 'telegram_channel_username_pk',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => $username,
+                ])
+        );
     }
 
-    public function findOnePrimaryByChannel(TelegramChannel $channel): ?TelegramChannel
+    public function findOnePrimaryNonDeletedByBot(TelegramBot $bot): ?TelegramChannel
     {
-        $args = (new QueryArgs())->indexName('TG_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_channel_pk = :tg_channel_pk AND tg_channel_group_country_locale_sk = :tg_channel_group_country_locale_sk')
-            ->expressionAttributeValues([
-                ':tg_channel_pk' => 'TG_CHANNEL',
-                ':tg_channel_group_country_locale_sk' => $channel->getGroup()->name . '#' . $channel->getCountryCode() . '#' . $channel->getLocaleCode(),
-            ])
-        ;
-        $channels = $this->queryMany($args);
-        foreach ($channels as $channel_) {
-            if ($channel_->getLevel1RegionId() !== $channel->getLevel1RegionId()) {
-                continue;
-            }
-            if ($channel_->getDeletedAt() !== null) {
-                continue;
-            }
-            if ($channel_->getPrimary() !== true) {
-                continue;
-            }
-            return $channel_;
-        }
-
-        return null;
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    '#sk = :sk',
+                ])
+                ->filterExpression([
+                    'attribute_exists(#primary)',
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeValues([
+                    '#pk' => 'telegram_channel_pk',
+                    '#sk' => 'telegram_channel_group_country_locale_sk',
+                    '#primary' => 'primary',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_CHANNEL',
+                    ':sk' => $bot->getGroup()->name . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
+                ])
+        );
     }
 
-    /**
-     * @param TelegramBotGroupName $group
-     * @param string $countryCode
-     * @return TelegramChannel[]
-     */
-    public function findPrimaryByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
+    public function findOnePrimaryNonDeletedByChannel(TelegramChannel $channel): ?TelegramChannel
     {
-        $args = (new QueryArgs())->indexName('TG_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
-            ->keyConditionExpression('tg_channel_pk = :tg_channel_pk AND tg_channel_group_country_locale_sk = :tg_channel_group_country_locale_sk')
-            ->expressionAttributeValues([
-                ':tg_channel_pk' => 'TG_CHANNEL',
-                ':tg_channel_group_country_locale_sk' => $group->name . '#' . $countryCode . '#',
-            ])
-        ;
-        $channels = $this->queryMany($args);
+        $filters = [
+            'attribute_exists(#primary)',
+            'attribute_not_exists(#deletedAt)',
+        ];
 
-        return array_filter($channels, static fn (TelegramChannel $channel): bool => $channel->getDeletedAt() === null && $channel->getPrimary() === true);
+        $values = [
+            ':pk' => 'TELEGRAM_CHANNEL',
+            ':sk' => $channel->getGroup()->name . '#' . $channel->getCountryCode() . '#' . $channel->getLocaleCode(),
+        ];
+
+        if ($channel->getLevel1RegionId() == null) {
+            $filters[] = 'attribute_not_exists(#level1RegionId)';
+        } else {
+            $filters[] = '#level1RegionId = :level1RegionId';
+            $values[':level1RegionId'] = $channel->getLevel1RegionId();
+        }
+
+        return $this->queryOne(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    '#sk = :sk',
+                ])
+                ->filterExpression($filters)
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_channel_pk',
+                    '#sk' => 'telegram_channel_group_country_locale_sk',
+                    '#primary' => 'primary',
+                    '#level1RegionId' => 'level_1_region_id',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues($values)
+        );
+    }
+
+    public function findPrimaryNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
+    {
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    'begins_with(#sk, :sk)',
+                ])
+                ->filterExpression([
+                    'attribute_exists(#primary)',
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_channel_pk',
+                    '#sk' => 'telegram_channel_group_country_locale_sk',
+                    '#primary' => 'primary',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_CHANNEL',
+                    ':sk' => $group->name . '#' . $countryCode . '#',
+                ])
+        );
     }
 }

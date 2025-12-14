@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer\Telegram\Bot;
 
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 

@@ -25,6 +25,7 @@
             <argument type="service" id="app.intl_locale_provider"/>
             <argument type="service" id="app.level_1_region_provider"/>
             <argument type="service" id="app.id_generator"/>
+            <argument type="service" id="app.messenger_user_repository"/>
             <tag name="console.command" command="dynamodb:from-doctrine:transfer"/>
         </service>
     </services>

@@ -12,11 +12,6 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<TelegramBotPaymentMethod>
- *
- * @method TelegramBotPaymentMethod|null find($id, $lockMode = null, $lockVersion = null)
- * @method TelegramBotPaymentMethod|null findOneBy(array $criteria, array $orderBy = null)
- * @method TelegramBotPaymentMethod[]    findAll()
- * @method TelegramBotPaymentMethod[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class TelegramBotPaymentMethodRepository extends ServiceEntityRepository
 {

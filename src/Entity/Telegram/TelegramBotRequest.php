@@ -12,12 +12,14 @@ use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 
 #[Entity(
-    new PartitionKey('TG_BOT_REQ', ['id']),
+    new PartitionKey('TELEGRAM_BOT_REQUEST', ['id']),
     new SortKey('META'),
 )]
 class TelegramBotRequest
 {
     public function __construct(
+        #[Attribute('telegram_bot_request_id')]
+        private string $id,
         #[Attribute]
         private readonly string $method,
         #[Attribute('chat_id')]
@@ -29,9 +31,7 @@ class TelegramBotRequest
         private ?array $response = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        #[Attribute]
-        private readonly ?string $id = null,
-        #[Attribute]
+        #[Attribute('bot_id')]
         private ?string $botId = null,
         #[Attribute('expire_at')]
         private ?DateTimeInterface $expireAt = null,

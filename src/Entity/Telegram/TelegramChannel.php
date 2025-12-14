@@ -13,26 +13,26 @@ use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 
 #[Entity(
-    new PartitionKey('TG_CHANNEL', ['id']),
-    new SortKey('META'),
+    new PartitionKey('TELEGRAM_CHANNEL', ['id']),
+    new SortKey('M'),
     [
         new GlobalIndex(
-            'TG_CHANNELS_BY_USERNAME',
-            new PartitionKey(null, ['username'], 'tg_channel_username_pk')
+            'TELEGRAM_CHANNELS_BY_USERNAME',
+            new PartitionKey(null, ['username'], 'telegram_channel_username_pk')
         ),
         new GlobalIndex(
-            'TG_CHANNELS_BY_GROUP_COUNTRY_LOCALE',
-            new PartitionKey('TG_CHANNEL', [], 'tg_channel_pk'),
-            new SortKey(null, ['group', 'countryCode', 'localeCode'], 'tg_channel_group_country_locale_sk'),
+            'TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE',
+            new PartitionKey('TELEGRAM_CHANNEL', [], 'telegram_channel_pk'),
+            new SortKey(null, ['group', 'countryCode', 'localeCode'], 'telegram_channel_group_country_locale_sk'),
         ),
     ]
 )]
 class TelegramChannel
 {
     public function __construct(
-        #[Attribute('tg_channel_id')]
-        private readonly string $id,
-        #[Attribute('tg_channel_username_pk')]
+        #[Attribute('telegram_channel_id')]
+        private string $id,
+        #[Attribute]
         private readonly string $username,
         #[Attribute]
         private TelegramBotGroupName $group,
@@ -47,7 +47,7 @@ class TelegramChannel
         #[Attribute('chat_id')]
         private ?string $chatId = null,
         #[Attribute]
-        private bool $primary = true,
+        private ?bool $primary = true,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
         #[Attribute('updated_at')]
@@ -56,6 +56,9 @@ class TelegramChannel
         private ?DateTimeInterface $deletedAt = null,
     )
     {
+        if ($this->primary !== true) {
+            $this->primary = null;
+        }
     }
 
     public function getId(): string

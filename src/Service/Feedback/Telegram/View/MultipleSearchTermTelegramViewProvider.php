@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\View;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Service\Feedback\SearchTerm\SearchTermProvider;
 use App\Service\Feedback\SearchTerm\SearchTermTypeProvider;
@@ -22,7 +22,7 @@ class MultipleSearchTermTelegramViewProvider
     }
 
     /**
-     * @param FeedbackSearchTerm[] $feedbackSearchTerms
+     * @param SearchTerm[] $feedbackSearchTerms
      * @param bool $addSecrets
      * @param string|null $locale
      * @return string
@@ -34,7 +34,7 @@ class MultipleSearchTermTelegramViewProvider
     ): string
     {
         $searchTermsItems = array_map(
-            fn (FeedbackSearchTerm $searchTerm): SearchTermTransfer => $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
+            fn (SearchTerm $searchTerm): SearchTermTransfer => $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
             $feedbackSearchTerms
         );
         $searchTerms = new SearchTermsTransfer($searchTermsItems);

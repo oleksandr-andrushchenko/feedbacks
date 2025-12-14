@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot\Conversation;
 
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 
 abstract class TelegramBotConversation implements TelegramBotConversationInterface
 {

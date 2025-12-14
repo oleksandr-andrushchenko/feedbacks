@@ -22,7 +22,7 @@ class TelegramBotMatchesChatSender
     public function sendTelegramBotMatchesIfNeed(TelegramBotAwareHelper $tg, Keyboard $keyboard = null): void
     {
         $bots = $this->telegramBotMatchesProvider->getTelegramBotMatches(
-            $tg->getBot()->getMessengerUser()->getUser(),
+            $tg->getBot()->getUser(),
             $tg->getBot()->getEntity()
         );
 

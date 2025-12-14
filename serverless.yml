@@ -98,23 +98,43 @@ resources:
             AttributeType: S
           - AttributeName: sk
             AttributeType: S
-          - AttributeName: tg_bot_username_pk
+          - AttributeName: telegram_bot_username_pk
             AttributeType: S
-          - AttributeName: tg_bot_pk
+          - AttributeName: telegram_bot_pk
             AttributeType: S
-          - AttributeName: tg_bot_group_country_locale_sk
+          - AttributeName: telegram_bot_group_country_locale_sk
             AttributeType: S
-          - AttributeName: tg_bot_group_primary_sk
+          - AttributeName: telegram_channel_username_pk
             AttributeType: S
-          - AttributeName: tg_channel_username_pk
+          - AttributeName: telegram_channel_pk
             AttributeType: S
-          - AttributeName: tg_channel_pk
+          - AttributeName: telegram_channel_group_country_locale_sk
             AttributeType: S
-          - AttributeName: tg_channel_group_country_locale_sk
+          - AttributeName: level_1_region_pk
             AttributeType: S
-          - AttributeName: lvl_1_rgn_pk
+          - AttributeName: level_1_region_country_code_name_sk
             AttributeType: S
-          - AttributeName: lvl_1_rgn_country_name_sk
+          - AttributeName: messenger_user_messenger_identifier_pk
+            AttributeType: S
+          - AttributeName: messenger_user_messenger_username_pk
+            AttributeType: S
+          - AttributeName: messenger_user_user_pk
+            AttributeType: S
+          - AttributeName: feedback_user_subscription_messenger_user_id_pk
+            AttributeType: S
+          - AttributeName: feedback_user_subscription_user_id_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_normalized_text_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_created_at_sk
+            AttributeType: S
+          - AttributeName: search_term_feedback_search_normalized_text_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_search_created_at_sk
+            AttributeType: S
+          - AttributeName: search_term_feedback_lookup_normalized_text_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_lookup_created_at_sk
             AttributeType: S
         KeySchema:
           - AttributeName: pk
@@ -125,47 +145,93 @@ resources:
           Enabled: true
           AttributeName: expire_at
         GlobalSecondaryIndexes:
-          - IndexName: TG_BOTS_BY_USERNAME
+          - IndexName: TELEGRAM_BOTS_BY_USERNAME
             KeySchema:
-              - AttributeName: tg_bot_username_pk
+              - AttributeName: telegram_bot_username_pk
                 KeyType: HASH
             Projection:
               ProjectionType: ALL
-          - IndexName: TG_BOTS_BY_GROUP_COUNTRY_LOCALE
+          - IndexName: TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE
             KeySchema:
-              - AttributeName: tg_bot_pk
+              - AttributeName: telegram_bot_pk
                 KeyType: HASH
-              - AttributeName: tg_bot_group_country_locale_sk
+              - AttributeName: telegram_bot_group_country_locale_sk
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          - IndexName: TG_BOTS_BY_GROUP_PRIMARY
+          - IndexName: TELEGRAM_CHANNELS_BY_USERNAME
             KeySchema:
-              - AttributeName: tg_bot_pk
+              - AttributeName: telegram_channel_username_pk
                 KeyType: HASH
-              - AttributeName: tg_bot_group_primary_sk
+            Projection:
+              ProjectionType: ALL
+          - IndexName: TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE
+            KeySchema:
+              - AttributeName: telegram_channel_pk
+                KeyType: HASH
+              - AttributeName: telegram_channel_group_country_locale_sk
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          - IndexName: TG_CHANNELS_BY_USERNAME
+          - IndexName: LEVEL_1_REGIONS_BY_COUNTRY_NAME
             KeySchema:
-              - AttributeName: tg_channel_username_pk
+              - AttributeName: level_1_region_pk
                 KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-          - IndexName: TG_CHANNELS_BY_GROUP_COUNTRY_LOCALE
-            KeySchema:
-              - AttributeName: tg_channel_pk
-                KeyType: HASH
-              - AttributeName: tg_channel_group_country_locale_sk
+              - AttributeName: level_1_region_country_code_name_sk
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-          - IndexName: LVL_1_RGN_BY_COUNTRY_NAME
+          - IndexName: MESSENGER_USERS_BY_MESSENGER_IDENTIFIER
             KeySchema:
-              - AttributeName: lvl_1_rgn_pk
+              - AttributeName: messenger_user_messenger_identifier_pk
                 KeyType: HASH
-              - AttributeName: lvl_1_rgn_country_name_sk
+            Projection:
+              ProjectionType: ALL
+          - IndexName: MESSENGER_USERS_BY_MESSENGER_USERNAME
+            KeySchema:
+              - AttributeName: messenger_user_messenger_username_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: MESSENGER_USERS_BY_USER
+            KeySchema:
+              - AttributeName: messenger_user_user_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: FEEDBACK_USER_SUBSCRIPTIONS_BY_MESSENGER_USER
+            KeySchema:
+              - AttributeName: feedback_user_subscription_messenger_user_id_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: FEEDBACK_USER_SUBSCRIPTIONS_BY_USER
+            KeySchema:
+              - AttributeName: feedback_user_subscription_user_id_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: SEARCH_TERM_FEEDBACKS_BY_SEARCH_TERM_NORMALIZED_TEXT_CREATED
+            KeySchema:
+              - AttributeName: search_term_feedback_normalized_text_pk
+                KeyType: HASH
+              - AttributeName: search_term_feedback_created_at_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: SEARCH_TERM_FEEDBACK_SEARCHES_BY_SEARCH_TERM_NORMALIZED_TEXT_CREATED
+            KeySchema:
+              - AttributeName: search_term_feedback_search_normalized_text_pk
+                KeyType: HASH
+              - AttributeName: search_term_feedback_search_created_at_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: SEARCH_TERM_FEEDBACK_LOOKUPS_BY_SEARCH_TERM_NORMALIZED_TEXT_CREATED
+            KeySchema:
+              - AttributeName: search_term_feedback_lookup_normalized_text_pk
+                KeyType: HASH
+              - AttributeName: search_term_feedback_lookup_created_at_sk
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL

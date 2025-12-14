@@ -46,13 +46,13 @@ class TelegramChannelMatchesProvider
      */
     public function getTelegramChannelMatches(User $user, TelegramBot $bot): array
     {
-        $channels = $this->telegramChannelRepository->findPrimaryByGroupAndCountry($bot->getGroup(), $bot->getCountryCode());
+        $channels = $this->telegramChannelRepository->findPrimaryNonDeletedByGroupAndCountry($bot->getGroup(), $bot->getCountryCode());
 
         if (count($channels) === 0) {
             return [];
         }
 
-        $channels = array_combine(array_map(static fn (TelegramChannel $channel): int => $channel->getId(), $channels), $channels);
+        $channels = array_combine(array_map(static fn (TelegramChannel $channel) => $channel->getId(), $channels), $channels);
 
         $points = [];
 

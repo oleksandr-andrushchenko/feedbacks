@@ -1,10 +1,19 @@
 include .env
 export
 
-DC = docker-compose
-BE_FUNCTION_CONTAINER = $(DOCKER_NAME)-be-function
-RDBMS_CONTAINER = $(DOCKER_NAME)-rdbms
-DYNAMODB_CONTAINER = $(DOCKER_NAME)-dynamodb
+# Detect docker compose command
+ifeq (, $(shell command -v docker-compose 2>/dev/null))
+    ifeq (, $(shell command -v docker 2>/dev/null))
+        $(error "Docker is not installed")
+    endif
+    DC := docker compose
+else
+    DC := docker-compose
+endif
+
+BE_FUNCTION_CONTAINER = be-function
+RDBMS_CONTAINER = rdbms
+DYNAMODB_CONTAINER = dynamodb
 
 .PHONY: help
 help: ## Show this help
@@ -19,7 +28,7 @@ ngrok-setup: ## Setup ngrok
 	@echo "Visit: https://dashboard.ngrok.com/get-started/setup/linux"
 
 .PHONY: ngrok-tunnel
-ngrok-tunnel:
+ngrok-tunnel: ## Establish ngrok tunnel
 	@echo "🔹 Checking for existing ngrok process..."
 	@if grep -q '^NGROK_PID=' .env; then \
 		PID=$$(grep '^NGROK_PID=' .env | cut -d '=' -f2); \
@@ -48,75 +57,79 @@ ngrok-tunnel:
 
 .PHONY: start
 start: ## Build and start all Docker containers
-	docker compose up -d --build --force-recreate
+	$(DC) up -d --build --force-recreate
 
 .PHONY: stop
 stop: ## Stop and remove all Docker containers
-	docker compose down --remove-orphans
+	$(DC) down --remove-orphans
 
 .PHONY: restart
 restart: stop start ## Restart all Docker containers and show status
-	docker compose ps -a
+	$(DC) ps -a
 
 .PHONY: composer-install
 composer-install: ## Run composer install inside be-function container
-	docker exec -it $(BE_FUNCTION_CONTAINER) composer install
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) composer install
 
 .PHONY: console
 console: ## Run Symfony console
-	@docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console $(filter-out $@,$(MAKECMDGOALS))
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: tests
 tests: ## Run PHPUnit tests
-	docker exec -it $(BE_FUNCTION_CONTAINER) ./vendor/phpunit/phpunit/phpunit $(filter-out $@,$(MAKECMDGOALS))
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) ./vendor/phpunit/phpunit/phpunit $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: warmup-cache
 warmup-cache: ## Warm up Symfony cache inside be-function container
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup
 
 .PHONY: clear-cache
 clear-cache: ## Clear cache inside be-function
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console cache:clear
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console cache:clear
 
-.PHONY: import-bots
-import-bots: ## Import Telegram bots from CSV file
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:bot:import telegram_bots.csv
+.PHONY: import-tg-bots
+import-tg-bots: ## Import Telegram bots from CSV file
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:bot:import telegram_bots.csv --no-interaction
+
+.PHONY: import-tg-channels
+import-tg-channels: ## Import Telegram bots from CSV file
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:channel:import telegram_channels.csv --no-interaction
 
 .PHONY: sync-bot-webhook
 sync-bot-webhook: ## Synchronize Telegram bot webhook
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:bot:webhook:sync wild_s_local_bot
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:bot:webhook:sync wild_s_local_bot
 
 .PHONY: be-function-logs
 be-function-logs: ## View be-function function logs
-	docker logs $(BE_FUNCTION_CONTAINER) -f
+	$(DC) logs $(BE_FUNCTION_CONTAINER) -f
 
 .PHONY: login
 login: ## Open shell inside be-function container
-	docker exec -it $(BE_FUNCTION_CONTAINER) bash
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) bash
 
 .PHONY: search
 search: ## Search for a Telegram user by name
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:bot:search "Андрущенко Олександр" person_name --country=ua
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console telegram:bot:search "Андрущенко Олександр" person_name --country=ua
 
 .PHONY: logs
 logs: ## Tail Symfony development logs
-	docker exec -it $(BE_FUNCTION_CONTAINER) tail -f var/log/dev.log
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) tail -f var/log/dev.log
 
 .PHONY: rdbms-logs
 rdbms-logs: ## View database (MySQL) container logs
-	docker logs $(RDBMS_CONTAINER) -f
+	$(DC) logs $(RDBMS_CONTAINER) -f
 
 .PHONY: rdbms-login
 rdbms-login: ## Open MySQL shell inside database container
-	docker exec -it $(RDBMS_CONTAINER) mysql -uroot -p1111 -A app
+	$(DC) exec -it $(RDBMS_CONTAINER) mysql -uroot -p1111 -A app
 
 .PHONY: generate-migration
 generate-migration: ## Generate a new Doctrine migration file
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:migrations:diff
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:migrations:diff
 
 .PHONY: run-migrations
 run-migrations: ## Execute pending Doctrine migrations
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
 
 .PHONY: create-local-dynamodb
 create-local-dynamodb: ## Create local DynamoDB table
@@ -129,7 +142,7 @@ create-local-dynamodb: ## Create local DynamoDB table
 		echo "⚠️ Table $(DYNAMODB_TABLE) already exists, skipping creation."; \
 	else \
 		echo "🧩 Extracting DynamoDB schema from CloudFormation..."; \
-		docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:schema:extract > /tmp/dynamodb_schema.json; \
+		$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:schema:extract > /tmp/dynamodb_schema.json; \
 		if [ ! -s /tmp/dynamodb_schema.json ]; then echo '❌ Failed to generate valid DynamoDB schema JSON'; exit 1; fi; \
 		echo "📄 Generated schema:"; \
 		cat /tmp/dynamodb_schema.json; \
@@ -180,11 +193,18 @@ recreate-local-dynamodb: drop-local-dynamodb create-local-dynamodb ## Recreate D
 
 .PHONY: fix-permissions
 fix-permissions: ## Fix permissions
-	sudo chown -R 1001:1001 var/
+	sudo chown -R 1001:1001 var/ && chmod 0777 -R var/
+
+.PHONY: drop-doctrine
+drop-doctrine: ## Drop local Doctrine DB
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:schema:drop --force --full-database
+
+.PHONY: reload-doctrine
+reload-doctrine: drop-doctrine run-migrations import-tg-bots import-tg-channels ## Reload local Doctrine DB
 
 .PHONY: reload-dynamodb
 reload-dynamodb: recreate-local-dynamodb ## Reload local Dynamodb
-	docker exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:from-doctrine:transfer
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:from-doctrine:transfer
 	$(MAKE) fetch-local-dynamodb
 
 .PHONY: reload-bot
@@ -195,4 +215,4 @@ reload-cache: clear-cache fix-permissions # Reload local symfony cache
 
 .PHONY: rdbms-prod-login
 rdbms-prod-login: ## Open PROD MySQL shell
-	docker exec -it $(RDBMS_CONTAINER) mysql -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) -A $(PROD_DB_NAME)
+	$(DC) exec -it $(RDBMS_CONTAINER) mysql -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) -A $(PROD_DB_NAME)

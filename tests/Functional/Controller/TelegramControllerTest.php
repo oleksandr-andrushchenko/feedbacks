@@ -33,7 +33,7 @@ class TelegramControllerTest extends DatabaseTestCase
             TelegramBot::class,
         ]);
 
-        $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+        $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
 
         $client = $this->getWebClient();
 

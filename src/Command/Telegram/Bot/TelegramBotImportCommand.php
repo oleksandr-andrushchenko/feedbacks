@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command\Telegram\Bot;
 
-use App\Entity\ImportResult;
+use App\Model\ImportResult;
 use App\Service\Doctrine\DryRunner;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\TelegramBotImporter;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,16 +16,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-/**
- * @see TelegramBotImportCommand
- */
 class TelegramBotImportCommand extends Command
 {
     public function __construct(
         private readonly string $dataDir,
         private readonly TelegramBotImporter $telegramBotImporter,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();

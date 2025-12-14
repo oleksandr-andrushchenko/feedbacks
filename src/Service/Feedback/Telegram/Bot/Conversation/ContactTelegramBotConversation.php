@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Exception\ValidatorException;
+use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Service\ContactOptionsFactory;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
@@ -168,7 +168,7 @@ class ContactTelegramBotConversation extends TelegramBotConversation implements 
             $this->userContactMessageCreator->createUserContactMessage(
                 new UserContactMessageTransfer(
                     $tg->getBot()->getMessengerUser(),
-                    $tg->getBot()->getMessengerUser()->getUser(),
+                    $tg->getBot()->getUser(),
                     $tg->getInput(),
                     $tg->getBot()->getEntity()
                 )

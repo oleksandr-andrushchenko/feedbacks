@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBot as TelegramBotEntity;
+use App\Service\Messenger\MessengerUserService;
 use Psr\Log\LoggerInterface;
 
 class TelegramBotFactory
@@ -13,6 +14,7 @@ class TelegramBotFactory
         private readonly TelegramBotClientRegistry $telegramBotClientRegistry,
         private readonly TelegramBotRequestChecker $telegramBotRequestChecker,
         private readonly LoggerInterface $logger,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
     }
@@ -24,6 +26,7 @@ class TelegramBotFactory
             $this->telegramBotClientRegistry,
             $this->telegramBotRequestChecker,
             $this->logger,
+            $this->messengerUserService,
         );
     }
 }

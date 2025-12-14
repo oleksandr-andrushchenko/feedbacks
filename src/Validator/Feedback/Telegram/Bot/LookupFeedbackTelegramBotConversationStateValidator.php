@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Feedback\Telegram\Bot;
 
-use App\Entity\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
+use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\LookupFeedbackTelegramBotConversation;
 use App\Service\Validator\ValidatorHelper;
 use App\Validator\Feedback\SearchTermTransferConstraint;

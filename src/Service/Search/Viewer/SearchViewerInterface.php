@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 
 interface SearchViewerInterface
 {
-    public function getOnSearchMessage(FeedbackSearchTerm $searchTerm, array $context = []): string;
+    public function getOnSearchMessage(SearchTerm $searchTerm, array $context = []): string;
 
     public function showLimits(): bool;
 
     public function getLimitsMessage(): string;
 
-    public function getEmptyMessage(FeedbackSearchTerm $searchTerm, array $context = [], bool $good = null): string;
+    public function getEmptyMessage(SearchTerm $searchTerm, array $context = [], bool $good = null): string;
 
-    public function getErrorMessage(FeedbackSearchTerm $searchTerm, array $context = []): string;
+    public function getErrorMessage(SearchTerm $searchTerm, array $context = []): string;
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string;
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string;
 }
