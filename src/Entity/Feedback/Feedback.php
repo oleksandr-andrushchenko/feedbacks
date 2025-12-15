@@ -112,6 +112,15 @@ class Feedback
         return $this;
     }
 
+    public function addSearchTermId(string $id): self
+    {
+        if ($this->searchTermIds === null) {
+            $this->searchTermIds = [];
+        }
+        $this->searchTermIds[] = $id;
+        return $this;
+    }
+
     /**
      * @return Collection<SearchTerm>
      */

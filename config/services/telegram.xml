@@ -31,8 +31,16 @@
 
         <service id="app.telegram_bot_stopped_conversation_repository" parent="app.doctrine.entity_repository"
                  class="App\Repository\Telegram\Bot\TelegramBotStoppedConversationRepository"/>
-        <service id="app.telegram_bot_payment_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Telegram\Bot\TelegramBotPaymentRepository"/>
+
+        <service id="app.telegram_bot_payment_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Telegram\Bot\TelegramBotPaymentDoctrineRepository"/>
+        <service id="app.telegram_bot_payment_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Telegram\Bot\TelegramBotPaymentDynamodbRepository"/>
+        <service id="app.telegram_bot_payment_repository" parent="app.entity_repository"
+                 class="App\Repository\Telegram\Bot\TelegramBotPaymentRepository">
+            <argument type="service" id="app.telegram_bot_payment_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_payment_dynamodb_repository"/>
+        </service>
 
         <service id="app.telegram_bot_request_doctrine_repository" parent="app.doctrine.entity_repository"
                  class="App\Repository\Telegram\Bot\TelegramBotRequestDoctrineRepository"/>
@@ -69,8 +77,16 @@
             <argument type="service" id="app.telegram_channel_dynamodb_repository"/>
         </service>
 
-        <service id="app.telegram_bot_payment_method_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Telegram\Bot\TelegramBotPaymentMethodRepository"/>
+        <service id="app.telegram_bot_payment_method_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Telegram\Bot\TelegramBotPaymentMethodDoctrineRepository"/>
+        <service id="app.telegram_bot_payment_method_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Telegram\Bot\TelegramBotPaymentMethodDynamodbRepository"/>
+        <service id="app.telegram_bot_payment_method_repository" parent="app.entity_repository"
+                 class="App\Repository\Telegram\Bot\TelegramBotPaymentMethodRepository">
+            <argument type="service" id="app.telegram_bot_payment_method_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_payment_method_dynamodb_repository"/>
+        </service>
+
         <service id="app.telegram_webhook_sync_command"
                  class="App\Command\Telegram\Bot\TelegramBotWebhookSyncCommand" lazy="true">
             <argument type="service" id="app.telegram_bot_repository"/>

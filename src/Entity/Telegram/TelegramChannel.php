@@ -11,6 +11,7 @@ use OA\Dynamodb\Attribute\Entity;
 use OA\Dynamodb\Attribute\GlobalIndex;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
 #[Entity(
     new PartitionKey('TELEGRAM_CHANNEL', ['id']),
@@ -27,7 +28,7 @@ use OA\Dynamodb\Attribute\SortKey;
         ),
     ]
 )]
-class TelegramChannel
+class TelegramChannel implements Stringable
 {
     public function __construct(
         #[Attribute('telegram_channel_id')]
@@ -189,5 +190,10 @@ class TelegramChannel
         $this->deletedAt = $deletedAt;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

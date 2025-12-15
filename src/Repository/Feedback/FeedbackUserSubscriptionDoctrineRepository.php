@@ -12,6 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<FeedbackUserSubscription>
+ * @method array<FeedbackUserSubscription> findAll()
  */
 class FeedbackUserSubscriptionDoctrineRepository extends ServiceEntityRepository
 {

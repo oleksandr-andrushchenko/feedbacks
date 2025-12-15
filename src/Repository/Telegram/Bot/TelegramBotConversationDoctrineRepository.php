@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<TelegramBotConversation>
+ * @method array<TelegramBotConversation> findAll()
  */
 class TelegramBotConversationDoctrineRepository extends ServiceEntityRepository
 {

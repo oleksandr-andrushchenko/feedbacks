@@ -10,12 +10,13 @@ use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
 #[Entity(
     new PartitionKey('TELEGRAM_BOT_UPDATE', ['id']),
     new SortKey('META'),
 )]
-class TelegramBotUpdate
+class TelegramBotUpdate implements Stringable
 {
     public function __construct(
         #[Attribute('telegram_bot_update_id')]
@@ -73,5 +74,10 @@ class TelegramBotUpdate
     public function getExpireAt(): DateTimeInterface
     {
         return $this->expireAt;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

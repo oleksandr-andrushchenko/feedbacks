@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Repository\User;
 
 use App\Entity\User\UserContactMessage;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<UserContactMessage>
+ * @extends EntityRepository<UserContactMessage>
+ * @method UserContactMessageDoctrineRepository getDoctrine()
+ * @property-read  UserContactMessageDoctrineRepository $doctrine
+ * @method UserContactMessageDynamodbRepository getDynamodb()
+ * @property-read  UserContactMessageDynamodbRepository $dynamodb
  */
-class UserContactMessageRepository extends ServiceEntityRepository
+class UserContactMessageRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, UserContactMessage::class);
-    }
 }

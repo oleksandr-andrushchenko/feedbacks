@@ -28,7 +28,7 @@ class FeedbackNotificationNormalizer implements NormalizerInterface
                 $result['user'] = sprintf('@%s', $user->getUsername());
             }
 
-            $searchTerm = $data->getFeedbackSearchTerm();
+            $searchTerm = $data->getSearchTerm();
 
             if ($searchTerm !== null) {
                 $result[$searchTerm->getType()->name] = $searchTerm->getText();

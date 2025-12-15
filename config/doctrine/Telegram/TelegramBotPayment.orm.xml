@@ -22,7 +22,7 @@
         <field name="priceCurrency" column="price_currency"/>
         <field name="payload" column="payload" type="json"/>
 
-        <many-to-one field="bot" target-entity="App\Entity\Telegram\TelegramBot">
+        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot">
             <join-column nullable="false"/>
         </many-to-one>
 

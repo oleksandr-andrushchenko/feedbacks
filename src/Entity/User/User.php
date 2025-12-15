@@ -11,12 +11,13 @@ use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
 #[Entity(
     new PartitionKey('USER', ['id']),
     new SortKey('META'),
 )]
-class User
+class User implements Stringable
 {
     #[Attribute('location_latitude')]
     private ?string $locationLatitude;
@@ -259,5 +260,10 @@ class User
     public function hasSubscription(): bool
     {
         return $this->getSubscriptionExpireAt() !== null;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

@@ -5,23 +5,15 @@ declare(strict_types=1);
 namespace App\Repository\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotPayment;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<TelegramBotPayment>
+ * @extends EntityRepository<TelegramBotPayment>
+ * @method TelegramBotPaymentDoctrineRepository getDoctrine()
+ * @property-read TelegramBotPaymentDoctrineRepository $doctrine
+ * @method TelegramBotPaymentDynamodbRepository getDynamodb()
+ * @property-read TelegramBotPaymentDynamodbRepository $dynamodb
  */
-class TelegramBotPaymentRepository extends ServiceEntityRepository
+class TelegramBotPaymentRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, TelegramBotPayment::class);
-    }
-
-    public function findOneByUuid(string $uuid): ?TelegramBotPayment
-    {
-        return $this->findOneBy([
-            'uuid' => $uuid,
-        ]);
-    }
 }

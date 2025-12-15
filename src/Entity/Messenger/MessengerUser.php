@@ -61,9 +61,7 @@ class MessengerUser implements Stringable
         private ?string $userId = null,
     )
     {
-        if ($this->user !== null) {
-            $this->userId = $this->user->getId();
-        }
+        $this->userId = $this->user?->getId();
     }
 
     public function getId(): string

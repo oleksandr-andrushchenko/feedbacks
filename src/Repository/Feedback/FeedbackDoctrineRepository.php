@@ -14,6 +14,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Feedback>
+ * @method array<Feedback> findAll()
  */
 class FeedbackDoctrineRepository extends ServiceEntityRepository
 {

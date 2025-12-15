@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<User>
+ * @method array<User> findAll()
  */
 class UserDoctrineRepository extends ServiceEntityRepository
 {

@@ -12,6 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<FeedbackLookup>
+ * @method array<FeedbackLookup> findAll()
  */
 class FeedbackLookupDoctrineRepository extends ServiceEntityRepository
 {

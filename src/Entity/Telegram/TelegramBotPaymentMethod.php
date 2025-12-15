@@ -6,8 +6,9 @@ namespace App\Entity\Telegram;
 
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
 use DateTimeInterface;
+use Stringable;
 
-class TelegramBotPaymentMethod
+class TelegramBotPaymentMethod implements Stringable
 {
     public function __construct(
         private readonly TelegramBot $bot,
@@ -68,5 +69,10 @@ class TelegramBotPaymentMethod
         $this->deletedAt = $deletedAt;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }

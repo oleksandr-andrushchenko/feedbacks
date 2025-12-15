@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<FeedbackNotification>
+ * @method array<FeedbackNotification> findAll()
  */
 class FeedbackNotificationDoctrineRepository extends ServiceEntityRepository
 {

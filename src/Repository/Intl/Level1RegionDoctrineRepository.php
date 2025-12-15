@@ -10,6 +10,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Level1Region>
+ * @method array<Level1Region> findAll()
  */
 class Level1RegionDoctrineRepository extends ServiceEntityRepository
 {

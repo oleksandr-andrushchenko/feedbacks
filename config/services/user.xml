@@ -14,8 +14,16 @@
             <argument type="service" id="app.user_dynamodb_repository"/>
         </service>
 
-        <service id="app.user_contact_message_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\User\UserContactMessageRepository"/>
+        <service id="app.user_contact_message_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\User\UserContactMessageDoctrineRepository"/>
+        <service id="app.user_contact_message_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\User\UserContactMessageDynamodbRepository"/>
+        <service id="app.user_contact_message_repository" parent="app.entity_repository"
+                 class="App\Repository\User\UserContactMessageRepository">
+            <argument type="service" id="app.user_contact_message_doctrine_repository"/>
+            <argument type="service" id="app.user_contact_message_dynamodb_repository"/>
+        </service>
+
         <service id="app.user_contact_message_validator"
                  class="App\Validator\User\UserContactMessageTransferValidator" lazy="true">
             <argument type="service" id="app.validator_helper"/>

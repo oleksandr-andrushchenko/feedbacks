@@ -7,32 +7,60 @@ namespace App\Entity\Telegram;
 use App\Entity\Messenger\MessengerUser;
 use App\Enum\Telegram\TelegramBotPaymentStatus;
 use App\Model\Money;
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
 
+#[Entity(
+    new PartitionKey('TELEGRAM_BOT_PAYMENT', ['id']),
+    new SortKey('META'),
+)]
 class TelegramBotPayment implements Stringable
 {
+    #[Attribute('price_amount')]
     private readonly float $priceAmount;
+    #[Attribute('price_currency')]
     private readonly string $priceCurrency;
 
     public function __construct(
+        #[Attribute('telegram_bot_payment_id')]
         private readonly string $id,
         private readonly MessengerUser $messengerUser,
+        #[Attribute('chat_id')]
         private readonly string $chatId,
+        #[Attribute]
         private readonly TelegramBotPaymentMethod $method,
+        #[Attribute]
         private readonly string $purpose,
         Money $price,
+        #[Attribute]
         private readonly array $payload,
-        private readonly TelegramBot $bot,
+        private readonly TelegramBot $telegramBot,
+        #[Attribute('pre_checkout_query')]
         private ?array $preCheckoutQuery = null,
+        #[Attribute('successful_payment')]
         private ?array $successfulPayment = null,
+        #[Attribute]
         private ?TelegramBotPaymentStatus $status = TelegramBotPaymentStatus::REQUEST_SENT,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
+        #[Attribute('updated_at')]
         private ?DateTimeInterface $updatedAt = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
     )
     {
         $this->priceAmount = $price->getAmount();
         $this->priceCurrency = $price->getCurrency();
+        $this->telegramBotId = $this->telegramBot?->getId();
+        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): string
@@ -43,6 +71,11 @@ class TelegramBotPayment implements Stringable
     public function getMessengerUser(): MessengerUser
     {
         return $this->messengerUser;
+    }
+
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
     }
 
     public function getChatId(): string
@@ -70,9 +103,14 @@ class TelegramBotPayment implements Stringable
         return $this->payload;
     }
 
-    public function getBot(): TelegramBot
+    public function getTelegramBot(): TelegramBot
     {
-        return $this->bot;
+        return $this->telegramBot;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
     }
 
     public function getPreCheckoutQuery(): ?array

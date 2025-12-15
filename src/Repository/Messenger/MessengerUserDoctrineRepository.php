@@ -12,6 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<MessengerUser>
+ * @method array<MessengerUser> findAll()
  */
 class MessengerUserDoctrineRepository extends ServiceEntityRepository
 {

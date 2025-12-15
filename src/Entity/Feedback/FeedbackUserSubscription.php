@@ -55,12 +55,8 @@ class FeedbackUserSubscription implements Stringable
     )
     {
         $this->userId = $this->user->getId();
-        if ($this->messengerUser !== null) {
-            $this->messengerUserId = $this->messengerUser->getId();
-        }
-        if ($this->telegramPayment !== null) {
-            $this->telegramPaymentId = $this->telegramPayment->getId();
-        }
+        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->telegramPaymentId = $this->telegramPayment?->getId();
     }
 
     public function getId(): string
