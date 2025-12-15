@@ -216,3 +216,19 @@ reload-cache: clear-cache fix-permissions # Reload local symfony cache
 .PHONY: rdbms-prod-login
 rdbms-prod-login: ## Open PROD MySQL shell
 	$(DC) exec -it $(RDBMS_CONTAINER) mysql -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) -A $(PROD_DB_NAME)
+
+.PHONY: dump-prod-rdbms
+dump-prod-rdbms: ## Dump prod RDBMS
+	@filename=/tmp/prod_$(shell date +%Y_%m_%d).sql; \
+	echo "Dumping prod database to $$filename"; \
+	$(DC) exec -i $(RDBMS_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
+	head -n 30 $$filename
+
+.PHONY: load-prod-rdbms
+load-prod-rdbms: ## Load prod RDBMS into local RDBMS
+	@filename=/tmp/prod_$(shell date +%Y_%m_%d).sql; \
+	echo "Dumping prod DB to $$filename"; \
+	$(DC) exec -T $(RDBMS_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
+	echo "Importing into local DB"; \
+	$(DC) exec -T $(RDBMS_CONTAINER) mysql -uroot -p1111 app < $$filename; \
+	echo "Done!"
