@@ -205,7 +205,6 @@ reload-doctrine: drop-doctrine run-migrations import-tg-bots import-tg-channels 
 .PHONY: reload-dynamodb
 reload-dynamodb: recreate-local-dynamodb ## Reload local Dynamodb
 	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:from-doctrine:transfer
-	$(MAKE) fetch-local-dynamodb
 
 .PHONY: reload-bot
 reload-bot: ngrok-tunnel sync-bot-webhook # Reload local tg bot

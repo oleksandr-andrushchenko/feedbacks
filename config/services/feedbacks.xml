@@ -161,6 +161,7 @@
 
         <service id="app.feedback_factory" class="App\Factory\Feedback\FeedbackFactory"/>
         <service id="app.feedback_search_factory" class="App\Factory\Feedback\FeedbackSearchFactory"/>
+        <service id="app.feedback_lookup_factory" class="App\Factory\Feedback\FeedbackLookupFactory"/>
         <service id="app.search_term_feedback_factory" class="App\Factory\Feedback\SearchTermFeedbackFactory"/>
         <service id="app.search_term_feedback_search_factory" class="App\Factory\Feedback\SearchTermFeedbackSearchFactory"/>
         <service id="app.search_term_feedback_lookup_factory" class="App\Factory\Feedback\SearchTermFeedbackLookupFactory"/>
@@ -305,10 +306,12 @@
             <argument type="service" id="app.validator"/>
             <argument type="service" id="app.feedback_lookup_statistic_provider"/>
             <argument type="service" id="app.feedback_command_limits_checker"/>
-            <argument type="service" id="app.feedback_subscription_manager"/>
             <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.search_term_feedback_lookup_factory"/>
+            <argument type="service" id="app.feedback_lookup_factory"/>
         </service>
         <service id="app.feedback_searcher" class="App\Service\Feedback\FeedbackSearcher" lazy="true">
             <argument type="service" id="app.feedback_repository"/>

@@ -16,7 +16,7 @@ class TelegramBotStoppedConversation
         private readonly array $state,
         private readonly DateTimeInterface $startedAt,
         private ?DateTimeInterface $createdAt = null,
-        private ?int $id = null,
+        private ?string $id = null,
     )
     {
     }

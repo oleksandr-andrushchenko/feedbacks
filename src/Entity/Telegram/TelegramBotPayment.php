@@ -32,8 +32,7 @@ class TelegramBotPayment implements Stringable
         private readonly MessengerUser $messengerUser,
         #[Attribute('chat_id')]
         private readonly string $chatId,
-        #[Attribute]
-        private readonly TelegramBotPaymentMethod $method,
+        private readonly TelegramBotPaymentMethod $telegramBotPaymentMethod,
         #[Attribute]
         private readonly string $purpose,
         Money $price,
@@ -54,12 +53,15 @@ class TelegramBotPayment implements Stringable
         private ?string $telegramBotId = null,
         #[Attribute('messenger_user_id')]
         private ?string $messengerUserId = null,
+        #[Attribute('telegram_bot_payment_method_id')]
+        private ?string $telegramBotPaymentMethodId = null,
     )
     {
         $this->priceAmount = $price->getAmount();
         $this->priceCurrency = $price->getCurrency();
         $this->telegramBotId = $this->telegramBot?->getId();
         $this->messengerUserId = $this->messengerUser?->getId();
+        $this->telegramBotPaymentMethodId = $this->telegramBotPaymentMethod->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 
@@ -73,6 +75,12 @@ class TelegramBotPayment implements Stringable
         return $this->messengerUser;
     }
 
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
+    }
+
     public function getMessengerUserId(): ?string
     {
         return $this->messengerUserId;
@@ -83,9 +91,15 @@ class TelegramBotPayment implements Stringable
         return $this->chatId;
     }
 
-    public function getMethod(): TelegramBotPaymentMethod
+    public function setTelegramBotPaymentMethodId(?string $telegramBotPaymentMethodId): self
     {
-        return $this->method;
+        $this->telegramBotPaymentMethodId = $telegramBotPaymentMethodId;
+        return $this;
+    }
+
+    public function getTelegramBotPaymentMethod(): TelegramBotPaymentMethod
+    {
+        return $this->telegramBotPaymentMethod;
     }
 
     public function getPurpose(): string
@@ -106,6 +120,12 @@ class TelegramBotPayment implements Stringable
     public function getTelegramBot(): TelegramBot
     {
         return $this->telegramBot;
+    }
+
+    public function setTelegramBotId(?string $telegramBotId): self
+    {
+        $this->telegramBotId = $telegramBotId;
+        return $this;
     }
 
     public function getTelegramBotId(): ?string

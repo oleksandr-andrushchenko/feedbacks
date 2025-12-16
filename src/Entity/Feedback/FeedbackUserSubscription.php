@@ -79,6 +79,12 @@ class FeedbackUserSubscription implements Stringable
         return $this->subscriptionPlan;
     }
 
+    public function setTelegramPaymentId(?string $telegramPaymentId): self
+    {
+        $this->telegramPaymentId = $telegramPaymentId;
+        return $this;
+    }
+
     public function getTelegramPayment(): ?TelegramBotPayment
     {
         return $this->telegramPayment;
@@ -121,6 +127,12 @@ class FeedbackUserSubscription implements Stringable
     public function getUserId(): ?string
     {
         return $this->userId;
+    }
+
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
     }
 
     public function getMessengerUserId(): ?string

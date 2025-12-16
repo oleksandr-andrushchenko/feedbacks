@@ -58,7 +58,7 @@ class SearchTermFeedback
         #[Attribute('messenger_user_id')]
         private readonly ?string $messengerUserId,
         #[Attribute('telegram_bot_id')]
-        private readonly ?string $telegramBotId,
+        private ?string $telegramBotId,
         /** @var array<SearchTerm> */
         #[Attribute('extra_search_terms')]
         private readonly ?array $extraSearchTerms = null,
@@ -147,6 +147,12 @@ class SearchTermFeedback
 
         $this->feedbackTelegramChannelMessageIds[] = $messageId;
 
+        return $this;
+    }
+
+    public function setTelegramBotId(?string $telegramBotId):self
+    {
+        $this->telegramBotId = $telegramBotId;
         return $this;
     }
 

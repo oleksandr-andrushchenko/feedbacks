@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command\Dynamodb;
 
+use App\Entity\Feedback\SearchTerm;
+use App\Factory\Feedback\SearchTermFeedbackFactory;
+use App\Factory\Feedback\SearchTermFeedbackLookupFactory;
+use App\Factory\Feedback\SearchTermFeedbackSearchFactory;
 use App\Repository\Feedback\FeedbackDoctrineRepository;
 use App\Repository\Feedback\FeedbackLookupDoctrineRepository;
 use App\Repository\Feedback\FeedbackNotificationDoctrineRepository;
@@ -21,6 +25,7 @@ use App\Repository\Telegram\Channel\TelegramChannelDoctrineRepository;
 use App\Repository\User\UserContactMessageDoctrineRepository;
 use App\Repository\User\UserDoctrineRepository;
 use App\Service\IdGenerator;
+use Doctrine\ORM\EntityManagerInterface;
 use OA\Dynamodb\ODM\EntityManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -50,7 +55,11 @@ class DynamodbFromDoctrineTransferCommand extends Command
         private readonly TelegramBotUpdateDoctrineRepository $telegramBotUpdateDoctrineRepository,
         private readonly UserContactMessageDoctrineRepository $userContactMessageDoctrineRepository,
         private readonly FeedbackNotificationDoctrineRepository $feedbackNotificationDoctrineRepository,
+        private readonly SearchTermFeedbackFactory $searchTermFeedbackFactory,
+        private readonly SearchTermFeedbackSearchFactory $searchTermFeedbackSearchFactory,
+        private readonly SearchTermFeedbackLookupFactory $searchTermFeedbackLookupFactory,
         private readonly IdGenerator $idGenerator,
+        private readonly EntityManagerInterface $doctrineEntityManager,
         private readonly EntityManager $dynamodbEntityManager,
     )
     {
@@ -69,23 +78,26 @@ class DynamodbFromDoctrineTransferCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $telegramBotIdMap = [];
+        $telegramBotPaymentMethodIdMap = [];
+
         $stats = [
             'level_1_regions' => $this->transferLevel1Regions(),
-            'telegram_bots' => $this->transferTelegramBots(),
+            'telegram_bots' => $this->transferTelegramBots($telegramBotIdMap),
             'telegram_channels' => $this->transferTelegramChannels(),
             'users' => $this->transferUsers(),
             'messenger_users' => $this->transferMessengerUsers(),
-            'feedbacks' => $this->transferFeedbacks(),
-            'feedback_searches' => $this->transferFeedbackSearches(),
-            'feedback_lookups' => $this->transferFeedbackLookups(),
-            'telegram_bot_payments' => $this->transferTelegramBotPayments(),
+            'feedbacks' => $this->transferFeedbacks($telegramBotIdMap),
+            'feedback_searches' => $this->transferFeedbackSearches($telegramBotIdMap),
+            'feedback_lookups' => $this->transferFeedbackLookups($telegramBotIdMap),
+            'telegram_bot_payment_methods' => $this->transferTelegramBotPaymentMethods($telegramBotIdMap, $telegramBotPaymentMethodIdMap),
+            'telegram_bot_payments' => $this->transferTelegramBotPayments($telegramBotIdMap, $telegramBotPaymentMethodIdMap),
             'feedback_user_subscriptions' => $this->transferFeedbackUserSubscriptions(),
-            'feedback_bot_conversations' => $this->transferTelegramBotConversations(),
-            'telegram_bot_payment_methods' => $this->transferTelegramBotPaymentMethods(),
-            'telegram_bot_requests' => $this->transferTelegramBotRequests(),
-            'telegram_bot_updates' => $this->transferTelegramBotUpdates(),
-            'user_contact_messages' => $this->transferUserContactMessages(),
-            'feedback_notifications' => $this->transferFeedbackNotifications(),
+            'feedback_bot_conversations' => $this->transferTelegramBotConversations($telegramBotIdMap),
+//            'telegram_bot_requests' => $this->transferTelegramBotRequests(),
+//            'telegram_bot_updates' => $this->transferTelegramBotUpdates(),
+            'user_contact_messages' => $this->transferUserContactMessages($telegramBotIdMap),
+//            'feedback_notifications' => $this->transferFeedbackNotifications(),
         ];
 
         $this->dynamodbEntityManager->flush();
@@ -106,174 +118,276 @@ class DynamodbFromDoctrineTransferCommand extends Command
 
     private function transferLevel1Regions(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->level1RegionDoctrineRepository->findAll() as $level1Region) {
             $this->dynamodbEntityManager->persist($level1Region);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    private function transferUsers(): int
+    private function transferTelegramBots(array &$telegramBotIdMap): int
     {
-        $affectedRows = 0;
-        foreach ($this->userDoctrineRepository->findAll() as $user) {
-            $this->dynamodbEntityManager->persist($user);
-            $affectedRows++;
-        }
-        return $affectedRows;
-    }
-
-    private function transferTelegramBots(): int
-    {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotDoctrineRepository->findAll() as $telegramBot) {
+            $telegramBotIdMap[$telegramBot->getId()] = $this->idGenerator->generateId();
+            $telegramBot->setId($telegramBotIdMap[$telegramBot->getId()]);
             $this->dynamodbEntityManager->persist($telegramBot);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
     private function transferTelegramChannels(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramChannelDoctrineRepository->findAll() as $telegramChannel) {
+            $telegramChannel->setId($this->idGenerator->generateId());
             $this->dynamodbEntityManager->persist($telegramChannel);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
+        return $affectedRows;
+    }
+
+    private function transferUsers(): int
+    {
+        $this->doctrineEntityManager->clear();
+        $affectedRows = 0;
+        foreach ($this->userDoctrineRepository->findAll() as $user) {
+            $this->dynamodbEntityManager->persist($user);
+            $affectedRows++;
+        }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
     private function transferMessengerUsers(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->messengerUserDoctrineRepository->findAll() as $messengerUser) {
+            $messengerUser->setUserId($messengerUser->getUser()?->getId());
             $this->dynamodbEntityManager->persist($messengerUser);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    private function transferFeedbacks(): int
+    private function transferFeedbacks(array $telegramBotIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->feedbackDoctrineRepository->findAll() as $feedback) {
-            foreach ($feedback->getSearchTerms() as $searchTerm) {
-                $searchTerm->setId($this->idGenerator->generateId());
+            $telegramBotId = $telegramBotIdMap[$feedback->getTelegramBot()?->getId()] ?? null;
+            /** @var SearchTerm[] $searchTerms */
+            $searchTerms = $feedback->getSearchTerms()->toArray();
+            $feedback->setTelegramBotId($telegramBotId)
+                ->setSearchTermIds(array_map(static fn ($term) => $term->getId(), $searchTerms))
+                ->setUserId($feedback->getUser()?->getId())
+                ->setMessengerUserId($feedback->getMessengerUser()?->getId())
+                ->setHasActiveSubscription($feedback->hasActiveSubscription() ? true : null)
+            ;
+            foreach ($searchTerms as $searchTerm) {
+                $searchTerm->setId($this->idGenerator->generateId())
+                    ->setMessengerUserId($searchTerm->getMessengerUser()?->getId())
+                ;
                 $this->dynamodbEntityManager->persist($searchTerm);
-                $feedback->addSearchTermId($searchTerm->getId());
+
+                $extraSearchTerms = array_values(array_filter($searchTerms, static fn ($otherSearchTerm) => $otherSearchTerm->getId() !== $searchTerm->getId()));
+                $searchTermFeedback = $this->searchTermFeedbackFactory->createSearchTermFeedback($searchTerm, $feedback, empty($extraSearchTerms) ? null : $extraSearchTerms);
+                $searchTermFeedback->setTelegramBotId($telegramBotId);
+                $this->dynamodbEntityManager->persist($searchTermFeedback);
             }
             $this->dynamodbEntityManager->persist($feedback);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    private function transferFeedbackSearches(): int
+    private function transferFeedbackSearches(array $telegramBotIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
-        foreach ($this->feedbackSearchDoctrineRepository->findAll() as $feedbackSearch) {
+        foreach ($this->feedbackSearchDoctrineRepository->findAllWithSearchTerms() as $feedbackSearch) {
+            $telegramBotId = $telegramBotIdMap[$feedbackSearch->getTelegramBot()?->getId()] ?? null;
             $searchTerm = $feedbackSearch->getSearchTerm();
-            $searchTerm->setId($this->idGenerator->generateId());
+
+            $searchTerm->setId($this->idGenerator->generateId())
+                ->setMessengerUserId($searchTerm->getMessengerUser()?->getId())
+            ;
+
             $this->dynamodbEntityManager->persist($searchTerm);
-            $feedbackSearch->setSearchTermId($searchTerm->getId());
+
+            $feedbackSearch
+                ->setSearchTermId($searchTerm->getId())
+                ->setUserId($feedbackSearch->getUser()?->getId())
+                ->setMessengerUserId($feedbackSearch->getMessengerUser()?->getId())
+                ->setTelegramBotId($telegramBotId)
+            ;
             $this->dynamodbEntityManager->persist($feedbackSearch);
+
+            $searchTermFeedbackSearch = $this->searchTermFeedbackSearchFactory->createSearchTermFeedbackSearch($searchTerm, $feedbackSearch);
+            $this->dynamodbEntityManager->persist($searchTermFeedbackSearch);
+
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    private function transferFeedbackLookups(): int
+    private function transferFeedbackLookups(array $telegramBotIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
-        foreach ($this->feedbackLookupDoctrineRepository->findAll() as $feedbackLookup) {
+        foreach ($this->feedbackLookupDoctrineRepository->findAllWithSearchTerms() as $feedbackLookup) {
+            $telegramBotId = $telegramBotIdMap[$feedbackLookup->getTelegramBot()?->getId()] ?? null;
             $searchTerm = $feedbackLookup->getSearchTerm();
-            $searchTerm->setId($this->idGenerator->generateId());
+
+            $searchTerm->setId($this->idGenerator->generateId())
+                ->setMessengerUserId($searchTerm->getMessengerUser()?->getId())
+            ;
+
             $this->dynamodbEntityManager->persist($searchTerm);
-            $feedbackLookup->setSearchTermId($searchTerm->getId());
+
+            $feedbackLookup
+                ->setSearchTermId($searchTerm->getId())
+                ->setUserId($feedbackLookup->getUser()?->getId())
+                ->setMessengerUserId($feedbackLookup->getMessengerUser()?->getId())
+                ->setTelegramBotId($telegramBotId)
+            ;
             $this->dynamodbEntityManager->persist($feedbackLookup);
+
+            $searchTermFeedbackLookup = $this->searchTermFeedbackLookupFactory->createSearchTermFeedbackLookup($searchTerm, $feedbackLookup);
+            $this->dynamodbEntityManager->persist($searchTermFeedbackLookup);
+
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    private function transferTelegramBotPayments(): int
+    private function transferTelegramBotPayments(array $telegramBotIdMap, array $telegramBotPaymentMethodIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotPaymentDoctrineRepository->findAll() as $telegramBotPayment) {
+            $telegramBotPayment
+                ->setTelegramBotPaymentMethodId($telegramBotPaymentMethodIdMap[$telegramBotPayment->getTelegramBotPaymentMethod()?->getId()] ?? null)
+                ->setMessengerUserId($telegramBotPayment->getMessengerUser()?->getId())
+                ->setTelegramBotId($telegramBotIdMap[$telegramBotPayment->getTelegramBot()?->getId()] ?? null)
+            ;
             $this->dynamodbEntityManager->persist($telegramBotPayment);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
     private function transferFeedbackUserSubscriptions(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->feedbackUserSubscriptionDoctrineRepository->findAll() as $feedbackUserSubscription) {
+            $feedbackUserSubscription
+                ->setTelegramPaymentId($feedbackUserSubscription->getTelegramPayment()?->getId())
+                ->setMessengerUserId($feedbackUserSubscription->getMessengerUser()?->getId())
+            ;
             $this->dynamodbEntityManager->persist($feedbackUserSubscription);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    public function transferTelegramBotConversations(): int
+    public function transferTelegramBotConversations(array $telegramBotIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotConversationDoctrineRepository->findAll() as $telegramBotConversation) {
+            $telegramBotConversation
+                ->setTelegramBotId($telegramBotIdMap[$telegramBotConversation->getTelegramBotId()] ?? null)
+            ;
             $this->dynamodbEntityManager->persist($telegramBotConversation);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    public function transferTelegramBotPaymentMethods(): int
+    public function transferTelegramBotPaymentMethods(array $telegramBotIdMap, array &$telegramBotPaymentMethodIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotPaymentMethodDoctrineRepository->findAll() as $telegramBotPaymentMethod) {
+            $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()] = $this->idGenerator->generateId();
+            $telegramBotPaymentMethod
+                ->setId($telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()])
+                ->setTelegramBotId($telegramBotIdMap[$telegramBotPaymentMethod->getTelegramBotId()] ?? null)
+            ;
             $this->dynamodbEntityManager->persist($telegramBotPaymentMethod);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
     public function transferTelegramBotRequests(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotRequestDoctrineRepository->findAll() as $telegramBotRequest) {
             $this->dynamodbEntityManager->persist($telegramBotRequest);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
     public function transferTelegramBotUpdates(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotUpdateDoctrineRepository->findAll() as $telegramBotUpdate) {
             $this->dynamodbEntityManager->persist($telegramBotUpdate);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
-    public function transferUserContactMessages(): int
+    public function transferUserContactMessages(array $telegramBotIdMap): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->userContactMessageDoctrineRepository->findAll() as $userContactMessage) {
+            $userContactMessage
+                ->setTelegramBotId($telegramBotIdMap[$userContactMessage->getTelegramBot()?->getId()] ?? null)
+                ->setMessengerUserId($telegramBotIdMap[$userContactMessage->getMessengerUser()?->getId()] ?? null)
+            ;
             $this->dynamodbEntityManager->persist($userContactMessage);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 
     public function transferFeedbackNotifications(): int
     {
+        $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->feedbackNotificationDoctrineRepository->findAll() as $feedbackNotification) {
             $this->dynamodbEntityManager->persist($feedbackNotification);
             $affectedRows++;
         }
+        $this->dynamodbEntityManager->flush();
         return $affectedRows;
     }
 }

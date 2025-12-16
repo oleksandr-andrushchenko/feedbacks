@@ -29,7 +29,7 @@ class TelegramBotPaymentNormalizer implements NormalizerInterface
         if ($format === 'activity') {
             return [
                 'messenger_user' => $data->getMessengerUser()->getUsername(),
-                'method' => $data->getMethod()->getName()->name,
+                'method' => $data->getTelegramBotPaymentMethod()->getName()->name,
                 'purpose' => $data->getPurpose(),
                 'price' => $this->priceNormalizer->normalize($data->getPrice(), $format, $context),
                 'has_pre_checkout_query' => $data->getPreCheckoutQuery() !== null,

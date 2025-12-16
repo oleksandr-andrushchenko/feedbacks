@@ -7,20 +7,10 @@ namespace App\Factory\Feedback;
 use App\Entity\Feedback\FeedbackSearch;
 use App\Entity\Feedback\SearchTerm;
 use App\Entity\Feedback\SearchTermFeedbackSearch;
-use App\Entity\Messenger\MessengerUser;
-use App\Entity\Telegram\TelegramBot;
-use App\Entity\User\User;
 
 class SearchTermFeedbackSearchFactory
 {
-    public function createSearchTermFeedbackSearch(
-        SearchTerm $searchTerm,
-        FeedbackSearch $feedbackSearch,
-        User $user,
-        ?MessengerUser $messengerUser = null,
-        ?TelegramBot $telegramBot = null,
-        ?array $extraSearchTerms = null,
-    ): SearchTermFeedbackSearch
+    public function createSearchTermFeedbackSearch(SearchTerm $searchTerm, FeedbackSearch $feedbackSearch, ?array $extraSearchTerms = null): SearchTermFeedbackSearch
     {
         return new SearchTermFeedbackSearch(
             $searchTerm->getId(),
@@ -28,12 +18,12 @@ class SearchTermFeedbackSearchFactory
             $searchTerm->getNormalizedText(),
             $searchTerm->getType(),
             $feedbackSearch->getId(),
-            $user->getId(),
-            $user->hasActiveSubscription(),
-            $user->getCountryCode(),
-            $user->getLocaleCode(),
-            $messengerUser?->getId(),
-            $telegramBot?->getId(),
+            $feedbackSearch->getUser()?->getId(),
+            $feedbackSearch->getUser()?->hasActiveSubscription(),
+            $feedbackSearch->getUser()?->getCountryCode(),
+            $feedbackSearch->getUser()?->getLocaleCode(),
+            $feedbackSearch->getMessengerUser()?->getId(),
+            $feedbackSearch->getTelegramBot()?->getId(),
             empty($extraSearchTerms) ? null : $extraSearchTerms
         );
     }

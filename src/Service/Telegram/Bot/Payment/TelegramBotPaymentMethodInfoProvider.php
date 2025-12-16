@@ -11,7 +11,7 @@ class TelegramBotPaymentMethodInfoProvider
     public function getTelegramPaymentInfo(TelegramBotPaymentMethod $paymentMethod): array
     {
         return [
-            'bot' => $paymentMethod->getBot()->getUsername(),
+            'bot' => $paymentMethod->getTelegramBot()->getUsername(),
             'name' => $paymentMethod->getName()->name,
             'currencies' => join(', ', $paymentMethod->getCurrencyCodes()),
         ];

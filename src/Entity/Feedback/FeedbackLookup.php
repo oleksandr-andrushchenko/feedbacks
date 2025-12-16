@@ -13,7 +13,6 @@ use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
-use Stringable;
 
 #[Entity(
     new PartitionKey('FEEDBACK_LOOKUP', ['id']),
@@ -50,7 +49,9 @@ class FeedbackLookup
         $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
-        $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        if ($this->user?->hasActiveSubscription()) {
+            $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        }
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
@@ -79,6 +80,12 @@ class FeedbackLookup
         return $this->user;
     }
 
+    public function setUserId(?string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
     public function getUserId(): ?string
     {
         return $this->userId;
@@ -87,6 +94,12 @@ class FeedbackLookup
     public function getMessengerUser(): ?MessengerUser
     {
         return $this->messengerUser;
+    }
+
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
     }
 
     public function getMessengerUserId(): ?string
@@ -128,6 +141,12 @@ class FeedbackLookup
     public function getTelegramBot(): ?TelegramBot
     {
         return $this->telegramBot;
+    }
+
+    public function setTelegramBotId(?string $telegramBotId): self
+    {
+        $this->telegramBotId = $telegramBotId;
+        return $this;
     }
 
     public function getTelegramBotId(): ?string

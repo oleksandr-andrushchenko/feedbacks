@@ -15,7 +15,7 @@ use Stringable;
 
 #[Entity(
     new PartitionKey('TELEGRAM_CHANNEL', ['id']),
-    new SortKey('M'),
+    new SortKey('META'),
     [
         new GlobalIndex(
             'TELEGRAM_CHANNELS_BY_USERNAME',
@@ -60,6 +60,12 @@ class TelegramChannel implements Stringable
         if ($this->primary !== true) {
             $this->primary = null;
         }
+    }
+
+    public function setId(string $id): self
+    {
+        $this->id = $id;
+        return $this;
     }
 
     public function getId(): string

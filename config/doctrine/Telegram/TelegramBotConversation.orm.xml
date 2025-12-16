@@ -4,9 +4,8 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="App\Entity\Telegram\TelegramBotConversation"
-            repository-class="App\Repository\Telegram\Bot\TelegramBotConversationDoctrineRepository"
-            table="telegram_conversations">
+    <entity name="App\Entity\Telegram\TelegramBotConversation" table="telegram_conversations"
+            repository-class="App\Repository\Telegram\Bot\TelegramBotConversationDoctrineRepository">
 
         <indexes>
             <index fields="hash"/>
@@ -21,7 +20,7 @@
         <field name="hash" column="hash"/>
         <field name="messengerUserId" column="messenger_user_id" length="32"/>
         <field name="chatId" column="chat_id" type="bigint"/>
-        <field name="botId" column="bot_id" type="smallint"/>
+        <field name="telegramBotId" column="bot_id" type="smallint"/>
         <field name="class" column="class" length="255"/>
         <field name="state" column="state" type="json"/>
         <field name="createdAt" column="created_at" type="datetime_immutable"/>

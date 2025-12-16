@@ -76,9 +76,7 @@ class FeedbackSearchCreator
         $this->entityManager->persist($feedbackSearch);
 
         if ($this->entityManager->getConfig()->isDynamodb()) {
-            $searchTermFeedbackSearch = $this->searchTermFeedbackSearchFactory
-                ->createSearchTermFeedbackSearch($searchTerm, $feedbackSearch, $user, $messengerUser, $transfer->getTelegramBot())
-            ;
+            $searchTermFeedbackSearch = $this->searchTermFeedbackSearchFactory->createSearchTermFeedbackSearch($searchTerm, $feedbackSearch);
             $this->entityManager->persist($searchTermFeedbackSearch);
         }
 

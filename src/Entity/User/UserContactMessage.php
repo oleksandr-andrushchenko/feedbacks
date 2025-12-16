@@ -6,25 +6,50 @@ namespace App\Entity\User;
 
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
 
+#[Entity(
+    new PartitionKey('USER_CONTACT_MESSAGE', ['id']),
+    new SortKey('META'),
+)]
 class UserContactMessage implements Stringable
 {
     public function __construct(
+        #[Attribute]
         private readonly string $id,
         private readonly ?MessengerUser $messengerUser,
         private readonly User $user,
+        #[Attribute]
         private readonly string $text,
         private readonly ?TelegramBot $telegramBot,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
     )
     {
+        $this->telegramBotId = $this->telegramBot?->getId();
+        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): string
     {
         return $this->id;
+    }
+
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
     }
 
     public function getMessengerUser(): ?MessengerUser
@@ -40,6 +65,12 @@ class UserContactMessage implements Stringable
     public function getText(): string
     {
         return $this->text;
+    }
+
+    public function setTelegramBotId(?string $telegramBotId): self
+    {
+        $this->telegramBotId = $telegramBotId;
+        return $this;
     }
 
     public function getTelegramBot(): ?TelegramBot

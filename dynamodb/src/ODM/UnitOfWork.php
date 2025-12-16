@@ -218,8 +218,8 @@ class UnitOfWork
             ];
         }
 
-
         $logger->debug(__METHOD__, [
+            'writes_count' => count($writes),
             'writes' => $writes,
         ]);
 
@@ -254,7 +254,9 @@ class UnitOfWork
 
         $batched = [];
         foreach ($writes as $write) {
-            $table = array_key_first($write[array_key_first($write)]);
+            $opType = array_key_first($write); // Put | Delete
+            $table = $write[$opType]['TableName'];
+
             $batched[$table][] = $write;
         }
 
@@ -271,6 +273,10 @@ class UnitOfWork
                         $items[] = ['DeleteRequest' => ['Key' => $op['Delete']['Key']]];
                     }
                 }
+
+                $logger->debug(__METHOD__, [
+                    'batchWriteItem' => ['RequestItems' => [$table => $items]],
+                ]);
 
                 $client->batchWriteItem(['RequestItems' => [$table => $items]]);
             }

@@ -204,7 +204,7 @@ class MessengerUser implements Stringable
         return $this->getId();
     }
 
-    public function setUserId(string $userId): self
+    public function setUserId(?string $userId): self
     {
         $this->userId = $userId;
         return $this;

@@ -25,8 +25,8 @@ class TelegramBotConversation implements Stringable
         private readonly string $messengerUserId,
         #[Attribute('chat_id')]
         private readonly string $chatId,
-        #[Attribute('bot_id')]
-        private readonly string $botId,
+        #[Attribute('telegram_bot_id')]
+        private string $telegramBotId,
         #[Attribute]
         private readonly string $class,
         #[Attribute]
@@ -60,9 +60,15 @@ class TelegramBotConversation implements Stringable
         return $this->chatId;
     }
 
-    public function getBotId(): string
+    public function setTelegramBotId(?string $telegramBotId): self
     {
-        return $this->botId;
+        $this->telegramBotId = $telegramBotId;
+        return $this;
+    }
+
+    public function getTelegramBotId(): string
+    {
+        return $this->telegramBotId;
     }
 
     public function getClass(): string

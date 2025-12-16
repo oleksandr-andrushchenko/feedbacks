@@ -62,7 +62,9 @@ class Feedback
         $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
-        $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        if ($this->user?->hasActiveSubscription()) {
+            $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        }
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
@@ -79,6 +81,12 @@ class Feedback
         return $this;
     }
 
+    public function setUserId(?string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
@@ -87,6 +95,12 @@ class Feedback
     public function getUserId(): ?string
     {
         return $this->userId;
+    }
+
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
     }
 
     public function setMessengerUser(?MessengerUser $messengerUser): self
@@ -121,6 +135,12 @@ class Feedback
         return $this;
     }
 
+    public function setSearchTermIds(?array $ids): self
+    {
+        $this->searchTermIds = $ids;
+        return $this;
+    }
+
     /**
      * @return Collection<SearchTerm>
      */
@@ -142,6 +162,12 @@ class Feedback
     public function getText(): ?string
     {
         return $this->text;
+    }
+
+    public function setHasActiveSubscription(?bool $hasActiveSubscription): self
+    {
+        $this->hasActiveSubscription = $hasActiveSubscription;
+        return $this;
     }
 
     public function hasActiveSubscription(): ?bool
@@ -174,6 +200,12 @@ class Feedback
     public function getTelegramChannelMessageIds(): ?array
     {
         return $this->telegramChannelMessageIds;
+    }
+
+    public function setTelegramBotId(?string $telegramBotId): self
+    {
+        $this->telegramBotId = $telegramBotId;
+        return $this;
     }
 
     public function getTelegramBot(): ?TelegramBot

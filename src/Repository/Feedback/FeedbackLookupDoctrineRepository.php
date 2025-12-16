@@ -21,6 +21,19 @@ class FeedbackLookupDoctrineRepository extends ServiceEntityRepository
         parent::__construct($registry, FeedbackLookup::class);
     }
 
+    /**
+     * @return array<FeedbackLookup>
+     */
+    public function findAllWithSearchTerms(): array
+    {
+        return $this->createQueryBuilder('fl')
+            ->addSelect('searchTerm')
+            ->join('fl.searchTerm', 'searchTerm')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function findOneLast(): ?FeedbackLookup
     {
         return $this->findOneBy([], ['createdAt' => 'DESC']);

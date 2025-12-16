@@ -8,6 +8,7 @@ use App\Entity\Feedback\FeedbackLookup;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
 use App\Factory\Feedback\FeedbackLookupFactory;
+use App\Factory\Feedback\SearchTermFeedbackLookupFactory;
 use App\Message\Event\ActivityEvent;
 use App\Message\Event\Feedback\FeedbackLookupCreatedEvent;
 use App\Model\Feedback\Command\FeedbackCommandOptions;
@@ -34,6 +35,7 @@ class FeedbackLookupCreator
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
+        private readonly SearchTermFeedbackLookupFactory $searchTermFeedbackLookupFactory,
         private readonly FeedbackLookupFactory $feedbackLookupFactory,
     )
     {
@@ -68,6 +70,11 @@ class FeedbackLookupCreator
             $this->idGenerator->generateId(), $searchTerm, $user, $messengerUser, $transfer->getTelegramBot()
         );
         $this->entityManager->persist($feedbackLookup);
+
+        if ($this->entityManager->getConfig()->isDynamodb()) {
+            $searchTermFeedbackLookup = $this->searchTermFeedbackLookupFactory->createSearchTermFeedbackLookup($searchTerm, $feedbackLookup);
+            $this->entityManager->persist($searchTermFeedbackLookup);
+        }
 
         $this->eventBus->dispatch(new ActivityEvent(entity: $feedbackLookup, action: 'created'));
         $this->eventBus->dispatch(new FeedbackLookupCreatedEvent(lookup: $feedbackLookup));

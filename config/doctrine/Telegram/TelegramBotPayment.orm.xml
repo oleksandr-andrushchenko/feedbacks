@@ -15,7 +15,7 @@
 
         <field name="chatId" column="chat_id" type="bigint"/>
 
-        <many-to-one field="method" target-entity="App\Entity\Telegram\TelegramBotPaymentMethod"/>
+        <many-to-one field="telegramBotPaymentMethod" target-entity="App\Entity\Telegram\TelegramBotPaymentMethod"/>
 
         <field name="purpose" column="purpose"/>
         <field name="priceAmount" column="price_amount" type="decimal" precision="7" scale="2"/>

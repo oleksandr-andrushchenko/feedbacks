@@ -46,9 +46,7 @@ class SearchTerm
         private ?string $messengerUserId = null,
     )
     {
-        if ($this->messengerUser !== null) {
-            $this->messengerUserId = $this->messengerUser->getId();
-        }
+        $this->messengerUserId = $this->messengerUser?->getId();
     }
 
     public function setId(string $id): self
@@ -75,6 +73,12 @@ class SearchTerm
     public function getType(): SearchTermType
     {
         return $this->type;
+    }
+
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
     }
 
     public function setMessengerUser(?MessengerUser $messengerUser): self

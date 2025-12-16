@@ -67,10 +67,7 @@ class FeedbackCreator
         $user = $this->messengerUserService->getUser($messengerUser);
 
         if (!$user->hasActiveSubscription()) {
-            $this->feedbackCommandLimitsChecker->checkCommandLimits(
-                $user,
-                $this->feedbackCommandStatisticProvider
-            );
+            $this->feedbackCommandLimitsChecker->checkCommandLimits($user, $this->feedbackCommandStatisticProvider);
         }
 
         $feedback = $this->constructFeedback($transfer);
@@ -80,13 +77,7 @@ class FeedbackCreator
             $searchTerms = $feedback->getSearchTerms()->toArray();
             foreach ($searchTerms as $searchTerm) {
                 $extraSearchTerms = array_values(array_filter($searchTerms, static fn ($otherSearchTerm) => $otherSearchTerm->getId() !== $searchTerm->getId()));
-
-                $searchTermFeedback = $this->searchTermFeedbackFactory
-                    ->createSearchTermFeedback(
-                        $searchTerm, $feedback, $user, $messengerUser, $transfer->getTelegramBot(),
-                        empty($extraSearchTerms) ? null : $extraSearchTerms
-                    )
-                ;
+                $searchTermFeedback = $this->searchTermFeedbackFactory->createSearchTermFeedback($searchTerm, $feedback, empty($extraSearchTerms) ? null : $extraSearchTerms);
                 $this->entityManager->persist($searchTermFeedback);
             }
         }

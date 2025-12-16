@@ -21,6 +21,19 @@ class FeedbackSearchDoctrineRepository extends ServiceEntityRepository
         parent::__construct($registry, FeedbackSearch::class);
     }
 
+    /**
+     * @return array<FeedbackSearch>
+     */
+    public function findAllWithSearchTerms(): array
+    {
+        return $this->createQueryBuilder('fs')
+            ->addSelect('searchTerm')
+            ->join('fs.searchTerm', 'searchTerm')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function findOneLast(): ?FeedbackSearch
     {
         return $this->findOneBy([], ['createdAt' => 'DESC']);
