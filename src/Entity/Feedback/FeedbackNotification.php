@@ -60,7 +60,6 @@ class FeedbackNotification implements Stringable
         private ?string $telegramBotId = null,
     )
     {
-        $this->createdAt ??= new DateTimeImmutable();
         $this->messengerUserId = $this->messengerUser->getId();
         $this->searchTermId = $this->searchTerm?->getId();
         $this->feedbackId = $this->feedback?->getId();
@@ -71,6 +70,7 @@ class FeedbackNotification implements Stringable
         $this->targetFeedbackLookupId = $this->targetFeedbackLookup?->getId();
         $this->feedbackUserSubscriptionId = $this->feedbackUserSubscription?->getId();
         $this->telegramBotId = $this->telegramBot?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): string
@@ -83,14 +83,32 @@ class FeedbackNotification implements Stringable
         return $this->type;
     }
 
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
+    }
+
     public function getMessengerUser(): MessengerUser
     {
         return $this->messengerUser;
     }
 
-    public function getFeedbackSearchTerm(): ?SearchTerm
+    public function setSearchTermId(?string $searchTermId): self
+    {
+        $this->searchTermId = $searchTermId;
+        return $this;
+    }
+
+    public function getSearchTerm(): ?SearchTerm
     {
         return $this->searchTerm;
+    }
+
+    public function setFeedbackId(?string $feedbackId): self
+    {
+        $this->feedbackId = $feedbackId;
+        return $this;
     }
 
     public function getFeedback(): ?Feedback
@@ -98,9 +116,21 @@ class FeedbackNotification implements Stringable
         return $this->feedback;
     }
 
+    public function setTargetFeedbackId(?string $targetFeedbackId): self
+    {
+        $this->targetFeedbackId = $targetFeedbackId;
+        return $this;
+    }
+
     public function getTargetFeedback(): ?Feedback
     {
         return $this->targetFeedback;
+    }
+
+    public function setFeedbackSearchId(?string $feedbackSearchId): self
+    {
+        $this->feedbackSearchId = $feedbackSearchId;
+        return $this;
     }
 
     public function getFeedbackSearch(): ?FeedbackSearch
@@ -108,9 +138,22 @@ class FeedbackNotification implements Stringable
         return $this->feedbackSearch;
     }
 
+
+    public function setTargetFeedbackSearchId(?string $targetFeedbackSearchId): self
+    {
+        $this->targetFeedbackSearchId = $targetFeedbackSearchId;
+        return $this;
+    }
+
     public function getTargetFeedbackSearch(): ?FeedbackSearch
     {
         return $this->targetFeedbackSearch;
+    }
+
+    public function setFeedbackLookupId(?string $feedbackLookupId): self
+    {
+        $this->feedbackLookupId = $feedbackLookupId;
+        return $this;
     }
 
     public function getFeedbackLookup(): ?FeedbackLookup
@@ -118,14 +161,32 @@ class FeedbackNotification implements Stringable
         return $this->feedbackLookup;
     }
 
+    public function setTargetFeedbackLookupId(?string $targetFeedbackLookupId): self
+    {
+        $this->targetFeedbackLookupId = $targetFeedbackLookupId;
+        return $this;
+    }
+
     public function getTargetFeedbackLookup(): ?FeedbackLookup
     {
         return $this->targetFeedbackLookup;
     }
 
+    public function setFeedbackUserSubscriptionId(?string $feedbackUserSubscriptionId): self
+    {
+        $this->feedbackUserSubscriptionId = $feedbackUserSubscriptionId;
+        return $this;
+    }
+
     public function getFeedbackUserSubscription(): ?FeedbackUserSubscription
     {
         return $this->feedbackUserSubscription;
+    }
+
+    public function setTelegramBotId(?string $telegramBotId): self
+    {
+        $this->telegramBotId = $telegramBotId;
+        return $this;
     }
 
     public function getTelegramBot(): ?TelegramBot

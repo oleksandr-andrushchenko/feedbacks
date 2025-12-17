@@ -97,7 +97,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
 //            'telegram_bot_requests' => $this->transferTelegramBotRequests(),
 //            'telegram_bot_updates' => $this->transferTelegramBotUpdates(),
             'user_contact_messages' => $this->transferUserContactMessages($telegramBotIdMap),
-//            'feedback_notifications' => $this->transferFeedbackNotifications(),
+            'feedback_notifications' => $this->transferFeedbackNotifications($telegramBotIdMap),
         ];
 
         $this->dynamodbEntityManager->flush();
@@ -379,11 +379,23 @@ class DynamodbFromDoctrineTransferCommand extends Command
         return $affectedRows;
     }
 
-    public function transferFeedbackNotifications(): int
+    public function transferFeedbackNotifications(array $telegramBotIdMap): int
     {
         $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->feedbackNotificationDoctrineRepository->findAll() as $feedbackNotification) {
+            $feedbackNotification
+                ->setMessengerUserId($feedbackNotification->getMessengerUser()?->getId())
+                ->setSearchTermId($feedbackNotification->getSearchTerm()?->getId())
+                ->setFeedbackId($feedbackNotification->getFeedback()?->getId())
+                ->setTargetFeedbackId($feedbackNotification->getTargetFeedback()?->getId())
+                ->setFeedbackSearchId($feedbackNotification->getFeedbackSearch()?->getId())
+                ->setTargetFeedbackSearchId($feedbackNotification->getTargetFeedbackSearch()?->getId())
+                ->setFeedbackLookupId($feedbackNotification->getFeedbackLookup()?->getId())
+                ->setTargetFeedbackLookupId($feedbackNotification->getTargetFeedbackLookup()?->getId())
+                ->setFeedbackUserSubscriptionId($feedbackNotification->getFeedbackUserSubscription()?->getId())
+                ->setTelegramBotId($telegramBotIdMap[$feedbackNotification->getTelegramBot()?->getId()] ?? null)
+            ;
             $this->dynamodbEntityManager->persist($feedbackNotification);
             $affectedRows++;
         }

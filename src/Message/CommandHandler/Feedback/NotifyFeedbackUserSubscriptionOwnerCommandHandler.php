@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace App\Message\CommandHandler\Feedback;
 
-use App\Entity\Feedback\FeedbackNotification;
 use App\Entity\Feedback\FeedbackUserSubscription;
 use App\Entity\Messenger\MessengerUser;
 use App\Enum\Feedback\FeedbackNotificationType;
 use App\Enum\Telegram\TelegramBotGroupName;
+use App\Factory\Feedback\FeedbackNotificationFactory;
 use App\Message\Command\Feedback\NotifyFeedbackUserSubscriptionOwnerCommand;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackUserSubscriptionRepository;
 use App\Repository\Messenger\MessengerUserRepository;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionPlanProvider;
-use App\Service\IdGenerator;
 use App\Service\Intl\TimeProvider;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\Modifier;
@@ -25,6 +24,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @see NotifyFeedbackUserSubscriptionOwnerCommandHandler
+ */
 class NotifyFeedbackUserSubscriptionOwnerCommandHandler
 {
     public function __construct(
@@ -33,7 +35,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
         private readonly TelegramBotProvider $telegramBotProvider,
         private readonly TranslatorInterface $translator,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
-        private readonly IdGenerator $idGenerator,
+        private readonly FeedbackNotificationFactory $feedbackNotificationFactory,
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly TimeProvider $timeProvider,
@@ -85,8 +87,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
                 keepKeyboard: true
             );
 
-            $notification = new FeedbackNotification(
-                $this->idGenerator->generateId(),
+            $notification = $this->feedbackNotificationFactory->createFeedbackNotification(
                 FeedbackNotificationType::feedback_user_subscription_owner,
                 $messengerUser,
                 feedbackUserSubscription: $subscription,

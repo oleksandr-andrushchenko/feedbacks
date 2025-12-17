@@ -15,7 +15,6 @@ use App\Model\Feedback\Command\FeedbackCommandOptions;
 use App\Service\Feedback\Command\FeedbackCommandLimitsChecker;
 use App\Service\Feedback\SearchTerm\SearchTermUpserter;
 use App\Service\Feedback\Statistic\FeedbackUserStatisticProviderInterface;
-use App\Service\IdGenerator;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
@@ -32,7 +31,6 @@ class FeedbackLookupCreator
         private readonly FeedbackUserStatisticProviderInterface $statisticProvider,
         private readonly FeedbackCommandLimitsChecker $limitsChecker,
         private readonly SearchTermUpserter $searchTermUpserter,
-        private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
         private readonly SearchTermFeedbackLookupFactory $searchTermFeedbackLookupFactory,
@@ -60,15 +58,14 @@ class FeedbackLookupCreator
         $messengerUser = $transfer->getMessengerUser();
         $user = $this->messengerUserService->getUser($messengerUser);
 
+        // todo: disable by default
         if (!$user->hasActiveSubscription()) {
             $this->limitsChecker->checkCommandLimits($user, $this->statisticProvider);
         }
 
         $searchTerm = $this->searchTermUpserter->upsertSearchTerm($transfer->getSearchTerm());
 
-        $feedbackLookup = $this->feedbackLookupFactory->createFeedbackLookup(
-            $this->idGenerator->generateId(), $searchTerm, $user, $messengerUser, $transfer->getTelegramBot()
-        );
+        $feedbackLookup = $this->feedbackLookupFactory->createFeedbackLookup($searchTerm, $user, $messengerUser, $transfer->getTelegramBot());
         $this->entityManager->persist($feedbackLookup);
 
         if ($this->entityManager->getConfig()->isDynamodb()) {

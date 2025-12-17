@@ -17,7 +17,6 @@ use App\Service\Feedback\Command\FeedbackCommandLimitsChecker;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
 use App\Service\Feedback\SearchTerm\SearchTermUpserter;
 use App\Service\Feedback\Statistic\FeedbackUserStatisticProviderInterface;
-use App\Service\IdGenerator;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
@@ -34,7 +33,6 @@ class FeedbackCreator
         private readonly FeedbackUserStatisticProviderInterface $feedbackCommandStatisticProvider,
         private readonly FeedbackCommandLimitsChecker $feedbackCommandLimitsChecker,
         private readonly SearchTermUpserter $searchTermUpserter,
-        private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
         private readonly SearchTermMessengerProvider $searchTermMessengerProvider,
         private readonly MessengerUserService $messengerUserService,
@@ -99,7 +97,6 @@ class FeedbackCreator
         }
 
         return $this->feedbackFactory->createFeedback(
-            $this->idGenerator->generateId(),
             $user,
             $messengerUser,
             $searchTerms,

@@ -9,11 +9,17 @@ use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
+use App\Service\IdGenerator;
 
 class FeedbackLookupFactory
 {
+    public function __construct(
+        private IdGenerator $idGenerator,
+    )
+    {
+    }
+
     public function createFeedbackLookup(
-        string $id,
         SearchTerm $searchTerm,
         User $user,
         MessengerUser $messengerUser,
@@ -21,7 +27,7 @@ class FeedbackLookupFactory
     ): FeedbackLookup
     {
         return new FeedbackLookup(
-            id: $id,
+            id: $this->idGenerator->generateId(),
             searchTerm: $searchTerm,
             user: $user,
             messengerUser: $messengerUser,

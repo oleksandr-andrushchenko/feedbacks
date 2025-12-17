@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Message\CommandHandler\Feedback;
 
 use App\Entity\Feedback\Feedback;
-use App\Entity\Feedback\FeedbackNotification;
 use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Enum\Feedback\FeedbackNotificationType;
 use App\Enum\Messenger\Messenger;
 use App\Enum\Telegram\TelegramBotGroupName;
+use App\Factory\Feedback\FeedbackNotificationFactory;
 use App\Message\Command\Feedback\NotifyFeedbackSourcesAboutNewFeedbackCommand;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackSearcher;
 use App\Service\Feedback\FeedbackService;
-use App\Service\IdGenerator;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
@@ -28,6 +27,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @see NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
+ */
 class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
 {
     public function __construct(
@@ -38,7 +40,7 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
         private readonly TranslatorInterface $translator,
         private readonly FeedbackTelegramSearchViewer $feedbackTelegramSearchViewer,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
-        private readonly IdGenerator $idGenerator,
+        private readonly FeedbackNotificationFactory $feedbackNotificationFactory,
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
@@ -97,8 +99,7 @@ class NotifyFeedbackSourcesAboutNewFeedbackCommandHandler
                 keepKeyboard: true
             );
 
-            $notification = new FeedbackNotification(
-                $this->idGenerator->generateId(),
+            $notification = $this->feedbackNotificationFactory->createFeedbackNotification(
                 FeedbackNotificationType::feedback_source_about_new_feedback,
                 $messengerUser,
                 $searchTerm,

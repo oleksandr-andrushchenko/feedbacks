@@ -5,21 +5,20 @@ declare(strict_types=1);
 namespace App\Message\CommandHandler\Feedback;
 
 use App\Entity\Feedback\FeedbackLookup;
-use App\Entity\Feedback\FeedbackNotification;
 use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Enum\Feedback\FeedbackNotificationType;
 use App\Enum\Messenger\Messenger;
 use App\Enum\Telegram\TelegramBotGroupName;
+use App\Factory\Feedback\FeedbackNotificationFactory;
 use App\Message\Command\Feedback\NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommand;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackLookupRepository;
 use App\Repository\Messenger\MessengerUserRepository;
-use App\Service\Feedback\SearchTermService;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
+use App\Service\Feedback\SearchTermService;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackLookupTelegramViewProvider;
-use App\Service\IdGenerator;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
@@ -29,6 +28,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @see NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
+ */
 class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
 {
     public function __construct(
@@ -40,7 +42,7 @@ class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
         private readonly TranslatorInterface $translator,
         private readonly FeedbackLookupTelegramViewProvider $feedbackLookupTelegramViewProvider,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
-        private readonly IdGenerator $idGenerator,
+        private readonly FeedbackNotificationFactory $feedbackNotificationFactory,
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
@@ -107,8 +109,7 @@ class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
                 keepKeyboard: true
             );
 
-            $notification = new FeedbackNotification(
-                $this->idGenerator->generateId(),
+            $notification = $this->feedbackNotificationFactory->createFeedbackNotification(
                 FeedbackNotificationType::feedback_lookup_target_about_new_feedback_lookup,
                 $messengerUser,
                 $searchTerm,

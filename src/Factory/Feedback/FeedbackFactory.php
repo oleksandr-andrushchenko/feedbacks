@@ -10,11 +10,17 @@ use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
+use App\Service\IdGenerator;
 
 class FeedbackFactory
 {
+    public function __construct(
+        private IdGenerator $idGenerator,
+    )
+    {
+    }
+
     public function createFeedback(
-        string $id,
         User $user,
         MessengerUser $messengerUser,
         /** @var array<SearchTerm> $searchTerms */
@@ -25,7 +31,7 @@ class FeedbackFactory
     ): Feedback
     {
         return new Feedback(
-            id: $id,
+            id: $this->idGenerator->generateId(),
             user: $user,
             messengerUser: $messengerUser,
             searchTerms: $searchTerms,
