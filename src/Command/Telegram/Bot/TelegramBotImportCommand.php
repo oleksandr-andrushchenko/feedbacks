@@ -35,6 +35,9 @@ class TelegramBotImportCommand extends Command
     {
         $this
             ->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+            ->addOption('drop-existing', mode: InputOption::VALUE_NONE, description: 'Drop existing bots')
+            ->addOption('sync-descriptions', mode: InputOption::VALUE_NONE, description: 'Sync bots descriptions (with telegram)')
+            ->addOption('sync-webhooks', mode: InputOption::VALUE_NONE, description: 'Sync bots webhooks (with telegram)')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Import telegram bots')
         ;
@@ -64,8 +67,12 @@ class TelegramBotImportCommand extends Command
             }
         }
 
+        $mode = 0;
+        $mode |= $input->getOption('drop-existing') ? TelegramBotImporter::MODE_DROP_EXISTING : 0;
+        $mode |= $input->getOption('sync-descriptions') ? TelegramBotImporter::MODE_SYNC_DESCRIPTIONS : 0;
+        $mode |= $input->getOption('sync-webhooks') ? TelegramBotImporter::MODE_SYNC_WEBHOOKS : 0;
         $logger = static fn (string $message) => $io->note($message);
-        $func = fn () => $this->telegramBotImporter->importTelegramBots($filename, $logger);
+        $func = fn () => $this->telegramBotImporter->importTelegramBots($filename, $mode, $logger);
 
         if ($dryRun) {
             $result = $this->dryRunner->dryRun($func, readUncommitted: true);
