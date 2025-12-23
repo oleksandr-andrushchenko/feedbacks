@@ -38,6 +38,7 @@ class TelegramBotImportCommand extends Command
             ->addOption('drop-existing', mode: InputOption::VALUE_NONE, description: 'Drop existing bots')
             ->addOption('sync-descriptions', mode: InputOption::VALUE_NONE, description: 'Sync bots descriptions (with telegram)')
             ->addOption('sync-webhooks', mode: InputOption::VALUE_NONE, description: 'Sync bots webhooks (with telegram)')
+            ->addOption('undo-remove-for-updated', mode: InputOption::VALUE_NONE, description: 'Undo remove (deleted_at) for updated bots')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Import telegram bots')
         ;
@@ -71,6 +72,7 @@ class TelegramBotImportCommand extends Command
         $mode |= $input->getOption('drop-existing') ? TelegramBotImporter::MODE_DROP_EXISTING : 0;
         $mode |= $input->getOption('sync-descriptions') ? TelegramBotImporter::MODE_SYNC_DESCRIPTIONS : 0;
         $mode |= $input->getOption('sync-webhooks') ? TelegramBotImporter::MODE_SYNC_WEBHOOKS : 0;
+        $mode |= $input->getOption('undo-remove-for-updated') ? TelegramBotImporter::MODE_UNDO_REMOVE_FOR_UPDATED : 0;
         $logger = static fn (string $message) => $io->note($message);
         $func = fn () => $this->telegramBotImporter->importTelegramBots($filename, $mode, $logger);
 
