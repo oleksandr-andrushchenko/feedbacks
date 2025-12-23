@@ -29,7 +29,7 @@
 
         <field name="rating" column="rating" type="smallint" enum-type="App\Enum\Feedback\Rating"/>
         <field name="text" column="description" type="text" nullable="true"/>
-        <field name="hasActiveSubscription" column="has_active_subscription" type="boolean"/>
+        <field name="hasActiveSubscription" column="has_active_subscription" type="boolean" nullable="true"/>
         <field name="countryCode" column="country_code" length="2" nullable="true"/>
         <field name="localeCode" column="locale_code" length="2" nullable="true"/>
         <field name="telegramChannelMessageIds" column="channel_message_ids" type="simple_array" nullable="true"/>

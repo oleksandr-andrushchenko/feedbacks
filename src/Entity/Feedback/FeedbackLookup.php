@@ -49,9 +49,7 @@ class FeedbackLookup
         $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
-        if ($this->user?->hasActiveSubscription()) {
-            $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
-        }
+        $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
