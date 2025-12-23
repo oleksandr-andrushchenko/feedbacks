@@ -16,9 +16,13 @@ use App\Service\Intl\Level1RegionProvider;
 use App\Service\Intl\LocaleProvider;
 use App\Service\ORM\EntityManager;
 use App\Transfer\Telegram\TelegramChannelTransfer;
+use Throwable;
 
 class TelegramChannelImporter
 {
+    public const int MODE_DROP_EXISTING = 1;
+    public const int MODE_UNDO_REMOVE_FOR_UPDATED = 2;
+
     public function __construct(
         private readonly Level1RegionProvider $level1RegionProvider,
         private readonly TelegramChannelRepository $repository,
@@ -34,25 +38,27 @@ class TelegramChannelImporter
     {
     }
 
-    public function importTelegramChannels(string $filename, callable $logger = null): ImportResult
+    public function importTelegramChannels(string $filename, int $mode, callable $logger = null): ImportResult
     {
         $result = new ImportResult();
         $logger = $logger ?? static fn (string $message): null => null;
 
-        $channels = $this->repository->findAll();
-        $usernames = $this->getUsernames($filename);
+        if ($mode & self::MODE_DROP_EXISTING) {
+            $channels = $this->repository->findAll();
+            $usernames = $this->getUsernames($filename);
 
-        foreach ($channels as $channel) {
-            if (!in_array($channel->getUsername(), $usernames, true) && !$this->remover->telegramChannelRemoved($channel)) {
-                $this->remover->removeTelegramChannel($channel);
-                $logger(sprintf('%s: [OK] deleted', $channel->getUsername()));
-                $result->incDeletedCount();
+            foreach ($channels as $channel) {
+                if (!in_array($channel->getUsername(), $usernames, true) && !$this->remover->telegramChannelRemoved($channel)) {
+                    $this->remover->removeTelegramChannel($channel);
+                    $logger(sprintf('%s: [🟢 OK] deleted', $channel->getUsername()));
+                    $result->incDeletedCount();
+                }
             }
+
+            $this->entityManager->flush();
         }
 
-        $this->entityManager->flush();
-
-        $this->walk($filename, $result, $logger, function (array $data, ImportResult $result, callable $logger): void {
+        $this->walk($filename, $result, $logger, function (array $data, ImportResult $result, callable $logger) use ($mode): void {
             if ($data['skip'] === '1') {
                 $result->incSkippedCount();
 
@@ -64,7 +70,7 @@ class TelegramChannelImporter
             $group = TelegramBotGroupName::fromName($data['group']);
 
             if ($group === null) {
-                $logger(sprintf('%s: [FAIL] group - "%s" not found', $transfer->getUsername(), $data['group']));
+                $logger(sprintf('%s: [🔴 FAIL] group - "%s" not found', $transfer->getUsername(), $data['group']));
                 $result->incFailedCount();
 
                 return;
@@ -73,7 +79,7 @@ class TelegramChannelImporter
             $country = $this->countryProvider->getCountry($data['country']);
 
             if ($country === null) {
-                $logger(sprintf('%s: [FAIL] country - "%s" not found', $transfer->getUsername(), $data['country']));
+                $logger(sprintf('%s: [🔴 FAIL] country - "%s" not found', $transfer->getUsername(), $data['country']));
                 $result->incFailedCount();
 
                 return;
@@ -82,7 +88,7 @@ class TelegramChannelImporter
             $locale = $this->localeProvider->getLocale($data['locale']);
 
             if ($locale === null) {
-                $logger(sprintf('%s: [FAIL] locale - "%s" not found', $transfer->getUsername(), $data['locale']));
+                $logger(sprintf('%s: [🔴 FAIL] locale - "%s" not found', $transfer->getUsername(), $data['locale']));
                 $result->incFailedCount();
 
                 return;
@@ -101,7 +107,7 @@ class TelegramChannelImporter
                 $nonEmptyLocation = !empty($data['location_latitude']) && !empty($data['location_longitude']) && !empty($data['location_address_component']);
 
                 if (!$nonEmptyLocation) {
-                    $logger(sprintf('%s: [FAIL] locations - partially empty', $transfer->getUsername()));
+                    $logger(sprintf('%s: [🔴 FAIL] locations - partially empty', $transfer->getUsername()));
                     $result->incFailedCount();
 
                     return;
@@ -116,7 +122,7 @@ class TelegramChannelImporter
                     try {
                         $level1Region = $this->level1RegionProvider->getLevel1RegionByLocation($location);
                     } catch (AddressGeocodeFailedException|TimezoneGeocodeFailedException $exception) {
-                        $logger(sprintf('%s: [FAIL] level_1_region - %s', $transfer->getUsername(), $exception->getMessage()));
+                        $logger(sprintf('%s: [🔴 FAIL] level_1_region - %s', $transfer->getUsername(), $exception->getMessage()));
                         $result->incFailedCount();
 
                         return;
@@ -143,22 +149,33 @@ class TelegramChannelImporter
             ;
 
             $channel = $this->repository->findOneByUsername($transfer->getUsername());
+            $message = $transfer->getUsername();
 
             if ($channel === null) {
-                $this->creator->createTelegramChannel($transfer);
-                $logger(sprintf('%s: [OK] created', $transfer->getUsername()));
-                $result->incCreatedCount();
+                try {
+                    $this->creator->createTelegramChannel($transfer);
+                    $logger(sprintf('%s: [🟢 OK] created', $transfer->getUsername()));
+                    $result->incCreatedCount();
+                } catch (Throwable $exception) {
+                    $message .= ': [🔴 FAIL] create - ' . $exception->getMessage();
+                }
             } else {
-                $this->updater->updateTelegramChannel($channel, $transfer);
-                $logger(sprintf('%s: [OK] updated', $transfer->getUsername()));
-                $result->incUpdatedCount();
+                try {
+                    $this->updater->updateTelegramChannel($channel, $transfer);
+                    $logger(sprintf('%s: [🟢 OK] updated', $transfer->getUsername()));
+                    $result->incUpdatedCount();
 
-                if ($this->remover->telegramChannelRemoved($channel)) {
-                    $this->remover->undoTelegramChannelRemove($channel);
-                    $logger(sprintf('%s: [OK] restored', $transfer->getUsername()));
-                    $result->incRestoredCount();
+                    if ($this->remover->telegramChannelRemoved($channel) && $mode & self::MODE_UNDO_REMOVE_FOR_UPDATED) {
+                        $this->remover->undoTelegramChannelRemove($channel);
+                        $logger(sprintf('%s: [🟢 OK] restored', $transfer->getUsername()));
+                        $result->incRestoredCount();
+                    }
+                } catch (Throwable $exception) {
+                    $message .= ': [🔴 FAIL] update - ' . $exception->getMessage();
                 }
             }
+
+            $logger($message);
         });
 
         return $result;
@@ -196,7 +213,7 @@ class TelegramChannelImporter
 
         $this->walker->walk($filename, function (array $data) use ($result, $logger, $func): void {
             if ($data['stage'] !== $this->stage) {
-//                $logger && $logger(sprintf('%s: [OK] skipped - stage filter', $data['username']));
+//                $logger && $logger(sprintf('%s: [🟢 OK] skipped - stage filter', $data['username']));
                 $result && $result->incSkippedCount();
 
                 return;
