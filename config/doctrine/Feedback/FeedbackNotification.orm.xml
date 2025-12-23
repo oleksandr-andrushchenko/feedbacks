@@ -15,7 +15,7 @@
             <join-column nullable="false"/>
         </many-to-one>
 
-        <many-to-one field="feedbackSearchTerm" target-entity="App\Entity\Feedback\SearchTerm"/>
+        <many-to-one field="searchTerm" target-entity="App\Entity\Feedback\SearchTerm"/>
         <many-to-one field="feedback" target-entity="App\Entity\Feedback\Feedback"/>
         <many-to-one field="targetFeedback" target-entity="App\Entity\Feedback\Feedback"/>
         <many-to-one field="feedbackSearch" target-entity="App\Entity\Feedback\FeedbackSearch"/>

@@ -162,7 +162,7 @@
         <service id="app.feedback_factory" class="App\Factory\Feedback\FeedbackFactory">
             <argument type="service" id="app.id_generator"/>
         </service>
-        <service id="app.feedback_factory" class="App\Factory\Feedback\FeedbackNotificationFactory">
+        <service id="app.feedback_notification_factory" class="App\Factory\Feedback\FeedbackNotificationFactory">
             <argument type="service" id="app.id_generator"/>
         </service>
         <service id="app.feedback_search_factory" class="App\Factory\Feedback\FeedbackSearchFactory">
