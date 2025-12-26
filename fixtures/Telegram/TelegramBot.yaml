@@ -1,7 +1,8 @@
 App\Entity\Telegram\TelegramBot:
   telegram_bot_1:
     __construct:
-      username: any_bot
+      id: telegram_bot_1
+      username: <(\App\Tests\Fixtures::BOT_USERNAME_1)>
       group: <(\App\Enum\Telegram\TelegramBotGroupName::feedbacks)>
       name: Any Bot
       token: 0:any

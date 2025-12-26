@@ -23,24 +23,6 @@ class User implements Stringable
     private ?string $locationLatitude = null;
     #[Attribute('location_longitude')]
     private ?string $locationLongitude = null;
-    #[Attribute]
-    private ?string $username = null;
-    #[Attribute]
-    private ?string $name = null;
-    #[Attribute('country_code')]
-    private ?string $countryCode = null;
-    #[Attribute('level_1_region_id')]
-    private ?string $level1RegionId = null;
-    #[Attribute('locale_code')]
-    private ?string $localeCode = null;
-    #[Attribute('currency_code')]
-    private ?string $currencyCode = null;
-    #[Attribute('timezone')]
-    private ?string $timezone = null;
-    #[Attribute('phone_number')]
-    private ?string $phoneNumber = null;
-    #[Attribute('email')]
-    private ?string $email = null;
     #[Attribute('subscription_expire_at')]
     private ?DateTimeInterface $subscriptionExpireAt = null;
     #[Attribute('created_at')]
@@ -53,6 +35,24 @@ class User implements Stringable
     public function __construct(
         #[Attribute('user_id')]
         private string $id,
+        #[Attribute]
+        private ?string $username = null,
+        #[Attribute]
+        private ?string $name = null,
+        #[Attribute('country_code')]
+        private ?string $countryCode = null,
+        #[Attribute('level_1_region_id')]
+        private ?string $level1RegionId = null,
+        #[Attribute('locale_code')]
+        private ?string $localeCode = null,
+        #[Attribute('currency_code')]
+        private ?string $currencyCode = null,
+        #[Attribute('timezone')]
+        private ?string $timezone = null,
+        #[Attribute('phone_number')]
+        private ?string $phoneNumber = null,
+        #[Attribute('email')]
+        private ?string $email = null,
     )
     {
         $this->createdAt ??= new DateTimeImmutable();

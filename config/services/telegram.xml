@@ -468,6 +468,7 @@
         <service id="app.telegram_bot_payment_method_creator"
                  class="App\Service\Telegram\Bot\Payment\TelegramBotPaymentMethodCreator" lazy="true">
             <argument type="service" id="app.intl_currency_provider"/>
+            <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.orm.entity_manager"/>
         </service>
         <service id="app.telegram_bot_payment_method_info_provider"

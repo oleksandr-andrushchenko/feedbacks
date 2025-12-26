@@ -30,12 +30,6 @@ use Stringable;
 )]
 class TelegramBot implements Stringable
 {
-    #[Attribute('descriptions_synced')]
-    private ?bool $descriptionsSynced = null;
-    #[Attribute('webhook_synced')]
-    private ?bool $webhookSynced = null;
-    #[Attribute('commands_synced')]
-    private ?bool $commandsSynced = null;
     #[Attribute('created_at')]
     private ?DateTimeInterface $createdAt = null;
     #[Attribute('updated_at')]
@@ -70,6 +64,12 @@ class TelegramBot implements Stringable
         private ?bool $adminOnly = true,
         #[Attribute]
         private ?bool $primary = true,
+        #[Attribute('descriptions_synced')]
+        private ?bool $descriptionsSynced = null,
+        #[Attribute('webhook_synced')]
+        private ?bool $webhookSynced = null,
+        #[Attribute('commands_synced')]
+        private ?bool $commandsSynced = null,
     )
     {
         $this->checkUpdates = $this->checkUpdates === true ? true : null;
@@ -78,6 +78,9 @@ class TelegramBot implements Stringable
         $this->adminIds = empty($this->adminIds) ? null : $this->adminIds;
         $this->adminOnly = $this->adminOnly === true ? true : null;
         $this->primary = $this->primary === true ? true : null;
+        $this->descriptionsSynced = $this->descriptionsSynced === true ? true : null;
+        $this->webhookSynced = $this->webhookSynced === true ? true : null;
+        $this->commandsSynced = $this->commandsSynced === true ? true : null;
     }
 
     public function setId(string $id): self

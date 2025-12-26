@@ -22,6 +22,7 @@ use App\Tests\DatabaseTestCase;
 use App\Tests\Fixtures;
 use App\Tests\Traits\EntityManagerProviderTrait;
 use App\Tests\Traits\Feedback\SearchTermParserProviderTrait;
+use App\Tests\Traits\IdGeneratorProviderTrait;
 use App\Tests\Traits\Intl\CountryProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserProfileUrlProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserRepositoryProviderTrait;
@@ -67,6 +68,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     use TelegramBotRepositoryProviderTrait;
     use CountryProviderTrait;
     use UserRepositoryProviderTrait;
+    use IdGeneratorProviderTrait;
 
     protected ?TelegramBot $bot;
     protected ?TelegramBotAwareHelper $tg;
@@ -139,15 +141,6 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         return $this->getBot()->getMessengerUser() ?? $this->getMessengerUserRepository()->findOneByMessengerAndIdentifier(Messenger::telegram, (string) $this->getUpdateUserId());
     }
 
-    protected function getUpdateUser(): ?User
-    {
-        $messengerUser = $this->getUpdateMessengerUser();
-        if ($messengerUser === null) {
-            return null;
-        }
-        return $this->getUserRepository()->find($messengerUser->getUserId());
-    }
-
     protected function createConversation(string $class, TelegramBotConversationState $state): TelegramBotConversation
     {
         $messengerUserId = $this->getUpdateMessengerUser()->getId();
@@ -171,6 +164,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     protected function createPaymentMethod(TelegramBotPaymentMethodName $name): TelegramBotPaymentMethod
     {
         $paymentMethod = new TelegramBotPaymentMethod(
+            $this->getIdGenerator()->generateId(),
             $this->getBot()->getEntity(),
             $name,
             'any',
@@ -225,7 +219,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
 
     protected function getUser(): ?User
     {
-        return $this->getUpdateUser();
+        return $this->getUpdateMessengerUser()?->getUser();
     }
 
     protected function getConversation(): ?TelegramBotConversation

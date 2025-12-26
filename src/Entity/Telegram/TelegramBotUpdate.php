@@ -21,7 +21,7 @@ class TelegramBotUpdate implements Stringable
     #[Attribute('created_at')]
     private ?DateTimeInterface $createdAt = null;
     #[Attribute('telegram_bot_id')]
-    private ?string $botId = null;
+    private ?string $telegramBotId = null;
     #[Attribute('expire_at')]
     private ?DateTimeInterface $expireAt = null;
 
@@ -30,10 +30,10 @@ class TelegramBotUpdate implements Stringable
         private readonly string $id,
         #[Attribute]
         private readonly array $data,
-        private readonly TelegramBot $bot,
+        private readonly TelegramBot $telegramBot,
     )
     {
-        $this->botId = $this->bot->getId();
+        $this->telegramBotId = $this->telegramBot->getId();
         $this->expireAt ??= (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
         $this->createdAt ??= new DateTimeImmutable();
     }
@@ -48,9 +48,9 @@ class TelegramBotUpdate implements Stringable
         return $this->data;
     }
 
-    public function getBot(): TelegramBot
+    public function getTelegramBot(): TelegramBot
     {
-        return $this->bot;
+        return $this->telegramBot;
     }
 
     public function getCreatedAt(): ?DateTimeInterface
@@ -65,9 +65,9 @@ class TelegramBotUpdate implements Stringable
         return $this;
     }
 
-    public function getBotId(): string
+    public function getTelegramBotId(): string
     {
-        return $this->botId;
+        return $this->telegramBotId;
     }
 
     public function getExpireAt(): DateTimeInterface

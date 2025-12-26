@@ -4,7 +4,7 @@ App\Entity\Feedback\FeedbackSearch:
       id: feedback_search1
       user: '@user_1'
       messengerUser: '@messenger_user_1_telegram'
-      searchTerm: '@feedback_search_term_instagram_profile_url_3'
+      searchTerm: '@search_term_instagram_profile_url_3'
       hasActiveSubscription: false
       countryCode: ua
       localeCode: uk
@@ -14,7 +14,7 @@ App\Entity\Feedback\FeedbackSearch:
       id: feedback_search2
       user: '@user_2'
       messengerUser: '@messenger_user_2_telegram'
-      searchTerm: '@feedback_search_term_instagram_username_3'
+      searchTerm: '@search_term_instagram_username_3'
       hasActiveSubscription: false
       countryCode: ua
       localeCode: uk

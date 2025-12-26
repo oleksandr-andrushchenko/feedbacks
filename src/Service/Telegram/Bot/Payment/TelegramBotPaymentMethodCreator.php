@@ -6,6 +6,7 @@ namespace App\Service\Telegram\Bot\Payment;
 
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Exception\Intl\CurrencyNotFoundException;
+use App\Service\IdGenerator;
 use App\Service\Intl\CurrencyProvider;
 use App\Service\ORM\EntityManager;
 use App\Transfer\Telegram\TelegramBotPaymentMethodTransfer;
@@ -14,6 +15,7 @@ class TelegramBotPaymentMethodCreator
 {
     public function __construct(
         private readonly CurrencyProvider $currencyProvider,
+        private readonly IdGenerator $idGenerator,
         private readonly EntityManager $entityManager,
     )
     {
@@ -34,6 +36,7 @@ class TelegramBotPaymentMethodCreator
         }
 
         $paymentMethod = new TelegramBotPaymentMethod(
+            $this->idGenerator->generateId(),
             $transfer->getBot(),
             $transfer->getName(),
             $transfer->getToken(),

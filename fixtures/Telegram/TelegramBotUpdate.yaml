@@ -3,4 +3,4 @@ App\Entity\Telegram\TelegramBotUpdate:
     __construct:
       id: <current()>
       data: <([])>
-      bot: '@telegram_bot_1'
+      telegramBot: '@telegram_bot_1'

@@ -25,10 +25,10 @@ class TelegramBotPaymentMethod implements Stringable
     private ?DateTimeInterface $deletedAt = null;
     #[Attribute('telegram_bot_id')]
     private ?string $telegramBotId = null;
-    #[Attribute]
-    private ?string $id = null;
 
     public function __construct(
+        #[Attribute('telegram_bot_payment_method_id')]
+        private string $id,
         private readonly TelegramBot $telegramBot,
         #[Attribute]
         private readonly TelegramBotPaymentMethodName $name,
@@ -48,7 +48,7 @@ class TelegramBotPaymentMethod implements Stringable
         return $this;
     }
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }

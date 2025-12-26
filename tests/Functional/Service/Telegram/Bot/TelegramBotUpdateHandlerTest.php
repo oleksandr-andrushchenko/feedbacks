@@ -36,7 +36,7 @@ class TelegramBotUpdateHandlerTest extends DatabaseTestCase
         $updateRepository = $this->getTelegramBotUpdateRepository();
 
         $this->assertEquals(1, $updateRepository->count([]));
-        $this->assertNotNull($updateRepository->find(['id' => $updateId]));
+        $this->assertNotNull($updateRepository->find($updateId));
     }
 
     public function testHandleTelegramBotUpdateDuplicate(): void

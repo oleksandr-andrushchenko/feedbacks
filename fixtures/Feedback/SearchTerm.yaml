@@ -1,12 +1,14 @@
-App\Entity\Feedback\FeedbackSearchTerm:
-  feedback_search_term_instagram_profile_url_3:
+App\Entity\Feedback\SearchTerm:
+  search_term_instagram_profile_url_3:
     __construct:
+      id: search_term_instagram_profile_url_3
       text: 'https://instagram.com/<(\App\Tests\Fixtures::INSTAGRAM_USERNAME_3)>'
       normalizedText: <(\App\Tests\Fixtures::INSTAGRAM_USERNAME_3)>
       type: <(\App\Enum\Feedback\SearchTermType::instagram_username)>
       messengerUser: null
-  feedback_search_term_instagram_username_3:
+  search_term_instagram_username_3:
     __construct:
+      id: search_term_instagram_username_3
       text: <(\App\Tests\Fixtures::INSTAGRAM_USERNAME_3)>
       normalizedText: <(\App\Tests\Fixtures::INSTAGRAM_USERNAME_3)>
       type: <(\App\Enum\Feedback\SearchTermType::instagram_username)>

@@ -77,7 +77,7 @@ console: ## Run Symfony console
 
 .PHONY: tests
 tests: ## Run PHPUnit tests
-	$(DC) exec -it $(BE_FUNCTION_CONTAINER) ./vendor/phpunit/phpunit/phpunit $(filter-out $@,$(MAKECMDGOALS))
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/phpunit -c ./phpunit.xml $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: warmup-cache
 warmup-cache: ## Warm up Symfony cache inside be-function container

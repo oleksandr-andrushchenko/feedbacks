@@ -34,13 +34,6 @@ use Stringable;
 )]
 class MessengerUser implements Stringable
 {
-    #[Attribute]
-    private ?string $username = null;
-    #[Attribute]
-    private ?string $name = null;
-    private ?User $user = null;
-    #[Attribute('show_extended_keyboard')]
-    private ?bool $showExtendedKeyboard = null;
     /** @var array<string>|null */
     #[Attribute('bot_ids')]
     private ?array $botIds = null;
@@ -60,9 +53,17 @@ class MessengerUser implements Stringable
         private readonly Messenger $messenger,
         #[Attribute]
         private readonly string $identifier,
+        #[Attribute]
+        private ?string $username = null,
+        #[Attribute]
+        private ?string $name = null,
+        private ?User $user = null,
+        #[Attribute('show_extended_keyboard')]
+        private ?bool $showExtendedKeyboard = null,
     )
     {
         $this->userId = $this->user?->getId();
+        $this->showExtendedKeyboard = $this->showExtendedKeyboard === true ? true : null;
     }
 
     public function getId(): string

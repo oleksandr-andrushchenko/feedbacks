@@ -26,7 +26,7 @@ trait SearchProviderTrait
     public function testSupports(SearchTermType $type, string $term, array $context, bool $expected): void
     {
         $provider = $this->getSearchProvider(self::$searchProviderName);
-        $searchTerm = new SearchTerm($term, $term, $type);
+        $searchTerm = new SearchTerm('fake', $term, $term, $type);
 
         $actual = $provider->supports($searchTerm, $context);
 

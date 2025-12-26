@@ -4,24 +4,24 @@ App\Entity\Feedback\Feedback:
       id: feedback1
       user: '@user_1'
       messengerUser: '@messenger_user_1_telegram'
-      searchTerms: '@feedback_search_term_instagram_profile_url_3' ]
+      searchTerms: [ '@search_term_instagram_profile_url_3' ]
       rating: <(\App\Enum\Feedback\Rating::neutral)>
-      description: neutral
+      text: neutral
       hasActiveSubscription: false
       countryCode: ua
       localeCode: uk
-      channelMessageIds: null
+      telegramChannelMessageIds: null
       telegramBot: null
   feedback_23_telegram_instagram_username:
     __construct:
       id: feedback2
       user: '@user_2'
       messengerUser: '@messenger_user_2_telegram'
-      searchTerms: [ '@feedback_search_term_instagram_username_3' ]
+      searchTerms: [ '@search_term_instagram_username_3' ]
       rating: <(\App\Enum\Feedback\Rating::satisfied)>
-      description: awesome
+      text: awesome
       hasActiveSubscription: false
       countryCode: ua
       localeCode: uk
-      channelMessageIds: null
+      telegramChannelMessageIds: null
       telegramBot: null

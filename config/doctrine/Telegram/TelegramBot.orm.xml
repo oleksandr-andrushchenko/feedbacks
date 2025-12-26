@@ -39,27 +39,27 @@
             </options>
         </field>
         <field name="adminIds" column="admin_ids" type="simple_array" nullable="true"/>
-        <field name="adminOnly" column="admin_only" type="boolean">
+        <field name="adminOnly" column="admin_only" type="boolean" nullable="true">
             <options>
                 <option name="default">1</option>
             </options>
         </field>
-        <field name="descriptionsSynced" column="descriptions_synced" type="boolean">
+        <field name="descriptionsSynced" column="descriptions_synced" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="webhookSynced" column="webhook_synced" type="boolean">
+        <field name="webhookSynced" column="webhook_synced" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="commandsSynced" column="commands_synced" type="boolean">
+        <field name="commandsSynced" column="commands_synced" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="primary" column="_primary" type="boolean">
+        <field name="primary" column="_primary" type="boolean" nullable="true">
             <options>
                 <option name="default">1</option>
             </options>

@@ -25,7 +25,7 @@
 
         <many-to-one field="user" target-entity="App\Entity\User\User"/>
 
-        <field name="showExtendedKeyboard" column="show_extended_keyboard" type="boolean">
+        <field name="showExtendedKeyboard" column="show_extended_keyboard" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>

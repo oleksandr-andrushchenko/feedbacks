@@ -12,6 +12,7 @@ use App\Repository\Telegram\Channel\TelegramChannelRepository;
 use App\Service\Telegram\Channel\TelegramChannelMatchesProvider;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class TelegramChannelMatchesProviderTest extends TestCase
 {
@@ -33,7 +34,7 @@ class TelegramChannelMatchesProviderTest extends TestCase
         $user = $this->makeUser(...$userAddressComponents);
         $bot = $this->makeBot(...$botAddressComponents);
         $channel = $this->makeChannel(...$channelAddressComponents);
-        $provider = new TelegramChannelMatchesProvider($this->createMock(TelegramChannelRepository::class));
+        $provider = new TelegramChannelMatchesProvider($this->createMock(TelegramChannelRepository::class), new NullLogger());
 
         $actualPoints = $provider->calculateTelegramChannelPoints($bot, $user, $channel);
         $this->assertEquals($expectedPoints, $actualPoints);
@@ -127,9 +128,9 @@ class TelegramChannelMatchesProviderTest extends TestCase
             ->willReturn($channels)
         ;
 
-        $provider = new TelegramChannelMatchesProvider($repository);
+        $provider = new TelegramChannelMatchesProvider($repository, new NullLogger());
         $actualChannels = $provider->getTelegramChannelMatches($user, $bot);
-        $actualChannelIds = array_map(static fn (TelegramChannel $channel): int => $channel->getId(), $actualChannels);
+        $actualChannelIds = array_map(static fn (TelegramChannel $channel): string => $channel->getId(), $actualChannels);
 
         $this->assertEquals($expectedChannelIds, $actualChannelIds);
     }
