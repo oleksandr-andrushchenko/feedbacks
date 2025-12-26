@@ -55,16 +55,16 @@ ngrok-tunnel: ## Establish ngrok tunnel
 	echo "✅ Ngrok URL: $$NGROK_URL"; \
 	echo ".env updated with TELEGRAM_WEBHOOK_BASE_URL=$$NGROK_URL"
 
-.PHONY: start
-start: ## Build and start all Docker containers
+.PHONY: up
+up: ## Build and start all Docker containers
 	$(DC) up -d --build --force-recreate
 
-.PHONY: stop
-stop: ## Stop and remove all Docker containers
+.PHONY: down
+down: ## Stop and remove all Docker containers
 	$(DC) down --remove-orphans
 
 .PHONY: restart
-restart: stop start ## Restart all Docker containers and show status
+restart: down up ## Restart all Docker containers and show status
 	$(DC) ps -a
 
 .PHONY: composer-install
