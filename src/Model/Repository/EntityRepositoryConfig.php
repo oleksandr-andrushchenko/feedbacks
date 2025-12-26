@@ -14,7 +14,6 @@ readonly class EntityRepositoryConfig
 
     public function isDynamodb(): bool
     {
-        return true;
         return $this->engine === 'dynamodb';
     }
 }
