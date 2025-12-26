@@ -19,6 +19,15 @@ use Stringable;
 )]
 class TelegramBotPaymentMethod implements Stringable
 {
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+    #[Attribute]
+    private ?string $id = null;
+
     public function __construct(
         private readonly TelegramBot $telegramBot,
         #[Attribute]
@@ -27,21 +36,13 @@ class TelegramBotPaymentMethod implements Stringable
         private readonly string $token,
         #[Attribute('currency_codes')]
         private readonly array $currencyCodes,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('deleted_at')]
-        private ?DateTimeInterface $deletedAt = null,
-        #[Attribute('telegram_bot_id')]
-        private ?string $telegramBotId = null,
-        #[Attribute]
-        private ?string $id = null,
     )
     {
         $this->telegramBotId = $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function setId(?string $id):self
+    public function setId(?string $id): self
     {
         $this->id = $id;
         return $this;
@@ -56,6 +57,11 @@ class TelegramBotPaymentMethod implements Stringable
     {
         $this->telegramBotId = $telegramBotId;
         return $this;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
     }
 
     public function getTelegramBot(): TelegramBot

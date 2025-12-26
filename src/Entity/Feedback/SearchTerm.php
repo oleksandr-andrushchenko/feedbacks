@@ -6,6 +6,7 @@ namespace App\Entity\Feedback;
 
 use App\Entity\Messenger\MessengerUser;
 use App\Enum\Feedback\SearchTermType;
+use DateTimeImmutable;
 use DateTimeInterface;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
@@ -47,6 +48,7 @@ class SearchTerm
     )
     {
         $this->messengerUserId = $this->messengerUser?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function setId(string $id): self

@@ -18,6 +18,15 @@ use Stringable;
 )]
 class TelegramBotRequest implements Stringable
 {
+    #[Attribute]
+    private ?array $response = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+    #[Attribute('expire_at')]
+    private ?DateTimeInterface $expireAt = null;
+
     public function __construct(
         #[Attribute('telegram_bot_request_id')]
         private string $id,
@@ -27,22 +36,12 @@ class TelegramBotRequest implements Stringable
         private readonly null|int|string $chatId,
         #[Attribute]
         private readonly array $data,
-        private readonly TelegramBot $bot,
-        #[Attribute]
-        private ?array $response = null,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('bot_id')]
-        private ?string $botId = null,
-        #[Attribute('expire_at')]
-        private ?DateTimeInterface $expireAt = null,
+        private readonly TelegramBot $telegramBot,
     )
     {
-        $this->botId = $this->bot->getId();
-
-        if ($this->expireAt === null) {
-            $this->expireAt = (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
-        }
+        $this->telegramBotId = $this->telegramBot->getId();
+        $this->expireAt ??= (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): ?string
@@ -65,9 +64,9 @@ class TelegramBotRequest implements Stringable
         return $this->data;
     }
 
-    public function getBot(): TelegramBot
+    public function getTelegramBot(): TelegramBot
     {
-        return $this->bot;
+        return $this->telegramBot;
     }
 
     public function getResponse(): array
@@ -94,9 +93,9 @@ class TelegramBotRequest implements Stringable
         return $this;
     }
 
-    public function getBotId(): ?string
+    public function getTelegramBotId(): ?string
     {
-        return $this->botId;
+        return $this->telegramBotId;
     }
 
     public function getExpireAt(): DateTimeInterface

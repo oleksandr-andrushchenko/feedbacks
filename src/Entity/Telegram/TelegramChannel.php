@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity\Telegram;
 
 use App\Enum\Telegram\TelegramBotGroupName;
+use DateTimeImmutable;
 use DateTimeInterface;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
@@ -30,6 +31,13 @@ use Stringable;
 )]
 class TelegramChannel implements Stringable
 {
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
         #[Attribute('telegram_channel_id')]
         private string $id,
@@ -48,18 +56,11 @@ class TelegramChannel implements Stringable
         #[Attribute('chat_id')]
         private ?string $chatId = null,
         #[Attribute]
-        private ?bool $primary = true,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('updated_at')]
-        private ?DateTimeInterface $updatedAt = null,
-        #[Attribute('deleted_at')]
-        private ?DateTimeInterface $deletedAt = null,
+        private ?bool $primary = null,
     )
     {
-        if ($this->primary !== true) {
-            $this->primary = null;
-        }
+        $this->primary = $this->primary === true ? true : null;
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function setId(string $id): self
@@ -150,12 +151,12 @@ class TelegramChannel implements Stringable
         return $this;
     }
 
-    public function primary(): bool
+    public function primary(): ?bool
     {
         return $this->primary;
     }
 
-    public function setPrimary(bool $primary): self
+    public function setPrimary(?bool $primary): self
     {
         $this->primary = $primary;
 

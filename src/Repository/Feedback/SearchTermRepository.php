@@ -15,6 +15,7 @@ use DateTimeInterface;
  * @property SearchTermDoctrineRepository $doctrine
  * @method SearchTermDynamodbRepository getDynamodb()
  * @property SearchTermDynamodbRepository $dynamodb
+ * @method SearchTerm|null find(string $id)
  * @method SearchTerm|null findOneByNormalizedTextTypeText(string $normalizedText, SearchTermType $type, string $text)
  * @method array<SearchTerm> findByNormalizedText(string $normalizedText, int $maxResults)
  * @method iterable<SearchTerm> findByPeriod(DateTimeInterface $from, DateTimeInterface $to)

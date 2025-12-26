@@ -20,43 +20,42 @@ use Stringable;
 class User implements Stringable
 {
     #[Attribute('location_latitude')]
-    private ?string $locationLatitude;
+    private ?string $locationLatitude = null;
     #[Attribute('location_longitude')]
-    private ?string $locationLongitude;
+    private ?string $locationLongitude = null;
+    #[Attribute]
+    private ?string $username = null;
+    #[Attribute]
+    private ?string $name = null;
+    #[Attribute('country_code')]
+    private ?string $countryCode = null;
+    #[Attribute('level_1_region_id')]
+    private ?string $level1RegionId = null;
+    #[Attribute('locale_code')]
+    private ?string $localeCode = null;
+    #[Attribute('currency_code')]
+    private ?string $currencyCode = null;
+    #[Attribute('timezone')]
+    private ?string $timezone = null;
+    #[Attribute('phone_number')]
+    private ?string $phoneNumber = null;
+    #[Attribute('email')]
+    private ?string $email = null;
+    #[Attribute('subscription_expire_at')]
+    private ?DateTimeInterface $subscriptionExpireAt = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('purged_at')]
+    private ?DateTimeInterface $purgedAt = null;
 
     public function __construct(
         #[Attribute('user_id')]
         private string $id,
-        #[Attribute]
-        private ?string $username = null,
-        #[Attribute]
-        private ?string $name = null,
-        #[Attribute('country_code')]
-        private ?string $countryCode = null,
-        ?Location $location = null,
-        #[Attribute('level_1_region_id')]
-        private ?string $level1RegionId = null,
-        #[Attribute('locale_code')]
-        private ?string $localeCode = null,
-        #[Attribute('currency_code')]
-        private ?string $currencyCode = null,
-        #[Attribute('timezone')]
-        private ?string $timezone = null,
-        #[Attribute('phone_number')]
-        private ?string $phoneNumber = null,
-        #[Attribute('email')]
-        private ?string $email = null,
-        #[Attribute('subscription_expire_at')]
-        private ?DateTimeInterface $subscriptionExpireAt = null,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('updated_at')]
-        private ?DateTimeInterface $updatedAt = null,
-        #[Attribute('purged_at')]
-        private ?DateTimeInterface $purgedAt = null,
     )
     {
-        $this->setLocation($location);
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function setId(string $id): static

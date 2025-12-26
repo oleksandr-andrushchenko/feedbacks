@@ -6,6 +6,7 @@ namespace App\Serializer\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotPayment;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
+use App\Service\Telegram\TelegramBotPaymentService;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -13,6 +14,7 @@ class TelegramBotPaymentNormalizer implements NormalizerInterface
 {
     public function __construct(
         private readonly NormalizerInterface $priceNormalizer,
+        private readonly TelegramBotPaymentService $telegramBotPaymentService,
     )
     {
     }
@@ -27,9 +29,12 @@ class TelegramBotPaymentNormalizer implements NormalizerInterface
     public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'activity') {
+            $messengerUser = $this->telegramBotPaymentService->getMessengerUser($data);
+            $method = $this->telegramBotPaymentService->getTelegramBotPaymentMethod($data);
+
             return [
-                'messenger_user' => $data->getMessengerUser()->getUsername(),
-                'method' => $data->getTelegramBotPaymentMethod()->getName()->name,
+                'messenger_user' => $messengerUser->getUsername(),
+                'method' => $method->getName()->name,
                 'purpose' => $data->getPurpose(),
                 'price' => $this->priceNormalizer->normalize($data->getPrice(), $format, $context),
                 'has_pre_checkout_query' => $data->getPreCheckoutQuery() !== null,

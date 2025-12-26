@@ -29,12 +29,12 @@ class TelegramBotCreator
             $botTransfer->getToken(),
             $botTransfer->getCountry()->getCode(),
             $botTransfer->getLocale()?->getCode() ?? $botTransfer->getCountry()->getLocaleCodes()[0],
-            checkUpdates: $botTransfer->checkUpdates() ?? true,
-            checkRequests: $botTransfer->checkRequests() ?? true,
-            acceptPayments: $botTransfer->acceptPayments() ?? false,
-            adminIds: $botTransfer->getAdminIds() ?? [],
-            adminOnly: $botTransfer->adminOnly() ?? true,
-            primary: $botTransfer->primary() ?? true,
+            $botTransfer->checkUpdates(),
+            $botTransfer->checkRequests(),
+            $botTransfer->acceptPayments(),
+            $botTransfer->getAdminIds(),
+            $botTransfer->adminOnly(),
+            $botTransfer->primary(),
         );
 
         $this->telegramBotValidator->validateTelegramBot($bot);

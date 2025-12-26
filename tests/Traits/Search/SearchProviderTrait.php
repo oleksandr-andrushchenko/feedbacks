@@ -47,7 +47,7 @@ trait SearchProviderTrait
         $this->skipSearchTest(__CLASS__);
 
         $provider = $this->getSearchProvider(self::$searchProviderName);
-        $searchTerm = new SearchTerm($term, $term, $type);
+        $searchTerm = new SearchTerm('fake', $term, $term, $type);
 
         $actual = $provider->search($searchTerm, $context);
 

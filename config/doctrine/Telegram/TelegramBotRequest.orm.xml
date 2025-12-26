@@ -4,8 +4,8 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="App\Entity\Telegram\TelegramBotRequest"
-            repository-class="App\Repository\Telegram\Bot\TelegramBotRequestDoctrineRepository" table="telegram_requests">
+    <entity name="App\Entity\Telegram\TelegramBotRequest" table="telegram_requests"
+            repository-class="App\Repository\Telegram\Bot\TelegramBotRequestDoctrineRepository">
 
         <indexes>
             <index fields="createdAt,chatId"/>
@@ -21,7 +21,7 @@
         <field name="chatId" column="chat_id" length="32" nullable="true"/>
         <field name="data" column="data" type="json"/>
 
-        <many-to-one field="bot" target-entity="App\Entity\Telegram\TelegramBot"/>
+        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot"/>
 
         <field name="response" column="response" type="json"/>
         <field name="createdAt" column="created_at" type="datetime_immutable"/>

@@ -8,11 +8,13 @@ use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
 use App\Entity\User\User;
 use App\Repository\Telegram\Channel\TelegramChannelRepository;
+use Psr\Log\LoggerInterface;
 
 class TelegramChannelMatchesProvider
 {
     public function __construct(
         private readonly TelegramChannelRepository $telegramChannelRepository,
+        private readonly LoggerInterface $logger,
     )
     {
     }
@@ -49,6 +51,7 @@ class TelegramChannelMatchesProvider
         $channels = $this->telegramChannelRepository->findPrimaryNonDeletedByGroupAndCountry($bot->getGroup(), $bot->getCountryCode());
 
         if (count($channels) === 0) {
+            $this->logger->warning(sprintf('No channels were found for %s group and %s country', $bot->getGroup()->value, $bot->getCountryCode()));
             return [];
         }
 

@@ -20,6 +20,11 @@ class TelegramBotDynamodbRepository extends EntityRepository
         parent::__construct($em, TelegramBot::class);
     }
 
+    public function find(string $id): ?TelegramBot
+    {
+        return $this->getOne(['id' => $id]);
+    }
+
     public function findAll(): array
     {
         return $this->queryMany(
@@ -94,7 +99,7 @@ class TelegramBotDynamodbRepository extends EntityRepository
                 ])
                 ->expressionAttributeValues([
                     ':pk' => 'TELEGRAM_BOT',
-                    ':sk' => $group->name . '#',
+                    ':sk' => $group->value . '#',
                 ])
         );
     }
@@ -120,7 +125,7 @@ class TelegramBotDynamodbRepository extends EntityRepository
                 ])
                 ->expressionAttributeValues([
                     ':pk' => 'TELEGRAM_BOT',
-                    ':sk' => $group->name . '#',
+                    ':sk' => $group->value . '#',
                 ])
         );
     }
@@ -144,7 +149,7 @@ class TelegramBotDynamodbRepository extends EntityRepository
                 ])
                 ->expressionAttributeValues([
                     ':pk' => 'TELEGRAM_BOT',
-                    ':sk' => $group->name . '#' . $countryCode . '#',
+                    ':sk' => $group->value . '#' . $countryCode . '#',
                 ])
         );
     }
@@ -170,7 +175,7 @@ class TelegramBotDynamodbRepository extends EntityRepository
                 ])
                 ->expressionAttributeValues([
                     ':pk' => 'TELEGRAM_BOT',
-                    ':sk' => $bot->getGroup()->name . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
+                    ':sk' => $bot->getGroup()->value . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
                 ])
         );
     }

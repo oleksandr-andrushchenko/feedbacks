@@ -62,8 +62,9 @@ class Feedback
         $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
-        $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
         $this->messengerUserId ??= $this->messengerUser?->getId();
+        $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
@@ -124,15 +125,6 @@ class Feedback
         return $this;
     }
 
-    public function addSearchTermId(string $id): self
-    {
-        if ($this->searchTermIds === null) {
-            $this->searchTermIds = [];
-        }
-        $this->searchTermIds[] = $id;
-        return $this;
-    }
-
     public function setSearchTermIds(?array $ids): self
     {
         $this->searchTermIds = $ids;
@@ -164,7 +156,7 @@ class Feedback
 
     public function setHasActiveSubscription(?bool $hasActiveSubscription): self
     {
-        $this->hasActiveSubscription = $hasActiveSubscription;
+        $this->hasActiveSubscription = $hasActiveSubscription === true ? true : null;
         return $this;
     }
 
@@ -185,19 +177,20 @@ class Feedback
 
     public function addTelegramChannelMessageId(int $messageId): self
     {
-        if ($this->telegramChannelMessageIds === null) {
-            $this->telegramChannelMessageIds = [];
-        }
+        $this->telegramChannelMessageIds ??= [];
+
         if (!in_array($messageId, $this->telegramChannelMessageIds, true)) {
             $this->telegramChannelMessageIds[] = $messageId;
         }
 
+        $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
+
         return $this;
     }
 
-    public function getTelegramChannelMessageIds(): ?array
+    public function getTelegramChannelMessageIds(): array
     {
-        return $this->telegramChannelMessageIds;
+        return $this->telegramChannelMessageIds ?? [];
     }
 
     public function setTelegramBotId(?string $telegramBotId): self
@@ -206,14 +199,20 @@ class Feedback
         return $this;
     }
 
-    public function getTelegramBot(): ?TelegramBot
-    {
-        return $this->telegramBot;
-    }
-
     public function getTelegramBotId(): ?string
     {
         return $this->telegramBotId;
+    }
+
+    public function setTelegramBot(?TelegramBot $telegramBot): self
+    {
+        $this->telegramBot = $telegramBot;
+        return $this;
+    }
+
+    public function getTelegramBot(): ?TelegramBot
+    {
+        return $this->telegramBot;
     }
 
     public function getCreatedAt(): ?DateTimeInterface

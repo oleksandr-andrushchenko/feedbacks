@@ -45,7 +45,14 @@
         </service>
         <service id="app.user_contact_message_normalizer" class="App\Serializer\User\UserContactMessageNormalizer"
                  lazy="true">
+            <argument type="service" id="app.user_contact_message_service"/>
             <tag name="serializer.normalizer" priority="-940"/>
+        </service>
+        <service id="app.user_contact_message_service" class="App\Service\User\UserContactMessageService">
+            <argument type="service" id="app.user_contact_message_repository"/>
+            <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.messenger_user_repository"/>
+            <argument type="service" id="app.telegram_bot_repository"/>
         </service>
     </services>
 </container>

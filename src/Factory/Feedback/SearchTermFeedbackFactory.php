@@ -7,9 +7,16 @@ namespace App\Factory\Feedback;
 use App\Entity\Feedback\Feedback;
 use App\Entity\Feedback\SearchTerm;
 use App\Entity\Feedback\SearchTermFeedback;
+use App\Service\Feedback\FeedbackService;
 
 class SearchTermFeedbackFactory
 {
+    public function __construct(
+        private readonly FeedbackService $feedbackService,
+    )
+    {
+    }
+
     public function createSearchTermFeedback(SearchTerm $searchTerm, Feedback $feedback, ?array $extraSearchTerms = null): SearchTermFeedback
     {
         return new SearchTermFeedback(
@@ -25,8 +32,8 @@ class SearchTermFeedbackFactory
             $feedback->getUser()?->hasActiveSubscription(),
             $feedback->getUser()?->getCountryCode(),
             $feedback->getUser()?->getLocaleCode(),
-            $feedback->getMessengerUser()?->getId(),
-            $feedback->getTelegramBot()?->getId(),
+            $this->feedbackService->getMessengerUser($feedback)?->getId(),
+            $this->feedbackService->getTelegramBot($feedback)?->getId(),
             empty($extraSearchTerms) ? null : $extraSearchTerms
         );
     }

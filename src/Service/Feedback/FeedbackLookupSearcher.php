@@ -16,6 +16,7 @@ class FeedbackLookupSearcher
     public function __construct(
         private readonly FeedbackLookupRepository $feedbackLookupRepository,
         private readonly SearchTermFeedbackLookupDynamodbRepository $searchTermFeedbackLookupDynamodbRepository,
+        private readonly FeedbackLookupService $feedbackLookupService,
     )
     {
     }
@@ -51,9 +52,13 @@ class FeedbackLookupSearcher
 
         $feedbackLookups = array_filter(
             $feedbackLookups,
-            static fn (FeedbackLookup $feedbackLookup): bool => $searchTerm->getType() === SearchTermType::unknown
-                || $feedbackLookup->getSearchTerm()->getType() === SearchTermType::unknown
-                || $searchTerm->getType() === $feedbackLookup->getSearchTerm()->getType()
+            function (FeedbackLookup $feedbackLookup) use ($searchTerm): bool {
+                $searchTerm_ = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
+
+                return $searchTerm->getType() === SearchTermType::unknown
+                    || $searchTerm_->getType() === SearchTermType::unknown
+                    || $searchTerm->getType() === $searchTerm_->getType();
+            }
         );
 
         $feedbackLookups = array_values($feedbackLookups);

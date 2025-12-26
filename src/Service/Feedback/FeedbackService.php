@@ -7,10 +7,12 @@ namespace App\Service\Feedback;
 use App\Entity\Feedback\Feedback;
 use App\Entity\Feedback\SearchTerm;
 use App\Entity\Messenger\MessengerUser;
+use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Repository\Feedback\SearchTermRepository;
 use App\Repository\Messenger\MessengerUserRepository;
+use App\Repository\Telegram\Bot\TelegramBotRepository;
 use App\Repository\User\UserRepository;
 
 class FeedbackService
@@ -20,6 +22,7 @@ class FeedbackService
         private readonly UserRepository $userRepository,
         private readonly MessengerUserRepository $messengerUserRepository,
         private readonly SearchTermRepository $searchTermRepository,
+        private readonly TelegramBotRepository $telegramBotRepository,
     )
     {
     }
@@ -71,5 +74,22 @@ class FeedbackService
         }
 
         return $feedback->getSearchTerms()->toArray();
+    }
+
+    public function getTelegramBot(Feedback $feedback): ?TelegramBot
+    {
+        $telegramBot = $feedback->getTelegramBot();
+
+        if ($this->feedbackRepository->getConfig()->isDynamodb()) {
+            if ($telegramBot !== null) {
+                return $telegramBot;
+            }
+            if ($feedback->getTelegramBotId() !== null) {
+                $telegramBot = $this->telegramBotRepository->find($feedback->getTelegramBotId());
+                $feedback->setTelegramBot($telegramBot);
+            }
+        }
+
+        return $telegramBot;
     }
 }

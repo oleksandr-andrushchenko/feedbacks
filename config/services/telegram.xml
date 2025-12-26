@@ -251,10 +251,10 @@
                  class="App\Serializer\Telegram\Bot\TelegramBotPaymentMethodNormalizer" lazy="true">
             <tag name="serializer.normalizer" priority="-967"/>
         </service>
-        <service id="app.telegram_bot_payment_normalizer"
-                 class="App\Serializer\Telegram\Bot\TelegramBotPaymentNormalizer"
-                 lazy="true">
+        <service id="app.telegram_bot_payment_normalizer" lazy="true"
+                 class="App\Serializer\Telegram\Bot\TelegramBotPaymentNormalizer">
             <argument type="service" id="app.money_normalizer"/>
+            <argument type="service" id="app.telegram_bot_payment_service"/>
             <tag name="serializer.normalizer" priority="-966"/>
         </service>
         <service id="app.telegram_bot_remover" class="App\Service\Telegram\Bot\TelegramBotRemover" lazy="true"/>
@@ -476,6 +476,14 @@
                  class="App\Service\Telegram\Bot\TelegramBotMatchesProvider" lazy="true">
             <argument type="service" id="app.telegram_bot_repository"/>
         </service>
+
+        <service id="app.telegram_bot_payment_service" class="App\Service\Telegram\TelegramBotPaymentService"
+                 lazy="true">
+            <argument type="service" id="app.telegram_bot_payment_repository"/>
+            <argument type="service" id="app.telegram_bot_payment_method_repository"/>
+            <argument type="service" id="app.messenger_user_repository"/>
+        </service>
+
         <service id="app.telegram_bot_matches_chat_sender"
                  class="App\Service\Telegram\Bot\Chat\TelegramBotMatchesChatSender" lazy="true">
             <argument type="service" id="app.telegram_bot_matches_provider"/>
@@ -539,6 +547,7 @@
         <service id="app.telegram_channel_matches_provider"
                  class="App\Service\Telegram\Channel\TelegramChannelMatchesProvider" lazy="true">
             <argument type="service" id="app.telegram_channel_repository"/>
+            <argument type="service" id="logger"/>
         </service>
         <service id="app.telegram_bot_link_view_provider"
                  class="App\Service\Telegram\Bot\View\TelegramBotLinkViewProvider" lazy="true">

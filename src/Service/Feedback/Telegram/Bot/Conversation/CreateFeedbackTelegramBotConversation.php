@@ -690,9 +690,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
     public function gotDescription(TelegramBotAwareHelper $tg, Entity $entity): null
     {
-        $this->logger->critical(__METHOD__, [
-            'input' => $tg->getInput(),
-        ]);
         if ($tg->matchInput(null)) {
             $tg->replyWrong(true);
 
@@ -882,7 +879,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
     public function createAndReply(TelegramBotAwareHelper $tg, Entity $entity): null
     {
-        $this->logger->critical(__METHOD__);
         try {
             $this->validator->validate($this->state);
 
@@ -903,14 +899,10 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $tg->stopConversation($entity);
 
             if (!empty($this->state->getDescription())) {
-                $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent($this->state->getCreatedId(), addTime: true));
+                $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent(feedback: $feedback, addTime: true));
             }
 
-            $sent= $this->chooseActionTelegramChatSender->sendActions($tg);
-
-            $this->logger->critical(__METHOD__, ['sent']);
-
-            return $sent;
+            return $this->chooseActionTelegramChatSender->sendActions($tg);
         } catch (ValidatorException $exception) {
             if ($exception->isFirstProperty('rating')) {
                 $tg->replyWarning($tg->queryText($exception->getFirstMessage()));
@@ -1005,7 +997,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
         $this->chooseActionTelegramChatSender->sendActions($tg, $message, appendDefault: true);
 
-        $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent($this->state->getCreatedId(), addTime: true, notifyUser: true));
+        $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent(feedbackId: $this->state->getCreatedId(), addTime: true, notifyUser: true));
 
         return null;
     }

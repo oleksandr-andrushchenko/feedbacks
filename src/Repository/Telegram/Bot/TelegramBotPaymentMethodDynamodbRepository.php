@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository\Telegram\Bot;
 
-use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
-use App\Enum\Telegram\TelegramBotPaymentMethodName;
 use OA\Dynamodb\ODM\EntityManager;
 use OA\Dynamodb\ODM\EntityRepository;
 
@@ -20,24 +18,8 @@ class TelegramBotPaymentMethodDynamodbRepository extends EntityRepository
         parent::__construct($em, TelegramBotPaymentMethod::class);
     }
 
-    /**
-     * @param TelegramBot $bot
-     * @return TelegramBotPaymentMethod[]
-     */
-    public function findActiveByBot(TelegramBot $bot): array
+    public function find(string $id): ?TelegramBotPaymentMethod
     {
-        return $this->findBy([
-            'bot' => $bot,
-            'deletedAt' => null,
-        ]);
-    }
-
-    public function findOneActiveByBotAndName(TelegramBot $bot, TelegramBotPaymentMethodName $name): ?TelegramBotPaymentMethod
-    {
-        return $this->findOneBy([
-            'bot' => $bot,
-            'name' => $name,
-            'deletedAt' => null,
-        ]);
+        return $this->getOne(['id' => $id]);
     }
 }

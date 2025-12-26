@@ -299,6 +299,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
             $feedbackUserSubscription
                 ->setTelegramPaymentId($feedbackUserSubscription->getTelegramPayment()?->getId())
                 ->setMessengerUserId($feedbackUserSubscription->getMessengerUser()?->getId())
+                ->setUserId($feedbackUserSubscription->getUser()?->getId())
             ;
             $this->dynamodbEntityManager->persist($feedbackUserSubscription);
             $affectedRows++;

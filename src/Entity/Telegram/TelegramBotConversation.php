@@ -18,6 +18,16 @@ use Stringable;
 ]
 class TelegramBotConversation implements Stringable
 {
+    private ?string $id = null;
+    #[Attribute('expire_at')]
+    private ?DateTimeInterface $expireAt = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
         #[Attribute]
         private readonly string $hash,
@@ -30,16 +40,7 @@ class TelegramBotConversation implements Stringable
         #[Attribute]
         private readonly string $class,
         #[Attribute]
-        private ?array $state,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('updated_at')]
-        private ?DateTimeInterface $updatedAt = null,
-        #[Attribute('deleted_at')]
-        private ?DateTimeInterface $deletedAt = null,
-        #[Attribute('expire_at')]
-        private ?DateTimeInterface $expireAt = null,
-        private ?string $id = null,
+        private ?array $state
     )
     {
         $this->createdAt ??= new DateTimeImmutable();
@@ -112,6 +113,12 @@ class TelegramBotConversation implements Stringable
         return $this;
     }
 
+    public function setExpireAt(?DateTimeInterface $expireAt): self
+    {
+        $this->expireAt = $expireAt;
+        return $this;
+    }
+
     public function getExpireAt(): ?DateTimeInterface
     {
         return $this->expireAt;
@@ -126,12 +133,6 @@ class TelegramBotConversation implements Stringable
     public function getDeletedAt(): ?DateTimeInterface
     {
         return $this->deletedAt;
-    }
-
-    public function setExpireAt(?DateTimeInterface $expireAt): self
-    {
-        $this->expireAt = $expireAt;
-        return $this;
     }
 
     public function __toString(): string

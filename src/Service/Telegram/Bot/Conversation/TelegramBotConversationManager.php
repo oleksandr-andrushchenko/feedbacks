@@ -75,11 +75,7 @@ class TelegramBotConversationManager
         return md5($messengerUserId . '-' . $chatId . '-' . $botId);
     }
 
-    public function createTelegramConversation(
-        TelegramBot $bot,
-        string $class,
-        TelegramBotConversationState $state = null
-    ): TelegramBotConversation
+    public function createTelegramConversation(TelegramBot $bot, string $class, TelegramBotConversationState $state = null): TelegramBotConversation
     {
         $messengerUserId = $bot->getMessengerUser()->getId();
         $chatId = $this->telegramBotChatProvider->getTelegramChatByUpdate($bot->getUpdate())?->getId();
@@ -99,12 +95,7 @@ class TelegramBotConversationManager
         return $entity;
     }
 
-    public function executeTelegramConversation(
-        TelegramBot $bot,
-        string $class,
-        TelegramBotConversationState $state,
-        string $method
-    ): void
+    public function executeTelegramConversation(TelegramBot $bot, string $class, TelegramBotConversationState $state, string $method): void
     {
         $entity = $this->createTelegramConversation($bot, $class, $state);
 
@@ -153,11 +144,7 @@ class TelegramBotConversationManager
         }
     }
 
-    public function executeConversation(
-        TelegramBot $bot,
-        TelegramBotConversation $entity,
-        string $method
-    ): TelegramBotConversationInterface
+    public function executeConversation(TelegramBot $bot, TelegramBotConversation $entity, string $method): TelegramBotConversationInterface
     {
         $group = $this->telegramBotGroupRegistry->getTelegramGroup($bot->getEntity()->getGroup());
         // todo: throw not found exception

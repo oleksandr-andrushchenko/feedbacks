@@ -171,11 +171,17 @@
         <service id="app.feedback_lookup_factory" class="App\Factory\Feedback\FeedbackLookupFactory">
             <argument type="service" id="app.id_generator"/>
         </service>
-        <service id="app.search_term_feedback_factory" class="App\Factory\Feedback\SearchTermFeedbackFactory"/>
+        <service id="app.search_term_feedback_factory" class="App\Factory\Feedback\SearchTermFeedbackFactory">
+            <argument type="service" id="app.feedback_service"/>
+        </service>
         <service id="app.search_term_feedback_search_factory"
-                 class="App\Factory\Feedback\SearchTermFeedbackSearchFactory"/>
+                 class="App\Factory\Feedback\SearchTermFeedbackSearchFactory">
+            <argument type="service" id="app.feedback_search_service"/>
+        </service>
         <service id="app.search_term_feedback_lookup_factory"
-                 class="App\Factory\Feedback\SearchTermFeedbackLookupFactory"/>
+                 class="App\Factory\Feedback\SearchTermFeedbackLookupFactory">
+            <argument type="service" id="app.feedback_lookup_service"/>
+        </service>
 
         <service id="app.feedback_search_term_validator" class="App\Validator\Feedback\SearchTermTransferValidator"
                  lazy="true">
@@ -213,10 +219,12 @@
         </service>
         <service id="app.feedback_search_normalizer" class="App\Serializer\Feedback\FeedbackSearchNormalizer"
                  lazy="true">
+            <argument type="service" id="app.feedback_search_service"/>
             <tag name="serializer.normalizer" priority="-985"/>
         </service>
         <service id="app.feedback_lookup_normalizer" class="App\Serializer\Feedback\FeedbackLookupNormalizer"
                  lazy="true">
+            <argument type="service" id="app.feedback_lookup_service"/>
             <tag name="serializer.normalizer" priority="-984"/>
         </service>
         <service id="app.feedback_user_subscription_normalizer"
@@ -287,6 +295,7 @@
             <argument type="service" id="app.messenger_user_service"/>
             <argument type="service" id="app.search_term_feedback_factory"/>
             <argument type="service" id="app.feedback_factory"/>
+            <argument type="service" id="app.feedback_service"/>
         </service>
         <service id="app.feedback_search_creator" class="App\Service\Feedback\FeedbackSearchCreator" lazy="true">
             <argument type="service" id="app.feedback_search_command_options"/>
@@ -317,11 +326,13 @@
             <argument type="service" id="app.feedback_repository"/>
             <argument type="service" id="app.search_term_feedback_dynamodb_repository"/>
             <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.feedback_service"/>
         </service>
         <service id="app.feedback_search_searcher" class="App\Service\Feedback\FeedbackSearchSearcher" lazy="true">
             <argument type="service" id="app.feedback_search_repository"/>
             <argument type="service" id="app.search_term_feedback_search_dynamodb_repository"/>
             <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.feedback_search_service"/>
         </service>
         <service id="app.feedback_search_term_parser_instagram"
                  class="App\Service\Feedback\SearchTerm\InstagramSearchTermParser" lazy="true">
@@ -419,6 +430,7 @@
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.telegram_bot_payment_service"/>
         </service>
         <service id="app.feedback_search_statistic_provider"
                  class="App\Service\Feedback\Statistic\FeedbackSearchUserStatisticProvider" lazy="true">
@@ -565,7 +577,7 @@
             <argument type="service" id="app.feedback_search_term_type_provider"/>
             <argument type="service" id="app.feedback_search_creator"/>
             <argument type="service" id="app.search_searcher_telegram"/>
-            <argument type="service" id="logger"/>
+            <argument type="service" id="app.feedback_search_service"/>
             <argument>%app.search.search_term_type_step%</argument>
             <argument>%app.search.confirm_step%</argument>
             <argument>%app.search.create_confirm_step%</argument>
@@ -581,6 +593,7 @@
             <argument type="service" id="app.feedback_search_term_type_provider"/>
             <argument type="service" id="app.feedback_lookup_creator"/>
             <argument type="service" id="app.search_searcher_telegram"/>
+            <argument type="service" id="app.feedback_lookup_service"/>
             <argument>%app.lookup.search_term_type_step%</argument>
             <argument>%app.lookup.confirm_step%</argument>
             <tag name="app.telegram_conversation_feedbacks"/>
@@ -736,6 +749,7 @@
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
             <argument type="service" id="app.feedback_service"/>
+            <argument type="service" id="app.feedback_search_service"/>
             <tag name="messenger.message_handler" bus="app.command_bus"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSearchSourcesAboutNewFeedbackCommand"/>
         </service>
@@ -752,12 +766,15 @@
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.feedback_lookup_service"/>
+            <argument type="service" id="app.feedback_search_service"/>
             <tag name="messenger.message_handler" bus="app.command_bus"
                  handles="App\Message\Command\Feedback\NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommand"/>
         </service>
         <service id="app.feedback_lookup_searcher" class="App\Service\Feedback\FeedbackLookupSearcher" lazy="true">
             <argument type="service" id="app.feedback_lookup_repository"/>
             <argument type="service" id="app.search_term_feedback_lookup_dynamodb_repository"/>
+            <argument type="service" id="app.feedback_lookup_service"/>
         </service>
         <service id="app.notify_feedback_search_targets_about_new_feedback_search_command_handler" lazy="true"
                  class="App\Message\CommandHandler\Feedback\NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler">
@@ -774,6 +791,7 @@
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
             <argument type="service" id="app.search_term_service"/>
+            <argument type="service" id="app.feedback_search_service"/>
             <tag name="messenger.message_handler" bus="app.command_bus"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommand"/>
         </service>
@@ -807,6 +825,7 @@
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.feedback_search_service"/>
             <tag name="messenger.message_handler" bus="app.command_bus"
                  handles="App\Message\Command\Feedback\NotifyFeedbackSearchSourcesAboutNewFeedbackSearchCommand"/>
         </service>
@@ -819,6 +838,7 @@
             <argument type="service" id="translator"/>
             <argument type="service" id="app.feedback_telegram_reply_sign_view_provider"/>
             <argument type="service" id="app.string_mb_uc_firster"/>
+            <argument type="service" id="app.feedback_lookup_service"/>
         </service>
         <service id="app.notify_feedback_lookup_target_about_new_feedback_lookup_command_handler" lazy="true"
                  class="App\Message\CommandHandler\Feedback\NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler">
@@ -850,6 +870,7 @@
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.feedback_lookup_service"/>
             <tag name="messenger.message_handler" bus="app.command_bus"
                  handles="App\Message\Command\Feedback\NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommand"/>
         </service>
@@ -881,6 +902,21 @@
             <argument type="service" id="app.user_repository"/>
             <argument type="service" id="app.messenger_user_repository"/>
             <argument type="service" id="app.search_term_repository"/>
+            <argument type="service" id="app.telegram_bot_repository"/>
+        </service>
+        <service id="app.feedback_lookup_service" class="App\Service\Feedback\FeedbackLookupService" lazy="true">
+            <argument type="service" id="app.feedback_lookup_repository"/>
+            <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.messenger_user_repository"/>
+            <argument type="service" id="app.search_term_repository"/>
+            <argument type="service" id="app.telegram_bot_repository"/>
+        </service>
+        <service id="app.feedback_search_service" class="App\Service\Feedback\FeedbackSearchService" lazy="true">
+            <argument type="service" id="app.feedback_search_repository"/>
+            <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.messenger_user_repository"/>
+            <argument type="service" id="app.search_term_repository"/>
+            <argument type="service" id="app.telegram_bot_repository"/>
         </service>
     </services>
 </container>

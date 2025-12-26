@@ -16,6 +16,7 @@ use App\Message\Command\Feedback\NotifyFeedbackLookupSourcesAboutNewFeedbackLook
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackLookupRepository;
 use App\Service\Feedback\FeedbackLookupSearcher;
+use App\Service\Feedback\FeedbackLookupService;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackLookupTelegramViewProvider;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
@@ -43,6 +44,7 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommandHandler
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
+        private readonly FeedbackLookupService $feedbackLookupService,
     )
     {
     }
@@ -56,18 +58,19 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackLookupCommandHandler
             return;
         }
 
-        $searchTerm = $feedbackLookup->getSearchTerm();
+        $searchTerm = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
+        $messengerUser = $this->feedbackLookupService->getMessengerUser($feedbackLookup);
         $targetFeedbackLookups = $this->feedbackLookupSearcher->searchFeedbackLookups($searchTerm);
 
         foreach ($targetFeedbackLookups as $targetFeedbackLookup) {
-            $messengerUser = $targetFeedbackLookup->getMessengerUser();
+            $messengerUser_ = $this->feedbackLookupService->getMessengerUser($targetFeedbackLookup);
 
             if (
-                $messengerUser !== null
-                && $messengerUser->getMessenger() === Messenger::telegram
-                && $messengerUser->getId() !== $feedbackLookup->getMessengerUser()->getId()
+                $messengerUser_ !== null
+                && $messengerUser_->getMessenger() === Messenger::telegram
+                && $messengerUser_->getId() !== $messengerUser->getId()
             ) {
-                $this->notify($messengerUser, $searchTerm, $feedbackLookup, $targetFeedbackLookup);
+                $this->notify($messengerUser_, $searchTerm, $feedbackLookup, $targetFeedbackLookup);
             }
         }
     }

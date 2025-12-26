@@ -29,7 +29,7 @@ class TelegramBotMatchesProvider
             return [];
         }
 
-        $bots = array_combine(array_map(static fn (TelegramBot $bot): int => $bot->getId(), $bots), $bots);
+        $bots = array_combine(array_map(static fn (TelegramBot $bot): string => $bot->getId(), $bots), $bots);
 
         $points = [];
 

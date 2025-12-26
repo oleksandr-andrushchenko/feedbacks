@@ -14,6 +14,7 @@ use App\Repository\Feedback\FeedbackUserSubscriptionRepository;
 use App\Service\IdGenerator;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
+use App\Service\Telegram\TelegramBotPaymentService;
 use DateTimeImmutable;
 use Symfony\Component\Messenger\MessageBusInterface;
 
@@ -26,13 +27,14 @@ class FeedbackSubscriptionManager
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
+        private readonly TelegramBotPaymentService $telegramBotPaymentService,
     )
     {
     }
 
     public function createFeedbackUserSubscriptionByTelegramPayment(TelegramBotPayment $payment): FeedbackUserSubscription
     {
-        $messengerUser = $payment->getMessengerUser();
+        $messengerUser = $this->telegramBotPaymentService->getMessengerUser($payment);
         $user = $this->messengerUserService->getUser($messengerUser);
 
         return $this->createFeedbackUserSubscription(
@@ -57,8 +59,8 @@ class FeedbackSubscriptionManager
             $user,
             $subscriptionPlan->getName(),
             (new DateTimeImmutable())->modify($subscriptionPlan->getDatetimeModifier()),
-            messengerUser: $messengerUser,
-            telegramPayment: $telegramPayment
+            $messengerUser,
+            $telegramPayment
         );
         $this->entityManager->persist($subscription);
 

@@ -120,7 +120,6 @@ class UnitOfWork
         // ----------------------------
         // AUTOMATIC DIRTY DETECTION
         // ----------------------------
-        // todo: uncomment and fix
         foreach ($this->identityMap as $oid => $entity) {
             // Skip new or removed entities
             if (isset($this->newEntities[$oid]) || isset($this->removedEntities[$oid])) {
@@ -152,7 +151,7 @@ class UnitOfWork
             $table = $metadata->getTable();
             $item = $serializer->serialize($entity);
 
-//            $logger->critical(__METHOD__ . ':insert', $item);
+//            $logger->debug(__METHOD__ . ':insert', $item);
 
             $writes[] = [
                 'Put' => [
@@ -190,7 +189,7 @@ class UnitOfWork
                 $condValues = [':v' => ['N' => $oldVersion]];
             }
 
-//            $logger->critical(__METHOD__ . ':update', $newData);
+//            $logger->debug(__METHOD__ . ':update', $newData);
 
             $writes[] = [
                 'Put' => [

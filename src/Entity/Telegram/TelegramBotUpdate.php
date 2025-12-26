@@ -18,25 +18,24 @@ use Stringable;
 )]
 class TelegramBotUpdate implements Stringable
 {
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $botId = null;
+    #[Attribute('expire_at')]
+    private ?DateTimeInterface $expireAt = null;
+
     public function __construct(
         #[Attribute('telegram_bot_update_id')]
         private readonly string $id,
         #[Attribute]
         private readonly array $data,
         private readonly TelegramBot $bot,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('telegram_bot_id')]
-        private ?string $botId = null,
-        #[Attribute('expire_at')]
-        private ?DateTimeInterface $expireAt = null,
     )
     {
         $this->botId = $this->bot->getId();
-
-        if ($this->expireAt === null) {
-            $this->expireAt = (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
-        }
+        $this->expireAt ??= (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): string

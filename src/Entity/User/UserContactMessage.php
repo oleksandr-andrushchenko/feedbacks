@@ -20,24 +20,28 @@ use Stringable;
 )]
 class UserContactMessage implements Stringable
 {
+    #[Attribute('user_id')]
+    private ?string $userId = null;
+    #[Attribute('messenger_user_id')]
+    private ?string $messengerUserId = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+
     public function __construct(
         #[Attribute]
         private readonly string $id,
-        private readonly ?MessengerUser $messengerUser,
-        private readonly User $user,
+        private ?MessengerUser $messengerUser,
+        private User $user,
         #[Attribute]
         private readonly string $text,
-        private readonly ?TelegramBot $telegramBot,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('messenger_user_id')]
-        private ?string $messengerUserId = null,
-        #[Attribute('telegram_bot_id')]
-        private ?string $telegramBotId = null,
+        private ?TelegramBot $telegramBot,
     )
     {
-        $this->telegramBotId = $this->telegramBot?->getId();
+        $this->userId = $this->user?->getId();
         $this->messengerUserId = $this->messengerUser?->getId();
+        $this->telegramBotId = $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 
@@ -52,12 +56,40 @@ class UserContactMessage implements Stringable
         return $this;
     }
 
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
+    }
+
+    public function setMessengerUser(?MessengerUser $messengerUserId): self
+    {
+        $this->messengerUser = $messengerUserId;
+        return $this;
+    }
+
     public function getMessengerUser(): ?MessengerUser
     {
         return $this->messengerUser;
     }
 
-    public function getUser(): User
+    public function setUserId(?string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getUser(): ?User
     {
         return $this->user;
     }
@@ -70,6 +102,17 @@ class UserContactMessage implements Stringable
     public function setTelegramBotId(?string $telegramBotId): self
     {
         $this->telegramBotId = $telegramBotId;
+        return $this;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
+    }
+
+    public function setTelegramBot(?TelegramBot $telegramBot): self
+    {
+        $this->telegramBot = $telegramBot;
         return $this;
     }
 

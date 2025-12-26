@@ -39,7 +39,7 @@ class FeedbackNormalizer implements NormalizerInterface
 
             $result['rate'] = $data->getRating()->name;
             $result['description'] = $data->getText();
-            $result['bot'] = sprintf('@%s', $data->getTelegramBot()->getUsername());
+            $result['bot'] = sprintf('@%s', $this->feedbackService->getTelegramBot($data)?->getUsername());
 
             return $result;
         }

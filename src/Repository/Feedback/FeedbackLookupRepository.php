@@ -17,6 +17,7 @@ use OA\Dynamodb\ODM\EntityRepository as DynamodbEntityRepository;
  * @property-read FeedbackLookupDoctrineRepository $doctrine
  * @method FeedbackLookupDynamodbRepository getDynamodb()
  * @property-read FeedbackLookupDynamodbRepository $dynamodb
+ * @method FeedbackLookup|null find(string $id)
  * @method FeedbackLookup|null findOneLast()
  * @method array<FeedbackLookup> findByNormalizedText(string $normalizeText, int $maxResults = 100)
  * @method int countByUserAndFromWithoutActiveSubscription(User $user, DateTimeInterface $from)

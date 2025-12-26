@@ -16,6 +16,7 @@ use App\Service\Telegram\Channel\TelegramChannelMatchesProvider;
 use App\Service\Telegram\Channel\View\TelegramChannelLinkViewProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 
 class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
 {
@@ -43,10 +44,10 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
             return;
         }
 
-        $bot = $feedback->getTelegramBot();
+        $bot = $this->feedbackService->getTelegramBot($feedback);
 
         if ($bot === null) {
-            $this->logger->notice(sprintf('No telegram bot was found in %s for %s id', __CLASS__, $event->getFeedbackId()));
+            $this->logger->warning(sprintf('No telegram bot was found in %s for %s id', __CLASS__, $event->getFeedbackId()));
             return;
         }
 
@@ -54,6 +55,13 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
         $notifyUser = $event->notifyUser();
         $user = $this->feedbackService->getUser($feedback);
         $channels = $this->telegramChannelMatchesProvider->getCachedTelegramChannelMatches($user, $bot);
+
+        if (count($channels) === 0) {
+            $this->logger->warning(sprintf('No telegram channels were found in %s for %s bot id', __CLASS__, $bot->getId()));
+            return;
+        }
+
+        $failedChannelIds = [];
 
         foreach ($channels as $channel) {
             $message = $this->feedbackTelegramSearchViewer->getFeedbackTelegramView(
@@ -69,19 +77,31 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
 
             $chatId = $channel->getChatId() ?? ('@' . $channel->getUsername());
 
-            $response = $this->telegramBotMessageSender->sendTelegramMessage($bot, $chatId, $message, keepKeyboard: true);
+            try {
+                $response = $this->telegramBotMessageSender->sendTelegramMessage($bot, $chatId, $message, keepKeyboard: true);
 
-            if (!$response->isOk()) {
-                $this->logger->error($response->getDescription());
-                continue;
-            }
+                if (!$response->isOk()) {
+                    $this->logger->error($response->getDescription());
+                    continue;
+                }
 
-            $messageId = $response->getResult()?->getMessageId();
+                $messageId = $response->getResult()?->getMessageId();
 
-            if ($messageId !== null) {
-                $feedback->addTelegramChannelMessageId($messageId);
+                if ($messageId !== null) {
+                    $feedback->addTelegramChannelMessageId($messageId);
+                }
+            } catch (Throwable $exception) {
+                $this->logger->error($exception, [
+                    'channel_id' => $channel->getId(),
+                    'chat_id' => $chatId,
+                ]);
+                $failedChannelIds[] = $channel->getId();
             }
         }
+
+        $channels = array_values(
+            array_filter($channels, static fn (TelegramChannel $channel) => !in_array($channel->getId(), $failedChannelIds, true))
+        );
 
         if ($notifyUser) {
             $messengerUser = $this->feedbackService->getMessengerUser($feedback);

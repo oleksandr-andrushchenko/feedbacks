@@ -30,6 +30,19 @@ use Stringable;
 )]
 class TelegramBot implements Stringable
 {
+    #[Attribute('descriptions_synced')]
+    private ?bool $descriptionsSynced = null;
+    #[Attribute('webhook_synced')]
+    private ?bool $webhookSynced = null;
+    #[Attribute('commands_synced')]
+    private ?bool $commandsSynced = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
         #[Attribute('telegram_bot_id')]
         private string $id,
@@ -46,34 +59,25 @@ class TelegramBot implements Stringable
         #[Attribute('locale_code')]
         private string $localeCode,
         #[Attribute('check_updates')]
-        private bool $checkUpdates = false,
+        private ?bool $checkUpdates = null,
         #[Attribute('check_requests')]
-        private bool $checkRequests = false,
+        private ?bool $checkRequests = null,
         #[Attribute('accept_payments')]
-        private bool $acceptPayments = false,
+        private ?bool $acceptPayments = null,
         #[Attribute('admin_ids')]
-        private array $adminIds = [],
+        private ?array $adminIds = null,
         #[Attribute('admin_only')]
-        private bool $adminOnly = true,
-        #[Attribute('descriptions_synced')]
-        private bool $descriptionsSynced = false,
-        #[Attribute('webhook_synced')]
-        private bool $webhookSynced = false,
-        #[Attribute('commands_synced')]
-        private bool $commandsSynced = false,
+        private ?bool $adminOnly = true,
         #[Attribute]
         private ?bool $primary = true,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('updated_at')]
-        private ?DateTimeInterface $updatedAt = null,
-        #[Attribute('deleted_at')]
-        private ?DateTimeInterface $deletedAt = null,
     )
     {
-        if ($this->primary !== true) {
-            $this->primary = null;
-        }
+        $this->checkUpdates = $this->checkUpdates === true ? true : null;
+        $this->checkRequests = $this->checkRequests === true ? true : null;
+        $this->acceptPayments = $this->acceptPayments === true ? true : null;
+        $this->adminIds = empty($this->adminIds) ? null : $this->adminIds;
+        $this->adminOnly = $this->adminOnly === true ? true : null;
+        $this->primary = $this->primary === true ? true : null;
     }
 
     public function setId(string $id): self
@@ -152,36 +156,36 @@ class TelegramBot implements Stringable
         return $this;
     }
 
-    public function checkUpdates(): bool
+    public function checkUpdates(): ?bool
     {
         return $this->checkUpdates;
     }
 
-    public function setCheckUpdates(bool $checkUpdates): self
+    public function setCheckUpdates(?bool $checkUpdates): self
     {
         $this->checkUpdates = $checkUpdates;
 
         return $this;
     }
 
-    public function checkRequests(): bool
+    public function checkRequests(): ?bool
     {
         return $this->checkRequests;
     }
 
-    public function setCheckRequests(bool $checkRequests): self
+    public function setCheckRequests(?bool $checkRequests): self
     {
         $this->checkRequests = $checkRequests;
 
         return $this;
     }
 
-    public function acceptPayments(): bool
+    public function acceptPayments(): ?bool
     {
         return $this->acceptPayments;
     }
 
-    public function setAcceptPayments(bool $acceptPayments): self
+    public function setAcceptPayments(?bool $acceptPayments): self
     {
         $this->acceptPayments = $acceptPayments;
 
@@ -190,68 +194,64 @@ class TelegramBot implements Stringable
 
     public function getAdminIds(): array
     {
-        return array_map(static fn ($adminId): int => (int) $adminId, $this->adminIds);
+        return array_map(static fn ($adminId): int => (int) $adminId, $this->adminIds ?? []);
     }
 
     public function setAdminIds(array $adminIds): self
     {
+        $this->adminIds = [];
         foreach ($adminIds as $adminId) {
-            $this->addAdminId($adminId);
+            $this->adminIds[] = (int) $adminId;
         }
 
-        return $this;
-    }
-
-    public function addAdminId(string|int $adminId): self
-    {
-        $this->adminIds[] = (int) $adminId;
         $this->adminIds = array_filter(array_unique($this->adminIds));
+        $this->adminIds = empty($this->adminIds) ? null : $this->adminIds;
 
         return $this;
     }
 
-    public function adminOnly(): bool
+    public function adminOnly(): ?bool
     {
         return $this->adminOnly;
     }
 
-    public function setAdminOnly(bool $adminOnly): self
+    public function setAdminOnly(?bool $adminOnly): self
     {
         $this->adminOnly = $adminOnly;
 
         return $this;
     }
 
-    public function descriptionsSynced(): bool
+    public function descriptionsSynced(): ?bool
     {
         return $this->descriptionsSynced;
     }
 
-    public function setDescriptionsSynced(bool $descriptionsSynced): self
+    public function setDescriptionsSynced(?bool $descriptionsSynced): self
     {
         $this->descriptionsSynced = $descriptionsSynced;
 
         return $this;
     }
 
-    public function webhookSynced(): bool
+    public function webhookSynced(): ?bool
     {
         return $this->webhookSynced;
     }
 
-    public function setWebhookSynced(bool $webhookSynced): self
+    public function setWebhookSynced(?bool $webhookSynced): self
     {
         $this->webhookSynced = $webhookSynced;
 
         return $this;
     }
 
-    public function commandsSynced(): bool
+    public function commandsSynced(): ?bool
     {
         return $this->commandsSynced;
     }
 
-    public function setCommandsSynced(bool $commandsSynced): self
+    public function setCommandsSynced(?bool $commandsSynced): self
     {
         $this->commandsSynced = $commandsSynced;
 

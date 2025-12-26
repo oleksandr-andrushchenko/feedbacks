@@ -19,6 +19,7 @@ class FeedbackSearchSearcher
         private readonly FeedbackSearchRepository $feedbackSearchRepository,
         private readonly SearchTermFeedbackSearchDynamodbRepository $searchTermFeedbackSearchDynamodbRepository,
         private readonly UserRepository $userRepository,
+        private readonly FeedbackSearchService $feedbackSearchService,
     )
     {
     }
@@ -63,9 +64,13 @@ class FeedbackSearchSearcher
 
         $feedbackSearches = array_filter(
             $feedbackSearches,
-            static fn (FeedbackSearch $feedbackSearch): bool => $searchTerm->getType() === SearchTermType::unknown
-                || $feedbackSearch->getSearchTerm()->getType() === SearchTermType::unknown
-                || $searchTerm->getType() === $feedbackSearch->getSearchTerm()->getType()
+            function (FeedbackSearch $feedbackSearch) use ($searchTerm): bool {
+                $searchTerm_ = $this->feedbackSearchService->getSearchTerm($feedbackSearch);
+
+                return $searchTerm->getType() === SearchTermType::unknown
+                    || $searchTerm_->getType() === SearchTermType::unknown
+                    || $searchTerm->getType() === $searchTerm_->getType();
+            }
         );
 
         $feedbackSearches = array_values($feedbackSearches);

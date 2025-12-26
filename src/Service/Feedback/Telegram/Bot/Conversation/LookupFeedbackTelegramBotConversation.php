@@ -12,6 +12,7 @@ use App\Exception\ValidatorException;
 use App\Model\Feedback\Command\FeedbackCommandLimit;
 use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
 use App\Service\Feedback\FeedbackLookupCreator;
+use App\Service\Feedback\FeedbackLookupService;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
 use App\Service\Feedback\SearchTerm\SearchTermTypeProvider;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
@@ -44,6 +45,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly SearchTermTypeProvider $searchTermTypeProvider,
         private readonly FeedbackLookupCreator $feedbackLookupCreator,
         private readonly Searcher $searcher,
+        private readonly FeedbackLookupService $feedbackLookupService,
         private readonly bool $searchTermTypeStep,
         private readonly bool $confirmStep,
     )
@@ -471,7 +473,8 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation impl
                 SearchProviderName::searches,
             ];
 
-            $this->searcher->search($feedbackLookup->getSearchTerm(), $render, $context, $providers);
+            $searchTerm = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
+            $this->searcher->search($searchTerm, $render, $context, $providers);
 
             $tg->stopConversation($entity);
 

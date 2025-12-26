@@ -38,6 +38,7 @@ class FeedbackCreator
         private readonly MessengerUserService $messengerUserService,
         private readonly SearchTermFeedbackFactory $searchTermFeedbackFactory,
         private readonly FeedbackFactory $feedbackFactory,
+        private readonly FeedbackService $feedbackService,
     )
     {
     }
@@ -72,7 +73,7 @@ class FeedbackCreator
         $this->entityManager->persist($feedback);
 
         if ($this->entityManager->getConfig()->isDynamodb()) {
-            $searchTerms = $feedback->getSearchTerms()->toArray();
+            $searchTerms = $this->feedbackService->getSearchTerms($feedback);
             foreach ($searchTerms as $searchTerm) {
                 $extraSearchTerms = array_values(array_filter($searchTerms, static fn ($otherSearchTerm) => $otherSearchTerm->getId() !== $searchTerm->getId()));
                 $searchTermFeedback = $this->searchTermFeedbackFactory->createSearchTermFeedback($searchTerm, $feedback, empty($extraSearchTerms) ? null : $extraSearchTerms);

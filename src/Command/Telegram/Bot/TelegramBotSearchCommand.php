@@ -49,7 +49,7 @@ class TelegramBotSearchCommand extends Command
         $term = $input->getArgument('term');
         $termType = SearchTermType::fromName($input->getArgument('type'));
 
-        $searchTerm = new SearchTerm($term, $term, $termType);
+        $searchTerm = new SearchTerm('fake', $term, $term, $termType);
         $render = static fn (string $message) => $io->text($message);
         $context = [
             'countryCode' => $input->getOption('country'),

@@ -16,6 +16,7 @@ use App\Message\Command\Feedback\NotifyFeedbackSearchSourcesAboutNewFeedbackSear
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackSearchRepository;
 use App\Service\Feedback\FeedbackSearchSearcher;
+use App\Service\Feedback\FeedbackSearchService;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Search\Viewer\Telegram\SearchRegistryTelegramSearchViewer;
@@ -43,6 +44,7 @@ class NotifyFeedbackSearchSourcesAboutNewFeedbackSearchCommandHandler
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
+        private readonly FeedbackSearchService $feedbackSearchService,
     )
     {
     }
@@ -56,18 +58,20 @@ class NotifyFeedbackSearchSourcesAboutNewFeedbackSearchCommandHandler
             return;
         }
 
-        $feedbackSearches = $this->feedbackSearchSearcher->searchFeedbackSearches($feedbackSearch->getSearchTerm());
+        $messengerUser = $this->feedbackSearchService->getMessengerUser($feedbackSearch);
+        $searchTerm = $this->feedbackSearchService->getSearchTerm($feedbackSearch);
+        $feedbackSearches = $this->feedbackSearchSearcher->searchFeedbackSearches($searchTerm);
 
         foreach ($feedbackSearches as $targetFeedbackSearch) {
             // todo: iterate throw all $targetFeedbackSearch->getMessengerUser()->getUser()->getMessengerUsers()
-            $messengerUser = $targetFeedbackSearch->getMessengerUser();
+            $messengerUser_ = $this->feedbackSearchService->getMessengerUser($targetFeedbackSearch);
 
             if (
-                $messengerUser !== null
-                && $messengerUser->getMessenger() === Messenger::telegram
-                && $messengerUser->getId() !== $feedbackSearch->getMessengerUser()->getId()
+                $messengerUser_ !== null
+                && $messengerUser_->getMessenger() === Messenger::telegram
+                && $messengerUser_->getId() !== $messengerUser->getId()
             ) {
-                $this->notify($messengerUser, $feedbackSearch->getSearchTerm(), $feedbackSearch, $targetFeedbackSearch);
+                $this->notify($messengerUser_, $searchTerm, $feedbackSearch, $targetFeedbackSearch);
             }
         }
     }

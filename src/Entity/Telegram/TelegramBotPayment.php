@@ -25,36 +25,36 @@ class TelegramBotPayment implements Stringable
     private readonly float $priceAmount;
     #[Attribute('price_currency')]
     private readonly string $priceCurrency;
+    #[Attribute('pre_checkout_query')]
+    private ?array $preCheckoutQuery = null;
+    #[Attribute('successful_payment')]
+    private ?array $successfulPayment = null;
+    #[Attribute]
+    private ?TelegramBotPaymentStatus $status = TelegramBotPaymentStatus::REQUEST_SENT;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+    #[Attribute('messenger_user_id')]
+    private ?string $messengerUserId = null;
+    #[Attribute('telegram_bot_payment_method_id')]
+    private ?string $telegramBotPaymentMethodId = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
 
     public function __construct(
         #[Attribute('telegram_bot_payment_id')]
         private readonly string $id,
-        private readonly MessengerUser $messengerUser,
+        private MessengerUser $messengerUser,
         #[Attribute('chat_id')]
         private readonly string $chatId,
-        private readonly TelegramBotPaymentMethod $telegramBotPaymentMethod,
+        private TelegramBotPaymentMethod $telegramBotPaymentMethod,
         #[Attribute]
         private readonly string $purpose,
         Money $price,
         #[Attribute]
         private readonly array $payload,
         private readonly TelegramBot $telegramBot,
-        #[Attribute('pre_checkout_query')]
-        private ?array $preCheckoutQuery = null,
-        #[Attribute('successful_payment')]
-        private ?array $successfulPayment = null,
-        #[Attribute]
-        private ?TelegramBotPaymentStatus $status = TelegramBotPaymentStatus::REQUEST_SENT,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('updated_at')]
-        private ?DateTimeInterface $updatedAt = null,
-        #[Attribute('telegram_bot_id')]
-        private ?string $telegramBotId = null,
-        #[Attribute('messenger_user_id')]
-        private ?string $messengerUserId = null,
-        #[Attribute('telegram_bot_payment_method_id')]
-        private ?string $telegramBotPaymentMethodId = null,
     )
     {
         $this->priceAmount = $price->getAmount();
@@ -70,7 +70,13 @@ class TelegramBotPayment implements Stringable
         return $this->id;
     }
 
-    public function getMessengerUser(): MessengerUser
+    public function setMessengerUser(?MessengerUser $messengerUser): self
+    {
+        $this->messengerUser = $messengerUser;
+        return $this;
+    }
+
+    public function getMessengerUser(): ?MessengerUser
     {
         return $this->messengerUser;
     }
@@ -97,7 +103,18 @@ class TelegramBotPayment implements Stringable
         return $this;
     }
 
-    public function getTelegramBotPaymentMethod(): TelegramBotPaymentMethod
+    public function getTelegramBotPaymentMethodId(): ?string
+    {
+        return $this->telegramBotPaymentMethodId;
+    }
+
+    public function setTelegramBotPaymentMethod(?TelegramBotPaymentMethod $telegramBotPaymentMethod): self
+    {
+        $this->telegramBotPaymentMethod = $telegramBotPaymentMethod;
+        return $this;
+    }
+
+    public function getTelegramBotPaymentMethod(): ?TelegramBotPaymentMethod
     {
         return $this->telegramBotPaymentMethod;
     }

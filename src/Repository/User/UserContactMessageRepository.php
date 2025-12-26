@@ -13,6 +13,7 @@ use App\Repository\EntityRepository;
  * @property-read  UserContactMessageDoctrineRepository $doctrine
  * @method UserContactMessageDynamodbRepository getDynamodb()
  * @property-read  UserContactMessageDynamodbRepository $dynamodb
+ * @method UserContactMessage|null find(string $id)
  */
 class UserContactMessageRepository extends EntityRepository
 {

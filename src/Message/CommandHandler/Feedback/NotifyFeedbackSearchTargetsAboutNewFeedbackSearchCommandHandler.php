@@ -16,6 +16,7 @@ use App\Message\Command\Feedback\NotifyFeedbackSearchTargetsAboutNewFeedbackSear
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackSearchRepository;
 use App\Repository\Messenger\MessengerUserRepository;
+use App\Service\Feedback\FeedbackSearchService;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
 use App\Service\Feedback\SearchTermService;
 use App\Service\Messenger\MessengerUserService;
@@ -46,7 +47,8 @@ class NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
-        private readonly SearchTermService $feedbackSearchTermService,
+        private readonly SearchTermService $searchTermService,
+        private readonly FeedbackSearchService $feedbackSearchService,
     )
     {
     }
@@ -60,15 +62,16 @@ class NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler
             return;
         }
 
-        $searchTerm = $feedbackSearch->getSearchTerm();
-        $messengerUser = $this->feedbackSearchTermService->getMessengerUser($searchTerm);
+        $searchTerm = $this->feedbackSearchService->getSearchTerm($feedbackSearch);
+        $messengerUser = $this->feedbackSearchService->getMessengerUser($feedbackSearch);
+        $messengerUser_ = $this->searchTermService->getMessengerUser($searchTerm);
 
         if (
-            $messengerUser !== null
-            && $messengerUser->getMessenger() === Messenger::telegram
-            && $messengerUser->getId() !== $feedbackSearch->getMessengerUser()->getId()
+            $messengerUser_ !== null
+            && $messengerUser_->getMessenger() === Messenger::telegram
+            && $messengerUser_->getId() !== $messengerUser->getId()
         ) {
-            $this->notify($messengerUser, $searchTerm, $feedbackSearch);
+            $this->notify($messengerUser_, $searchTerm, $feedbackSearch);
             return;
         }
 
@@ -80,13 +83,13 @@ class NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler
         if ($messenger === Messenger::telegram) {
             $username = $searchTerm->getNormalizedText() ?? $searchTerm->getText();
 
-            $messengerUser = $this->messengerUserRepository->findOneByMessengerAndUsername($messenger, $username);
+            $messengerUser_ = $this->messengerUserRepository->findOneByMessengerAndUsername($messenger, $username);
 
             if (
-                $messengerUser !== null
-                && $messengerUser->getId() !== $feedbackSearch->getMessengerUser()->getId()
+                $messengerUser_ !== null
+                && $messengerUser_->getId() !== $messengerUser->getId()
             ) {
-                $this->notify($messengerUser, $searchTerm, $feedbackSearch);
+                $this->notify($messengerUser_, $searchTerm, $feedbackSearch);
             }
         }
     }

@@ -21,6 +21,11 @@ class SearchTermDynamodbRepository extends EntityRepository
         parent::__construct($em, SearchTerm::class);
     }
 
+    public function find(string $id): ?SearchTerm
+    {
+        return $this->getOne(['id' => $id]);
+    }
+
     public function findByNormalizedText(string $normalizedText, int $maxResults = 100): array
     {
         return $this->queryMany(

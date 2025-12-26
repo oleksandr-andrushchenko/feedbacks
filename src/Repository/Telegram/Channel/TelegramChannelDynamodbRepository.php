@@ -97,7 +97,7 @@ class TelegramChannelDynamodbRepository extends EntityRepository
                 ])
                 ->expressionAttributeValues([
                     ':pk' => 'TELEGRAM_CHANNEL',
-                    ':sk' => $bot->getGroup()->name . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
+                    ':sk' => $bot->getGroup()->value . '#' . $bot->getCountryCode() . '#' . $bot->getLocaleCode(),
                 ])
         );
     }
@@ -111,7 +111,7 @@ class TelegramChannelDynamodbRepository extends EntityRepository
 
         $values = [
             ':pk' => 'TELEGRAM_CHANNEL',
-            ':sk' => $channel->getGroup()->name . '#' . $channel->getCountryCode() . '#' . $channel->getLocaleCode(),
+            ':sk' => $channel->getGroup()->value . '#' . $channel->getCountryCode() . '#' . $channel->getLocaleCode(),
         ];
 
         if ($channel->getLevel1RegionId() == null) {
@@ -161,7 +161,7 @@ class TelegramChannelDynamodbRepository extends EntityRepository
                 ])
                 ->expressionAttributeValues([
                     ':pk' => 'TELEGRAM_CHANNEL',
-                    ':sk' => $group->name . '#' . $countryCode . '#',
+                    ':sk' => $group->value . '#' . $countryCode . '#',
                 ])
         );
     }

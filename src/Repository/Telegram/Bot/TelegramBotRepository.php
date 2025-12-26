@@ -15,6 +15,7 @@ use App\Repository\EntityRepository;
  * @method TelegramBotDynamodbRepository getDynamodb()
  * @property TelegramBotDynamodbRepository $dynamodb
  * @method TelegramBot[] findAll()
+ * @method TelegramBot|null find(string $id)
  * @method TelegramBot|null findOneByUsername(string $username)
  * @method TelegramBot|null findOneNonDeletedByUsername(string $username)
  * @method TelegramBot[] findNonDeletedByGroup(TelegramBotGroupName $group)

@@ -28,9 +28,9 @@ class TelegramChannelCreator
             $channelTransfer->getName(),
             $channelTransfer->getCountry()->getCode(),
             $channelTransfer->getLocale()?->getCode() ?? $channelTransfer->getCountry()->getLocaleCodes()[0],
-            level1RegionId: $channelTransfer->getLevel1Region()?->getId(),
-            chatId: $channelTransfer->getChatId(),
-            primary: $channelTransfer->primary(),
+            $channelTransfer->getLevel1Region()?->getId(),
+            $channelTransfer->getChatId(),
+            $channelTransfer->primary(),
         );
 
         $this->validator->validateTelegramChannel($channel);

@@ -49,7 +49,7 @@ class FeedbackSearch
         $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
-        $this->hasActiveSubscription = $this->user?->hasActiveSubscription();
+        $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
@@ -94,6 +94,12 @@ class FeedbackSearch
         return $this;
     }
 
+    public function setMessengerUser(?MessengerUser $messengerUser): self
+    {
+        $this->messengerUser = $messengerUser;
+        return $this;
+    }
+
     public function getMessengerUser(): ?MessengerUser
     {
         return $this->messengerUser;
@@ -107,6 +113,12 @@ class FeedbackSearch
     public function setSearchTermId(?string $searchTermId): self
     {
         $this->searchTermId = $searchTermId;
+        return $this;
+    }
+
+    public function setSearchTerm(?SearchTerm $searchTerm): self
+    {
+        $this->searchTerm = $searchTerm;
         return $this;
     }
 
@@ -133,6 +145,12 @@ class FeedbackSearch
     public function getLocaleCode(): ?string
     {
         return $this->localeCode;
+    }
+
+    public function setTelegramBot(?TelegramBot $telegramBot): self
+    {
+        $this->telegramBot = $telegramBot;
+        return $this;
     }
 
     public function getTelegramBot(): ?TelegramBot

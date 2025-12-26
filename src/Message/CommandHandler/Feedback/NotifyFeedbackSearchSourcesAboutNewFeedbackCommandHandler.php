@@ -17,6 +17,7 @@ use App\Message\Command\Feedback\NotifyFeedbackSearchSourcesAboutNewFeedbackComm
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackSearchSearcher;
+use App\Service\Feedback\FeedbackSearchService;
 use App\Service\Feedback\FeedbackService;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
@@ -46,6 +47,7 @@ class NotifyFeedbackSearchSourcesAboutNewFeedbackCommandHandler
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
         private readonly FeedbackService $feedbackService,
+        private readonly FeedbackSearchService $feedbackSearchService,
     )
     {
     }
@@ -59,18 +61,20 @@ class NotifyFeedbackSearchSourcesAboutNewFeedbackCommandHandler
             return;
         }
 
+        $messengerUser = $this->feedbackService->getMessengerUser($feedback);
+
         foreach ($this->feedbackService->getSearchTerms($feedback) as $searchTerm) {
             $feedbackSearches = $this->feedbackSearchSearcher->searchFeedbackSearches($searchTerm);
 
             foreach ($feedbackSearches as $feedbackSearch) {
-                $messengerUser = $feedbackSearch->getMessengerUser();
+                $messengerUser_ = $this->feedbackSearchService->getMessengerUser($feedbackSearch);
 
                 if (
-                    $messengerUser !== null
-                    && $messengerUser->getMessenger() === Messenger::telegram
-                    && $messengerUser->getId() !== $this->feedbackService->getMessengerUser($feedback)->getId()
+                    $messengerUser_ !== null
+                    && $messengerUser_->getMessenger() === Messenger::telegram
+                    && $messengerUser_->getId() !== $messengerUser->getId()
                 ) {
-                    $this->notify($messengerUser, $searchTerm, $feedback, $feedbackSearch);
+                    $this->notify($messengerUser_, $searchTerm, $feedback, $feedbackSearch);
                 }
             }
         }

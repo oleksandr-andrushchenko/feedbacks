@@ -34,6 +34,25 @@ use Stringable;
 )]
 class MessengerUser implements Stringable
 {
+    #[Attribute]
+    private ?string $username = null;
+    #[Attribute]
+    private ?string $name = null;
+    private ?User $user = null;
+    #[Attribute('show_extended_keyboard')]
+    private ?bool $showExtendedKeyboard = null;
+    /** @var array<string>|null */
+    #[Attribute('bot_ids')]
+    private ?array $botIds = null;
+    #[Attribute('username_history')]
+    private ?array $usernameHistory = null;
+    #[Attribute('user_id')]
+    private ?string $userId = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+
     public function __construct(
         #[Attribute('messenger_user_id')]
         private readonly string $id,
@@ -41,24 +60,6 @@ class MessengerUser implements Stringable
         private readonly Messenger $messenger,
         #[Attribute]
         private readonly string $identifier,
-        #[Attribute]
-        private ?string $username = null,
-        #[Attribute]
-        private ?string $name = null,
-        private ?User $user = null,
-        #[Attribute('show_extended_keyboard')]
-        private ?bool $showExtendedKeyboard = null,
-        /** @var array<string>|null */
-        #[Attribute('bot_ids')]
-        private ?array $botIds = null,
-        #[Attribute('username_history')]
-        private ?array $usernameHistory = null,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('updated_at')]
-        private ?DateTimeInterface $updatedAt = null,
-        #[Attribute('user_id')]
-        private ?string $userId = null,
     )
     {
         $this->userId = $this->user?->getId();
@@ -77,6 +78,17 @@ class MessengerUser implements Stringable
     public function getMessenger(): Messenger
     {
         return $this->messenger;
+    }
+
+    public function setUserId(?string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
+    public function getUserId(): ?string
+    {
+        return $this->userId;
     }
 
     public function getUser(): ?User
@@ -122,7 +134,7 @@ class MessengerUser implements Stringable
 
     public function setShowExtendedKeyboard(?bool $showExtendedKeyboard): self
     {
-        $this->showExtendedKeyboard = $showExtendedKeyboard;
+        $this->showExtendedKeyboard = $showExtendedKeyboard === true ? true : null;
 
         return $this;
     }
@@ -202,16 +214,5 @@ class MessengerUser implements Stringable
     public function __toString(): string
     {
         return $this->getId();
-    }
-
-    public function setUserId(?string $userId): self
-    {
-        $this->userId = $userId;
-        return $this;
-    }
-
-    public function getUserId(): ?string
-    {
-        return $this->userId;
     }
 }

@@ -16,6 +16,7 @@ use App\Message\Command\Feedback\NotifyFeedbackLookupTargetAboutNewFeedbackLooku
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackLookupRepository;
 use App\Repository\Messenger\MessengerUserRepository;
+use App\Service\Feedback\FeedbackLookupService;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
 use App\Service\Feedback\SearchTermService;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackLookupTelegramViewProvider;
@@ -46,7 +47,8 @@ class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
         private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
-        private readonly SearchTermService $feedbackSearchTermService,
+        private readonly SearchTermService $searchTermService,
+        private readonly FeedbackLookupService $feedbackLookupService,
     )
     {
     }
@@ -60,15 +62,16 @@ class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
             return;
         }
 
-        $searchTerm = $feedbackLookup->getSearchTerm();
-        $messengerUser = $this->feedbackSearchTermService->getMessengerUser($searchTerm);
+        $searchTerm = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
+        $messengerUser_ = $this->searchTermService->getMessengerUser($searchTerm);
+        $messengerUser = $this->feedbackLookupService->getMessengerUser($feedbackLookup);
 
         if (
-            $messengerUser !== null
-            && $messengerUser->getMessenger() === Messenger::telegram
-            && $messengerUser->getId() !== $feedbackLookup->getMessengerUser()->getId()
+            $messengerUser_ !== null
+            && $messengerUser_->getMessenger() === Messenger::telegram
+            && $messengerUser_->getId() !== $messengerUser->getId()
         ) {
-            $this->notify($messengerUser, $searchTerm, $feedbackLookup);
+            $this->notify($messengerUser_, $searchTerm, $feedbackLookup);
             return;
         }
 
@@ -84,7 +87,7 @@ class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
 
             if (
                 $messengerUser !== null
-                && $messengerUser->getId() !== $feedbackLookup->getMessengerUser()->getId()
+                && $messengerUser->getId() !== $messengerUser->getId()
             ) {
                 $this->notify($messengerUser, $searchTerm, $feedbackLookup);
             }
