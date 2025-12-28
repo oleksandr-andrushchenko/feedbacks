@@ -33,11 +33,11 @@ use Psr\Log\LoggerInterface;
  */
 class SubscribeTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CURRENCY_QUERIED = 10;
-    public const STEP_SUBSCRIPTION_PLAN_QUERIED = 20;
-    public const STEP_PAYMENT_METHOD_QUERIED = 30;
-    public const STEP_PAYMENT_QUERIED = 40;
-    public const STEP_CANCEL_PRESSED = 50;
+    public const int STEP_CURRENCY_QUERIED = 10;
+    public const int STEP_SUBSCRIPTION_PLAN_QUERIED = 20;
+    public const int STEP_PAYMENT_METHOD_QUERIED = 30;
+    public const int STEP_PAYMENT_QUERIED = 40;
+    public const int STEP_CANCEL_PRESSED = 50;
 
     public function __construct(
         private readonly Validator $validator,

@@ -17,9 +17,9 @@ use App\Transfer\User\UserContactMessageTransfer;
 
 class ContactTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_LEFT_MESSAGE_CONFIRM_QUERIED = 10;
-    public const STEP_MESSAGE_QUERIED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
+    public const int STEP_LEFT_MESSAGE_CONFIRM_QUERIED = 10;
+    public const int STEP_MESSAGE_QUERIED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
 
     public function __construct(
         private readonly UserContactMessageCreator $userContactMessageCreator,

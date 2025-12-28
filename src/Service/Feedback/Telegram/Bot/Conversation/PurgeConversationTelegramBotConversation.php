@@ -15,9 +15,9 @@ use App\Service\User\UserDataPurger;
 
 class PurgeConversationTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CONFIRM_QUERIED = 10;
-    public const STEP_CONFIRMED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
+    public const int STEP_CONFIRM_QUERIED = 10;
+    public const int STEP_CONFIRMED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
 
     public function __construct(
         private readonly UserDataPurger $userDataPurger,

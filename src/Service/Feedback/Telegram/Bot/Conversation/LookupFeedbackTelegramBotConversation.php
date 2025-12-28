@@ -32,10 +32,10 @@ use Longman\TelegramBot\Entities\KeyboardButton;
  */
 class LookupFeedbackTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_SEARCH_TERM_QUERIED = 10;
-    public const STEP_SEARCH_TERM_TYPE_QUERIED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
-    public const STEP_CONFIRM_QUERIED = 40;
+    public const int STEP_SEARCH_TERM_QUERIED = 10;
+    public const int STEP_SEARCH_TERM_TYPE_QUERIED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
+    public const int STEP_CONFIRM_QUERIED = 40;
 
     public function __construct(
         private readonly Validator $validator,

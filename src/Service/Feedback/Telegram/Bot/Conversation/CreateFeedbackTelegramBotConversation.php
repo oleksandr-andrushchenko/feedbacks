@@ -42,13 +42,13 @@ use Symfony\Component\Messenger\MessageBusInterface;
  */
 class CreateFeedbackTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_SEARCH_TERM_QUERIED = 10;
-    public const STEP_SEARCH_TERM_TYPE_QUERIED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
-    public const STEP_RATING_QUERIED = 40;
-    public const STEP_DESCRIPTION_QUERIED = 50;
-    public const STEP_CONFIRM_QUERIED = 60;
-    public const STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED = 70;
+    public const int STEP_SEARCH_TERM_QUERIED = 10;
+    public const int STEP_SEARCH_TERM_TYPE_QUERIED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
+    public const int STEP_RATING_QUERIED = 40;
+    public const int STEP_DESCRIPTION_QUERIED = 50;
+    public const int STEP_CONFIRM_QUERIED = 60;
+    public const int STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED = 70;
 
     public function __construct(
         private readonly Validator $validator,
@@ -64,7 +64,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly FeedbackTelegramSearchViewer $feedbackTelegramSearchViewer,
         private readonly TelegramChannelMatchesProvider $telegramChannelMatchesProvider,
         private readonly TelegramChannelLinkViewProvider $telegramChannelLinkViewProvider,
-        private readonly LoggerInterface $logger,
         private readonly bool $searchTermTypeStep,
         private readonly bool $extraSearchTermStep,
         private readonly bool $descriptionStep,

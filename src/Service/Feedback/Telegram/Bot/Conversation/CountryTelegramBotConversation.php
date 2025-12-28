@@ -23,12 +23,12 @@ use Psr\Log\LoggerInterface;
 
 class CountryTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CHANGE_CONFIRM_QUERIED = 5;
-    public const STEP_GUESS_COUNTRY_QUERIED = 10;
-    public const STEP_COUNTRY_QUERIED = 20;
-    public const STEP_LEVEL_1_REGION_QUERIED = 25;
-    public const STEP_TIMEZONE_QUERIED = 30;
-    public const STEP_CANCEL_PRESSED = 40;
+    public const int STEP_CHANGE_CONFIRM_QUERIED = 5;
+    public const int STEP_GUESS_COUNTRY_QUERIED = 10;
+    public const int STEP_COUNTRY_QUERIED = 20;
+    public const int STEP_LEVEL_1_REGION_QUERIED = 25;
+    public const int STEP_TIMEZONE_QUERIED = 30;
+    public const int STEP_CANCEL_PRESSED = 40;
 
     public function __construct(
         private readonly CountryProvider $countryProvider,

@@ -16,8 +16,8 @@ use App\Service\Telegram\Bot\TelegramBotLocaleSwitcher;
 
 class RestartConversationTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CONFIRM_QUERIED = 10;
-    public const STEP_CANCEL_PRESSED = 20;
+    public const int STEP_CONFIRM_QUERIED = 10;
+    public const int STEP_CANCEL_PRESSED = 20;
 
     public function __construct(
         private readonly ChooseActionTelegramChatSender $chooseActionTelegramChatSender,
