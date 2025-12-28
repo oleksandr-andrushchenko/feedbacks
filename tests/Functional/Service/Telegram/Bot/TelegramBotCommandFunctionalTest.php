@@ -13,7 +13,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
     public function testDeletedWithoutReplacementTelegramBotRequest(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
@@ -28,7 +28,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
     public function testDeletedWithReplacementTelegramBotRequest(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
@@ -50,7 +50,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
     public function testNonPrimaryWithoutReplacementTelegramBotRequest(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
@@ -65,7 +65,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
     public function testNonPrimaryWithReplacementTelegramBotRequest(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);

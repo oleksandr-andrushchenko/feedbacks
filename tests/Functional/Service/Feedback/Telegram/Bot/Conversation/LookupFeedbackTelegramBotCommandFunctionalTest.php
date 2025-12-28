@@ -6,10 +6,6 @@ namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Feedback\FeedbackLookup;
 use App\Entity\Feedback\FeedbackSearch;
-use App\Entity\Feedback\SearchTerm;
-use App\Entity\Messenger\MessengerUser;
-use App\Entity\Telegram\TelegramBot;
-use App\Entity\User\User;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Messenger\Messenger;
 use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
@@ -37,9 +33,16 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
     public function testStart(string $input): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
         ]);
 
         $this
@@ -399,11 +402,20 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
-            SearchTerm::class,
-            FeedbackSearch::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
+            Fixtures::SEARCH_TERM_INSTAGRAM_PROFILE_URL_3,
+            Fixtures::SEARCH_TERM_INSTAGRAM_USERNAME_3,
+            Fixtures::FEEDBACK_SEARCH_13_TELEGRAM_INSTAGRAM_PROFILE_URL,
+            Fixtures::FEEDBACK_SEARCH_23_TELEGRAM_INSTAGRAM_USERNAME,
         ]);
 
         $conversation = $this->createConversation(
@@ -532,12 +544,22 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
-            SearchTerm::class,
-            FeedbackSearch::class,
-            FeedbackLookup::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
+            Fixtures::SEARCH_TERM_INSTAGRAM_PROFILE_URL_3,
+            Fixtures::SEARCH_TERM_INSTAGRAM_USERNAME_3,
+            Fixtures::FEEDBACK_SEARCH_13_TELEGRAM_INSTAGRAM_PROFILE_URL,
+            Fixtures::FEEDBACK_SEARCH_23_TELEGRAM_INSTAGRAM_USERNAME,
+            Fixtures::FEEDBACK_LOOKUP_13_TELEGRAM_INSTAGRAM_PROFILE_URL,
+            Fixtures::FEEDBACK_LOOKUP_23_TELEGRAM_INSTAGRAM_USERNAME,
         ]);
 
         $feedbackSearchTermRepository = $this->getSearchTermRepository();
@@ -616,9 +638,16 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
         ]);
 
         $conversation = $this->createConversation(

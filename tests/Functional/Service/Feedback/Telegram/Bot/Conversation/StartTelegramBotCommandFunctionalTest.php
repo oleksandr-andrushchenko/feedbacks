@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Telegram\TelegramBot;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
+use App\Tests\Fixtures;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;
 use App\Tests\Traits\Intl\CountryProviderTrait;
 
@@ -16,7 +16,7 @@ class StartTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctional
     public function testStart(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $this->typeText(FeedbackTelegramBotGroup::START);

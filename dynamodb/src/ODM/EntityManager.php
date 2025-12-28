@@ -26,6 +26,11 @@ class EntityManager
         $this->unitOfWork = new UnitOfWork($this);
     }
 
+    public function getSchemaTool(): SchemaTool
+    {
+        return new SchemaTool($this);
+    }
+
     public function getClient(): DynamoDbClient
     {
         return $this->dynamoDbClient;
@@ -56,10 +61,6 @@ class EntityManager
         return $this->unitOfWork;
     }
 
-    // ---------------------------------------------------------
-    // GET — now with IdentityMap support
-    // ---------------------------------------------------------
-
     /**
      * @template T
      * @param class-string<T> $class
@@ -70,7 +71,6 @@ class EntityManager
     public function getOne(string $class, array $keyFields): ?object
     {
         try {
-            // 1. Check IdentityMap first
             $serializedKey = $this->entitySerializer->serializePrimaryKey($class, $keyFields);
             $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
 
@@ -85,7 +85,6 @@ class EntityManager
                 return $cached;
             }
 
-            // 2. Fetch from DynamoDB
             $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
             $result = $this->dynamoDbClient->getItem([
                 'TableName' => $table,
@@ -98,7 +97,6 @@ class EntityManager
                 return null;
             }
 
-            // 3. Deserialize → Register snapshot in IdentityMap
             $entity = $this->entitySerializer->deserialize($item, $class);
 
             $this->logger->debug(__METHOD__, [
@@ -114,10 +112,6 @@ class EntityManager
             $this->wrapException($exception);
         }
     }
-
-    // ---------------------------------------------------------
-    // BATCH GET (new)
-    // ---------------------------------------------------------
 
     /**
      * @template T
@@ -174,7 +168,6 @@ class EntityManager
                     $result[$this->serializeKeyToString($serializedKey)] = $entity;
                 }
 
-                // Retry unprocessed keys
                 while (!empty($response['UnprocessedKeys'])) {
                     $response = $this->dynamoDbClient->batchGetItem([
                         'RequestItems' => $response['UnprocessedKeys'],
@@ -193,10 +186,6 @@ class EntityManager
     {
         return json_encode($key, JSON_THROW_ON_ERROR);
     }
-
-    // ---------------------------------------------------------
-    // QUERY — now with IdentityMap and snapshots
-    // ---------------------------------------------------------
 
     /**
      * @template T
@@ -244,18 +233,7 @@ class EntityManager
 
                     foreach ($result['Items'] ?? [] as $item) {
                         $entity = $this->entitySerializer->deserialize($item, $class);
-//                        $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
-//                        $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
-
-//                        $this->logger->debug(__METHOD__, [
-//                            'entity' => $entity,
-//                            'serializedKey' => $serializedKey,
-//                            'cached' => $cached,
-//                        ]);
-
-//                        if ($cached === null) {
-                            $this->unitOfWork->registerManaged($entity);
-//                        }
+                        $this->unitOfWork->registerManaged($entity);
 
                         yield $entity;
 
@@ -276,10 +254,6 @@ class EntityManager
         return new ResultStream($generator);
     }
 
-    // ---------------------------------------------------------
-    // SCAN — same IdentityMap rules
-    // ---------------------------------------------------------
-
     public function scan(string $class, ScanArgs $scanArgs): ResultStream
     {
         $generator = (function () use ($class, $scanArgs): Generator {
@@ -298,12 +272,7 @@ class EntityManager
 
                     foreach ($result['Items'] ?? [] as $item) {
                         $entity = $this->entitySerializer->deserialize($item, $class);
-//                        $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
-//                        $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
-
-//                        if ($cached === null) {
-                            $this->unitOfWork->registerManaged($entity);
-//                        }
+                        $this->unitOfWork->registerManaged($entity);
 
                         yield $entity;
 
@@ -350,22 +319,13 @@ class EntityManager
             }
 
             $entity = $this->entitySerializer->deserialize($item, $class);
-//            $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
-//            $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
-
-//            if ($cached === null) {
-                $this->unitOfWork->registerManaged($entity);
-//            }
+            $this->unitOfWork->registerManaged($entity);
 
             return $entity;
         } catch (Throwable $exception) {
             $this->wrapException($exception);
         }
     }
-
-    // ---------------------------------------------------------
-    // WRITE OPERATIONS
-    // ---------------------------------------------------------
 
     public function persist(object $entity): void
     {
@@ -381,10 +341,6 @@ class EntityManager
     {
         $this->unitOfWork->flush();
     }
-
-    // ---------------------------------------------------------
-    // Exception wrapper
-    // ---------------------------------------------------------
 
     private function wrapException(Throwable $exception): never
     {

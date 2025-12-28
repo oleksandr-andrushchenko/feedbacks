@@ -61,9 +61,9 @@ class TelegramBot implements Stringable
         #[Attribute('admin_ids')]
         private ?array $adminIds = null,
         #[Attribute('admin_only')]
-        private ?bool $adminOnly = true,
+        private ?bool $adminOnly = null,
         #[Attribute]
-        private ?bool $primary = true,
+        private ?bool $primary = null,
         #[Attribute('descriptions_synced')]
         private ?bool $descriptionsSynced = null,
         #[Attribute('webhook_synced')]

@@ -80,12 +80,10 @@
   },
   "require-dev": {
     "dms/phpunit-arraysubset-asserts": "^0.5.0",
-    "doctrine/doctrine-fixtures-bundle": "^3.4",
     "phpunit/phpunit": "^9.6",
     "symfony/browser-kit": "^7.4",
     "symfony/maker-bundle": "^1.48",
     "symfony/panther": "^2.2",
-    "symfony/phpunit-bridge": "^7.4",
-    "theofidry/alice-data-fixtures": "^1.6"
+    "symfony/phpunit-bridge": "^7.4"
   }
 }

@@ -26,6 +26,7 @@ use App\Tests\Traits\IdGeneratorProviderTrait;
 use App\Tests\Traits\Intl\CountryProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserProfileUrlProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserRepositoryProviderTrait;
+use App\Tests\Traits\Messenger\MessengerUserServiceProviderTrait;
 use App\Tests\Traits\SerializerProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotAwareHelperProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotChatProviderTrait;
@@ -69,6 +70,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     use CountryProviderTrait;
     use UserRepositoryProviderTrait;
     use IdGeneratorProviderTrait;
+    use MessengerUserServiceProviderTrait;
 
     protected ?TelegramBot $bot;
     protected ?TelegramBotAwareHelper $tg;
@@ -219,7 +221,11 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
 
     protected function getUser(): ?User
     {
-        return $this->getUpdateMessengerUser()?->getUser();
+        $messengerUser = $this->getUpdateMessengerUser();
+        if ($messengerUser === null) {
+            return null;
+        }
+        return $this->getMessengerUserService()->getUser($messengerUser);
     }
 
     protected function getConversation(): ?TelegramBotConversation
@@ -228,7 +234,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         $chatId = $this->getUpdateChatId();
         $botId = $this->getBot()->getEntity()->getId();
 
-        return $this->getTelegramBotConversationRepository()->findOneNonDeletedByHash($messengerUserId . '-' . $chatId . '-' . $botId);
+        return $this->getTelegramBotConversationRepository()->findOneNonDeletedByHash(md5($messengerUserId . '-' . $chatId . '-' . $botId));
     }
 
     protected function shouldSeeConversation(?string $expectedClass, ?TelegramBotConversationState $expectedState, bool $active): static

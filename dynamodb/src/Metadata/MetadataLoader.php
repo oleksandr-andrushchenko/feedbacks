@@ -45,6 +45,11 @@ class MetadataLoader
         return $metadata;
     }
 
+    public function getDefaultTable(): ?string
+    {
+        return $this->defaults['table'] ?? null;
+    }
+
     /**
      * @template T of object
      * @param class-string<T> $class
@@ -67,7 +72,7 @@ class MetadataLoader
         }
 
         if ($entityAttribute->table === null) {
-            $entityAttribute->table = $this->defaults['table'] ?? null;
+            $entityAttribute->table = $this->getDefaultTable();
         }
 
         $propertyAttributes = $this->getPropertyAttributes($reflection);

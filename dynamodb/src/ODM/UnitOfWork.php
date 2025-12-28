@@ -29,10 +29,6 @@ class UnitOfWork
     {
     }
 
-    // -------------------------------------------------
-    // Identity Map + Snapshot
-    // -------------------------------------------------
-
     public function registerManaged(object $entity): void
     {
         $oid = spl_object_hash($entity);
@@ -76,10 +72,6 @@ class UnitOfWork
         return null;
     }
 
-    // -------------------------------------------------
-    // Schedulers (insert/delete/dirty)
-    // -------------------------------------------------
-
     public function scheduleForInsert(object $entity): void
     {
         $this->newEntities[spl_object_hash($entity)] = $entity;
@@ -95,7 +87,7 @@ class UnitOfWork
         $oid = spl_object_hash($entity);
 
         if (!isset($this->originalData[$oid])) {
-            return; // new entity or unmanaged
+            return;
         }
 
         $current = $this->em->getEntitySerializer()->serialize($entity);
@@ -105,10 +97,6 @@ class UnitOfWork
             $this->dirtyEntities[$oid] = $entity;
         }
     }
-
-    // -------------------------------------------------
-    // Flush Logic: Transactions / Batches / Instants
-    // -------------------------------------------------
 
     public function flush(): void
     {
@@ -121,7 +109,6 @@ class UnitOfWork
         // AUTOMATIC DIRTY DETECTION
         // ----------------------------
         foreach ($this->identityMap as $oid => $entity) {
-            // Skip new or removed entities
             if (isset($this->newEntities[$oid]) || isset($this->removedEntities[$oid])) {
                 continue;
             }
@@ -151,7 +138,7 @@ class UnitOfWork
             $table = $metadata->getTable();
             $item = $serializer->serialize($entity);
 
-//            $logger->debug(__METHOD__ . ':insert', $item);
+            $logger->debug(__METHOD__ . ':insert', $item);
 
             $writes[] = [
                 'Put' => [
@@ -189,7 +176,7 @@ class UnitOfWork
                 $condValues = [':v' => ['N' => $oldVersion]];
             }
 
-//            $logger->debug(__METHOD__ . ':update', $newData);
+            $logger->debug(__METHOD__ . ':update', $newData);
 
             $writes[] = [
                 'Put' => [

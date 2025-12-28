@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
+use App\Tests\Traits\ConsoleCommandRunnerTrait;
 use App\Tests\Traits\EntityManagerProviderTrait;
 use Doctrine\DBAL\ConnectionException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\Tools\SchemaTool;
-use Fidry\AliceDataFixtures\LoaderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Throwable;
 
 abstract class DatabaseTestCase extends KernelTestCase
 {
     use EntityManagerProviderTrait;
+    use ConsoleCommandRunnerTrait;
 
     protected static bool $databaseBooted = false;
+    protected static ?Fixtures $fixtures = null;
 
     public function setUp(): void
     {
@@ -34,8 +36,7 @@ abstract class DatabaseTestCase extends KernelTestCase
 
     protected function databaseUp(): void
     {
-        $this
-            ->bootDatabase()
+        $this->bootDatabase()
             ->rollBackIfNeed()
             ->beginTransaction()
         ;
@@ -46,16 +47,12 @@ abstract class DatabaseTestCase extends KernelTestCase
         $this->rollBackIfNeed();
     }
 
-    protected function refreshDatabase(): static
-    {
-        $this->databaseDown();
-        $this->databaseUp();
-
-        return $this;
-    }
-
     protected function beginTransaction(): void
     {
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            return;
+        }
+
         $conn = $this->getEntityManager()->getConnection();
 
         $tables = $conn->executeQuery('SHOW TABLES')->fetchFirstColumn();
@@ -69,6 +66,10 @@ abstract class DatabaseTestCase extends KernelTestCase
 
     protected function rollBackIfNeed(): static
     {
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            return $this;
+        }
+
         $conn = $this->getEntityManager()->getConnection();
 
         try {
@@ -98,16 +99,26 @@ abstract class DatabaseTestCase extends KernelTestCase
             return $this;
         }
 
-        try {
-            $this->updateDatabase();
-        } catch (Throwable $exception) {
-            if (!$this->isUnknownDatabaseException($exception)) {
-                throw $exception;
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            $em = $this->getEntityManager()->getDynamodb();
+            $schemaTool = $em->getSchemaTool();
+            try {
+                $schemaTool->dropTables();
+            } catch (Throwable) {
             }
-
-            $this->createDatabase()
-                ->updateDatabase()
-            ;
+            $schema = json_decode($this->runConsoleCommand('dynamodb:schema:extract'), true);
+            $schemaTool->createTables($schema);
+        } else {
+            $schemaTool = new SchemaTool($this->getEntityManager()->getDoctrine());
+            try {
+                $schemaTool->dropDatabase();
+            } catch (Throwable) {
+            }
+            try {
+                $this->createDatabase();
+            } catch (Throwable) {
+            }
+            $this->updateDatabase();
         }
 
         static::$databaseBooted = true;
@@ -122,6 +133,10 @@ abstract class DatabaseTestCase extends KernelTestCase
      */
     protected function createDatabase(): static
     {
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            return $this;
+        }
+
         $em = $this->getEntityManager();
         $conn = $em->getConnection();
 
@@ -150,34 +165,26 @@ abstract class DatabaseTestCase extends KernelTestCase
 
     protected function updateDatabase(): static
     {
-        $em = $this->getEntityManager();
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            return $this;
+        }
+
+        $em = $this->getEntityManager()->getDoctrine();
         $metadata = $em->getMetadataFactory()->getAllMetadata();
 
-        $sch = new SchemaTool($em);
-        $sch->updateSchema($metadata);
+        $schemaTool = new SchemaTool($em);
+        $schemaTool->updateSchema($metadata);
 
         return $this;
     }
 
-    /**
-     * @param array $fixtures
-     * @return mixed
-     * @see https://github.com/theofidry/AliceDataFixtures/blob/master/doc/advanced-usage.md#usage-in-tests
-     */
-    protected function bootFixtures(array $fixtures): self
+    protected function bootFixtures(array $refs): self
     {
-        /** @var LoaderInterface $service */
-        $service = static::getContainer()->get('fidry_alice_data_fixtures.loader.doctrine');
+        if (static::$fixtures === null) {
+            static::$fixtures = new Fixtures($this->getEntityManager());
+        }
 
-        $service->load(
-            array_map(
-                static fn (string $entityClass): string => sprintf(
-                    __DIR__ . '/../fixtures/%s.yaml',
-                    str_replace(['App\Entity\\', '\\'], ['', '/'], $entityClass)
-                ),
-                $fixtures
-            )
-        );
+        static::$fixtures->bootFixtures($refs);
 
         return $this;
     }

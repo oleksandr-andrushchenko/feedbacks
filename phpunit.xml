@@ -18,7 +18,7 @@
     <php>
         <ini name="display_errors" value="1"/>
         <ini name="error_reporting" value="E_ERROR | E_WARNING | E_PARSE | E_NOTICE"/>
-        <ini name="memory_limit" value="512M"/>
+        <ini name="memory_limit" value="-1"/>
 
         <server name="APP_ENV" value="test" force="true"/>
         <server name="SHELL_VERBOSITY" value="-1"/>
@@ -43,8 +43,8 @@
         <env name="TELEGRAM_ERRORS_TOKEN" value="0:any"/>
         <env name="LOG_ACTIVITIES" value="false"/>
         <env name="GOOGLE_API_KEY" value=""/>
-        <server name="DATABASE_URL" value="mysql://app:1111@rdbms:3306/app_test?serverVersion=8&amp;charset=utf8mb4"
-                force="true"/>
+        <env name="DATABASE_URL" value="mysql://app:1111@rdbms:3306/app_test?serverVersion=8&amp;charset=utf8mb4" force="true"/>
+        <env name="DYNAMODB_TABLE" value="app_test"/>
         <env name="CRYPTO" value='{"btc":"btc-addr","eth":"eth-addr"}'/>
         <env name="REPOSITORY_ENGINE" value='doctrine'/>
 

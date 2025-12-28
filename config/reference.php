@@ -1100,22 +1100,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *     enable_profiler?: bool, // Whether or not to enable the profiler collector to calculate and visualize migration status. This adds some queries overhead. // Default: false
  *     transactional?: bool, // Whether or not to wrap migrations in a single transaction. // Default: true
  * }
- * @psalm-type NelmioAliceConfig = array{
- *     locale?: scalar|null, // Default locale for the Faker Generator // Default: "en_US"
- *     seed?: scalar|null, // Value used make sure Faker generates data consistently across runs, set to null to disable. // Default: 1
- *     functions_blacklist?: list<scalar|null>,
- *     loading_limit?: int, // Alice may do some recursion to resolve certain values. This parameter defines a limit which will stop the resolution once reached. // Default: 5
- *     max_unique_values_retry?: int, // Maximum number of time Alice can try to generate a unique value before stopping and failing. // Default: 150
- * }
- * @psalm-type FidryAliceDataFixturesConfig = array{
- *     default_purge_mode?: scalar|null, // Default: "delete"
- *     db_drivers?: array{ // The list of enabled drivers.
- *         doctrine_orm?: bool|null, // Default: null
- *         doctrine_mongodb_odm?: bool|null, // Default: null
- *         doctrine_phpcr_odm?: bool|null, // Default: null
- *         eloquent_orm?: bool|null, // Default: null
- *     },
- * }
  * @psalm-type TwigConfig = array{
  *     form_themes?: list<scalar|null>,
  *     globals?: array<string, array{ // Default: []
@@ -1225,8 +1209,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         maker?: MakerConfig,
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
- *         nelmio_alice?: NelmioAliceConfig,
- *         fidry_alice_data_fixtures?: FidryAliceDataFixturesConfig,
  *         twig?: TwigConfig,
  *         twig_extra?: TwigExtraConfig,
  *         aws?: AwsConfig,
@@ -1253,8 +1235,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
  *         monolog?: MonologConfig,
  *         doctrine?: DoctrineConfig,
  *         doctrine_migrations?: DoctrineMigrationsConfig,
- *         nelmio_alice?: NelmioAliceConfig,
- *         fidry_alice_data_fixtures?: FidryAliceDataFixturesConfig,
  *         twig?: TwigConfig,
  *         twig_extra?: TwigExtraConfig,
  *         aws?: AwsConfig,

@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Intl\Level1Region;
-use App\Entity\Messenger\MessengerUser;
-use App\Entity\Telegram\TelegramBot;
-use App\Entity\User\User;
 use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\LocaleTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
+use App\Tests\Fixtures;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;
 use Generator;
 
@@ -36,9 +33,16 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
         ]);
 
         $this->getUser()
@@ -459,10 +463,19 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
     ): void
     {
         $this->bootFixtures([
-            Level1Region::class,
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
+            Fixtures::LEVEL_1_REGION_1_UA_KYIV,
+            Fixtures::LEVEL_1_REGION_2_UA_KYIV_OBLAST,
+            Fixtures::LEVEL_1_REGION_3_UA_LVIV_OBLAST,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
         ]);
 
         $this->getUser()
