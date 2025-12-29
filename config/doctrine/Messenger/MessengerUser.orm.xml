@@ -31,7 +31,7 @@
             </options>
         </field>
 
-        <field name="botIds" column="bot_ids" type="simple_array" nullable="true"/>
+        <field name="telegramBotIds" column="bot_ids" type="simple_array" nullable="true"/>
         <field name="usernameHistory" column="username_history" type="simple_array" nullable="true"/>
 
         <field name="createdAt" column="created_at" type="datetime_immutable"/>

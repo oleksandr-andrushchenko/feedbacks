@@ -146,7 +146,7 @@ class FeedbackTelegramBotGroup extends TelegramBotGroup implements TelegramBotGr
         $newChatMemberStatus = $tg->getBot()->getUpdate()->getMyChatMember()?->getNewChatMember()?->getStatus();
 
         if ($newChatMemberStatus === 'kicked') {
-            $messengerUser->removeBotId($tg->getBot()->getEntity()->getId());
+            $messengerUser->removeTelegramBotId($tg->getBot()->getEntity()->getId());
             $tg->stopCurrentConversation();
 
             $this->eventBus->dispatch(new ActivityEvent(entity: $messengerUser, action: 'left a bot'));

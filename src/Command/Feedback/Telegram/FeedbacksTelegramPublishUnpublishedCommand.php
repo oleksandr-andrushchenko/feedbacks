@@ -32,8 +32,7 @@ class FeedbacksTelegramPublishUnpublishedCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addOption('date', mode: InputOption::VALUE_REQUIRED, description: 'Date in mm/dd/yyyy format')
+        $this->addOption('date', mode: InputOption::VALUE_REQUIRED, description: 'Date in mm/dd/yyyy format')
             ->setDescription('Publish unpublished feedbacks in telegram channels')
         ;
     }

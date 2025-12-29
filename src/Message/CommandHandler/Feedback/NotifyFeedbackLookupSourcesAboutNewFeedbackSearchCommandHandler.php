@@ -86,7 +86,7 @@ class NotifyFeedbackLookupSourcesAboutNewFeedbackSearchCommandHandler
         FeedbackLookup $feedbackLookup
     ): void
     {
-        $botIds = $messengerUser->getBotIds();
+        $botIds = $messengerUser->getTelegramBotIds();
 
         if ($botIds === null) {
             return;

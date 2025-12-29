@@ -42,8 +42,7 @@ class TelegramBotUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group (inner name)')
             ->addOption('name', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Name')
             ->addOption('token', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Token')

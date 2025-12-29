@@ -31,8 +31,7 @@ class TelegramBotSearchCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addArgument('term', InputArgument::REQUIRED, 'Search term')
+        $this->addArgument('term', InputArgument::REQUIRED, 'Search term')
             ->addArgument('type', InputArgument::REQUIRED, 'Search term type')
             ->addOption('provider', mode: InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, description: 'Provider (-s)')
             ->addOption('country', mode: InputOption::VALUE_REQUIRED, description: 'Context country')

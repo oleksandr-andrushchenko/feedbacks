@@ -71,7 +71,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
 
     private function notify(MessengerUser $messengerUser, FeedbackUserSubscription $subscription): void
     {
-        $botIds = $messengerUser->getBotIds();
+        $botIds = $messengerUser->getTelegramBotIds();
 
         if ($botIds === null) {
             return;

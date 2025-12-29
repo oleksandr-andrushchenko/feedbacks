@@ -33,8 +33,7 @@ class StartTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctional
         $this->assertEquals($bot->getLocaleCode(), $user->getLocaleCode());
         $this->assertEquals($botCountry->getTimezones()[0] ?? null, $user->getTimezone());
 
-        $this
-            ->shouldNotSeeActiveConversation()
+        $this->shouldNotSeeActiveConversation()
             ->shouldSeeReply(
                 'title',
 //                'agreements',

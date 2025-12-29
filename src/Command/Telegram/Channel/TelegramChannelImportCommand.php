@@ -33,8 +33,7 @@ class TelegramChannelImportCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+        $this->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
             ->addOption('drop-existing', mode: InputOption::VALUE_NONE, description: 'Drop existing channels')
             ->addOption('undo-remove-for-updated', mode: InputOption::VALUE_NONE, description: 'Undo remove (deleted_at) for updated channels')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')

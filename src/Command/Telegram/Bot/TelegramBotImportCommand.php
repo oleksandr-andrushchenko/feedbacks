@@ -33,8 +33,7 @@ class TelegramBotImportCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+        $this->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
             ->addOption('drop-existing', mode: InputOption::VALUE_NONE, description: 'Drop existing bots')
             ->addOption('sync-descriptions', mode: InputOption::VALUE_NONE, description: 'Sync bots descriptions (with telegram)')
             ->addOption('sync-webhooks', mode: InputOption::VALUE_NONE, description: 'Sync bots webhooks (with telegram)')

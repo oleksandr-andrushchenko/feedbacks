@@ -35,8 +35,7 @@ class CountriesUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addOption('no-translations', mode: InputOption::VALUE_NONE, description: 'Whether to not update translations')
+        $this->addOption('no-translations', mode: InputOption::VALUE_NONE, description: 'Whether to not update translations')
             ->setDescription('Update countries and country translations')
         ;
     }

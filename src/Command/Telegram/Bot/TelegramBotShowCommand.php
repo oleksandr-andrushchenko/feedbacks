@@ -28,8 +28,7 @@ class TelegramBotShowCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->setDescription('Show telegram bot info')
         ;
     }

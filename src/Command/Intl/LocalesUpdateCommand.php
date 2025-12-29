@@ -27,8 +27,7 @@ class LocalesUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->setDescription('Update locale translations')
+        $this->setDescription('Update locale translations')
         ;
     }
 

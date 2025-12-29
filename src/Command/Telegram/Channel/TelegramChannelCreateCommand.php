@@ -42,8 +42,7 @@ class TelegramChannelCreateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('group', InputArgument::REQUIRED, 'Telegram Group (inner name)')
+        $this->addArgument('group', InputArgument::REQUIRED, 'Telegram Group (inner name)')
             ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addArgument('name', InputArgument::REQUIRED, 'Telegram Name')
             ->addArgument('country', InputArgument::REQUIRED, 'Country code')

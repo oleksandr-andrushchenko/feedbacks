@@ -7,13 +7,10 @@
          colors="true"
          bootstrap="tests/bootstrap.php"
          convertDeprecationsToExceptions="false"
-         verbose="true"
          reverseDefectList="true"
          testdox="false"
          stopOnError="true"
          stopOnFailure="true"
-         stopOnDefect="true"
-         stopOnIncomplete="true"
 >
     <php>
         <ini name="display_errors" value="1"/>
@@ -46,7 +43,7 @@
         <env name="DATABASE_URL" value="mysql://app:1111@rdbms:3306/app_test?serverVersion=8&amp;charset=utf8mb4" force="true"/>
         <env name="DYNAMODB_TABLE" value="app_test"/>
         <env name="CRYPTO" value='{"btc":"btc-addr","eth":"eth-addr"}'/>
-        <env name="REPOSITORY_ENGINE" value='doctrine'/>
+<!--        <env name="REPOSITORY_ENGINE" value='dynamodb'/>-->
 
         <const name="PHPUNIT_TESTSUITE" value="true"/>
 

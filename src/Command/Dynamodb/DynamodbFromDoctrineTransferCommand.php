@@ -68,8 +68,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->setDescription('Load data from doctrine to your dynamodb database')
+        $this->setDescription('Load data from doctrine to your dynamodb database')
             ->addOption('em', null, InputOption::VALUE_REQUIRED, 'The entity manager to use for this command.')
         ;
     }

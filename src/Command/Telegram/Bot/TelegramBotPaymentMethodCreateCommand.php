@@ -35,8 +35,7 @@ class TelegramBotPaymentMethodCreateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addArgument('name', InputArgument::REQUIRED, 'Payment Method Name')
             ->addArgument('token', InputArgument::REQUIRED, 'Payment method Token')
             ->addArgument('currencies', InputArgument::REQUIRED | InputArgument::IS_ARRAY, 'Currencies')

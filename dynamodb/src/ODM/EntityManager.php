@@ -72,17 +72,9 @@ class EntityManager
     {
         try {
             $serializedKey = $this->entitySerializer->serializePrimaryKey($class, $keyFields);
-            $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
 
-            $this->logger->debug(__METHOD__, [
-                'class' => $class,
-                'keyFields' => $keyFields,
-                'serializedKey' => $serializedKey,
-                'cached' => $cached,
-            ]);
-
-            if ($cached !== null) {
-                return $cached;
+            if ($entity = $this->unitOfWork->getById($class, $serializedKey)) {
+                return $entity;
             }
 
             $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
@@ -92,24 +84,18 @@ class EntityManager
             ]);
 
             $item = $result['Item'] ?? null;
-
             if ($item === null) {
                 return null;
             }
 
             $entity = $this->entitySerializer->deserialize($item, $class);
-
-            $this->logger->debug(__METHOD__, [
-                'entity' => $entity,
-                'item' => $item,
-            ]);
-
-            $this->unitOfWork->registerManaged($entity);
-
-            return $entity;
+            return $this->unitOfWork->register($entity);
 
         } catch (Throwable $exception) {
-            $this->wrapException($exception);
+            $this->logger?->error($exception);
+            throw new EntityManagerException(
+                sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
+            );
         }
     }
 
@@ -132,10 +118,9 @@ class EntityManager
 
             foreach ($keyFieldValuesSet as $keyFields) {
                 $serializedKey = $this->entitySerializer->serializePrimaryKey($class, $keyFields);
-                $cached = $this->unitOfWork->getFromIdentityMap($class, $serializedKey);
 
-                if ($cached !== null) {
-                    $result[$this->serializeKeyToString($serializedKey)] = $cached;
+                if ($entity = $this->unitOfWork->getById($class, $serializedKey)) {
+                    $result[$this->unitOfWork->getIdentityKey($entity)] = $entity;
                     continue;
                 }
 
@@ -150,41 +135,39 @@ class EntityManager
             $chunks = array_chunk($requestKeys, 100);
 
             foreach ($chunks as $chunk) {
-                $response = $this->dynamoDbClient->batchGetItem([
+                $request = [
                     'RequestItems' => [
                         $table => [
                             'Keys' => $chunk,
                         ],
                     ],
-                ]);
+                ];
 
-                $items = $response['Responses'][$table] ?? [];
+                do {
+                    $response = $this->dynamoDbClient->batchGetItem($request);
 
-                foreach ($items as $item) {
-                    $entity = $this->entitySerializer->deserialize($item, $class);
-                    $this->unitOfWork->registerManaged($entity);
+                    foreach ($response['Responses'][$table] ?? [] as $item) {
+                        $entity = $this->entitySerializer->deserialize($item, $class);
+                        $entity = $this->unitOfWork->register($entity);
+                        $result[$this->unitOfWork->getIdentityKey($entity)] = $entity;
+                    }
 
-                    $serializedKey = $this->entitySerializer->serializePrimaryKey($entity);
-                    $result[$this->serializeKeyToString($serializedKey)] = $entity;
-                }
+                    // Retry only unprocessed keys
+                    $request = [
+                        'RequestItems' => $response['UnprocessedKeys'] ?? [],
+                    ];
 
-                while (!empty($response['UnprocessedKeys'])) {
-                    $response = $this->dynamoDbClient->batchGetItem([
-                        'RequestItems' => $response['UnprocessedKeys'],
-                    ]);
-                }
+                } while (!empty($request['RequestItems']));
             }
 
             return $result;
 
         } catch (Throwable $exception) {
-            $this->wrapException($exception);
+            $this->logger?->error($exception);
+            throw new EntityManagerException(
+                sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
+            );
         }
-    }
-
-    private function serializeKeyToString(array $key): string
-    {
-        return json_encode($key, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -233,7 +216,7 @@ class EntityManager
 
                     foreach ($result['Items'] ?? [] as $item) {
                         $entity = $this->entitySerializer->deserialize($item, $class);
-                        $this->unitOfWork->registerManaged($entity);
+                        $entity = $this->unitOfWork->register($entity);
 
                         yield $entity;
 
@@ -247,7 +230,10 @@ class EntityManager
                 } while (!empty($params['ExclusiveStartKey']));
 
             } catch (Throwable $exception) {
-                $this->wrapException($exception);
+                $this->logger?->error($exception);
+                throw new EntityManagerException(
+                    sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
+                );
             }
         })();
 
@@ -272,7 +258,7 @@ class EntityManager
 
                     foreach ($result['Items'] ?? [] as $item) {
                         $entity = $this->entitySerializer->deserialize($item, $class);
-                        $this->unitOfWork->registerManaged($entity);
+                        $entity = $this->unitOfWork->register($entity);
 
                         yield $entity;
 
@@ -285,7 +271,10 @@ class EntityManager
 
                 } while (!empty($params['ExclusiveStartKey']));
             } catch (Throwable $exception) {
-                $this->wrapException($exception);
+                $this->logger?->error($exception);
+                throw new EntityManagerException(
+                    sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
+                );
             }
         })();
 
@@ -319,11 +308,12 @@ class EntityManager
             }
 
             $entity = $this->entitySerializer->deserialize($item, $class);
-            $this->unitOfWork->registerManaged($entity);
-
-            return $entity;
+            return $this->unitOfWork->register($entity);
         } catch (Throwable $exception) {
-            $this->wrapException($exception);
+            $this->logger?->error($exception);
+            throw new EntityManagerException(
+                sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
+            );
         }
     }
 
@@ -342,11 +332,10 @@ class EntityManager
         $this->unitOfWork->flush();
     }
 
-    private function wrapException(Throwable $exception): never
+    public function wrapInTransaction(callable $func): mixed
     {
-        $this->logger?->error($exception);
-        throw new EntityManagerException(
-            sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
-        );
+        $result = $func();
+        $this->flush();
+        return $result;
     }
 }

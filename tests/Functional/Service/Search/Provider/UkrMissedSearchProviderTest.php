@@ -19,6 +19,11 @@ class UkrMissedSearchProviderTest extends KernelTestCase
 
     protected static SearchProviderName $searchProviderName = SearchProviderName::ukr_missed;
 
+    public function testFoo(): void
+    {
+        $this->assertEquals(true, true);
+    }
+
     public function supportsDataProvider(): Generator
     {
         yield 'not supported type' => [

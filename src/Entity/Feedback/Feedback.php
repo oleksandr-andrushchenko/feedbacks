@@ -77,6 +77,7 @@ class Feedback
     public function setUser(?User $user): self
     {
         $this->user = $user;
+        $this->userId = $user?->getId();
         return $this;
     }
 
@@ -105,6 +106,7 @@ class Feedback
     public function setMessengerUser(?MessengerUser $messengerUser): self
     {
         $this->messengerUser = $messengerUser;
+        $this->messengerUserId = $messengerUser?->getId();
         return $this;
     }
 
@@ -207,6 +209,7 @@ class Feedback
     public function setTelegramBot(?TelegramBot $telegramBot): self
     {
         $this->telegramBot = $telegramBot;
+        $this->telegramBotId = $telegramBot?->getId();
         return $this;
     }
 

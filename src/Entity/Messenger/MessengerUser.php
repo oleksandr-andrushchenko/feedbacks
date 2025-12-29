@@ -35,8 +35,8 @@ use Stringable;
 class MessengerUser implements Stringable
 {
     /** @var array<string>|null */
-    #[Attribute('bot_ids')]
-    private ?array $botIds = null;
+    #[Attribute('telegram_bot_ids')]
+    private ?array $telegramBotIds = null;
     #[Attribute('username_history')]
     private ?array $usernameHistory = null;
     #[Attribute('user_id')]
@@ -100,6 +100,7 @@ class MessengerUser implements Stringable
     public function setUser(?User $user): self
     {
         $this->user = $user;
+        $this->userId = $user?->getId();
 
         return $this;
     }
@@ -143,30 +144,30 @@ class MessengerUser implements Stringable
     /**
      * @return int[]|null
      */
-    public function getBotIds(): ?array
+    public function getTelegramBotIds(): ?array
     {
-        return $this->botIds === null ? null : array_map('intval', $this->botIds);
+        return $this->telegramBotIds === null ? null : array_map('intval', $this->telegramBotIds);
     }
 
-    public function addBotId(string $botId): self
+    public function addTelegramBotId(string $botId): self
     {
-        if ($this->botIds === null) {
-            $this->botIds = [];
+        if ($this->telegramBotIds === null) {
+            $this->telegramBotIds = [];
         }
 
-        $this->botIds[] = $botId;
-        $this->botIds = array_filter(array_unique($this->botIds));
+        $this->telegramBotIds[] = $botId;
+        $this->telegramBotIds = array_filter(array_unique($this->telegramBotIds));
 
         return $this;
     }
 
-    public function removeBotId(int $botId): self
+    public function removeTelegramBotId(string $botId): self
     {
-        if ($this->botIds === null) {
+        if ($this->telegramBotIds === null) {
             return $this;
         }
 
-        $this->botIds = array_unique(array_diff($this->botIds, [$botId]));
+        $this->telegramBotIds = array_unique(array_diff($this->telegramBotIds, [$botId]));
 
         return $this;
     }

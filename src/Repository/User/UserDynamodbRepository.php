@@ -6,6 +6,7 @@ namespace App\Repository\User;
 
 use App\Entity\User\User;
 use OA\Dynamodb\ODM\EntityManager;
+use OA\Dynamodb\ODM\EntityManagerException;
 use OA\Dynamodb\ODM\EntityRepository;
 
 /**
@@ -23,6 +24,11 @@ class UserDynamodbRepository extends EntityRepository
         return $this->getOne(['id' => $id]);
     }
 
+    /**
+     * @param array $ids
+     * @return array<User>
+     * @throws EntityManagerException
+     */
     public function findByIds(array $ids): array
     {
         return $this->getMany(array_map(static fn (string $id): array => ['id' => $id], $ids));

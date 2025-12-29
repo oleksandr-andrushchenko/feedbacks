@@ -35,8 +35,7 @@ class AddressReverseGeocodeCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('coordinates', InputArgument::REQUIRED, 'Latitude and Longitude (separated by comma)')
+        $this->addArgument('coordinates', InputArgument::REQUIRED, 'Latitude and Longitude (separated by comma)')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Address Reverse Geocode with Google Service')
         ;

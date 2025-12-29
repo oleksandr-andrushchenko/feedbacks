@@ -66,7 +66,7 @@ class TelegramChannelDynamodbRepository extends EntityRepository
                 ->filterExpression([
                     'attribute_not_exists(#deletedAt)',
                 ])
-                ->expressionAttributeValues([
+                ->expressionAttributeNames([
                     '#pk' => 'telegram_channel_username_pk',
                     '#deletedAt' => 'deleted_at',
                 ])
@@ -89,7 +89,7 @@ class TelegramChannelDynamodbRepository extends EntityRepository
                     'attribute_exists(#primary)',
                     'attribute_not_exists(#deletedAt)',
                 ])
-                ->expressionAttributeValues([
+                ->expressionAttributeNames([
                     '#pk' => 'telegram_channel_pk',
                     '#sk' => 'telegram_channel_group_country_locale_sk',
                     '#primary' => 'primary',

@@ -34,8 +34,7 @@ class TelegramBotPaymentMethodRemoveCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addArgument('name', InputArgument::REQUIRED, 'Payment Method Name')
             ->setDescription('Remove telegram bot payment method')
         ;

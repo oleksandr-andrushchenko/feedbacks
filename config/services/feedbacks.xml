@@ -291,7 +291,7 @@
             <argument type="service" id="app.feedback_command_limits_checker"/>
             <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.event_bus"/>
-            <argument type="service" id="app.feedback_search_term_messenger_provider"/>
+            <argument type="service" id="app.search_term_messenger_provider"/>
             <argument type="service" id="app.messenger_user_service"/>
             <argument type="service" id="app.search_term_feedback_factory"/>
             <argument type="service" id="app.feedback_factory"/>
@@ -452,7 +452,7 @@
                  class="App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider" lazy="true">
             <argument type="service" id="app.feedback_search_term_type_provider"/>
             <argument type="service" id="app.messenger_user_profile_url_provider"/>
-            <argument type="service" id="app.feedback_search_term_messenger_provider"/>
+            <argument type="service" id="app.search_term_messenger_provider"/>
             <argument type="service" id="app.modifier"/>
         </service>
         <service id="app.feedback_multiple_search_term_telegram_view_provider"
@@ -690,7 +690,7 @@
             <tag name="messenger.message_handler" bus="app.event_bus"
                  handles="App\Message\Event\Feedback\FeedbackUserSubscriptionCreatedEvent"/>
         </service>
-        <service id="app.feedback_search_term_messenger_provider"
+        <service id="app.search_term_messenger_provider"
                  class="App\Service\Feedback\SearchTerm\SearchTermMessengerProvider" lazy="true"/>
         <service id="app.feedbacks_publish_unpublished_console_command"
                  class="App\Command\Feedback\Telegram\FeedbacksTelegramPublishUnpublishedCommand" lazy="true">
@@ -719,7 +719,7 @@
                  class="App\Message\CommandHandler\Feedback\NotifyFeedbackTargetAboutNewFeedbackCommandHandler">
             <argument type="service" id="app.feedback_repository"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="app.feedback_search_term_messenger_provider"/>
+            <argument type="service" id="app.search_term_messenger_provider"/>
             <argument type="service" id="app.messenger_user_repository"/>
             <argument type="service" id="app.telegram_bot_provider"/>
             <argument type="service" id="translator"/>
@@ -779,7 +779,7 @@
                  class="App\Message\CommandHandler\Feedback\NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler">
             <argument type="service" id="app.feedback_search_repository"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="app.feedback_search_term_messenger_provider"/>
+            <argument type="service" id="app.search_term_messenger_provider"/>
             <argument type="service" id="app.messenger_user_repository"/>
             <argument type="service" id="app.telegram_bot_provider"/>
             <argument type="service" id="translator"/>
@@ -843,7 +843,7 @@
                  class="App\Message\CommandHandler\Feedback\NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler">
             <argument type="service" id="app.feedback_lookup_repository"/>
             <argument type="service" id="logger"/>
-            <argument type="service" id="app.feedback_search_term_messenger_provider"/>
+            <argument type="service" id="app.search_term_messenger_provider"/>
             <argument type="service" id="app.messenger_user_repository"/>
             <argument type="service" id="app.telegram_bot_provider"/>
             <argument type="service" id="translator"/>
@@ -853,6 +853,8 @@
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
+            <argument type="service" id="app.search_term_service"/>
+            <argument type="service" id="app.feedback_lookup_service"/>
             <tag name="messenger.message_handler" bus="app.command_bus"
                  handles="App\Message\Command\Feedback\NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommand"/>
         </service>

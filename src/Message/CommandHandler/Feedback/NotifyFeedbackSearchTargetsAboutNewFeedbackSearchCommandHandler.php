@@ -96,7 +96,7 @@ class NotifyFeedbackSearchTargetsAboutNewFeedbackSearchCommandHandler
 
     private function notify(MessengerUser $messengerUser, SearchTerm $searchTerm, FeedbackSearch $feedbackSearch): void
     {
-        $botIds = $messengerUser->getBotIds();
+        $botIds = $messengerUser->getTelegramBotIds();
 
         if ($botIds === null) {
             return;

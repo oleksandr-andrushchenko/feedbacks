@@ -36,8 +36,7 @@ class Level1RegionsDumpCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('country', InputArgument::REQUIRED, 'Country code')
+        $this->addArgument('country', InputArgument::REQUIRED, 'Country code')
             ->setDescription('Dump level 1 regions (Put/cache country regions in static json file)')
         ;
     }

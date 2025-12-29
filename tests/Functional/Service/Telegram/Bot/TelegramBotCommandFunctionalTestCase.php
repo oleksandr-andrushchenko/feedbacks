@@ -150,12 +150,12 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         $botId = $this->getBot()->getEntity()->getId();
 
         $conversation = new TelegramBotConversation(
-            $messengerUserId . '-' . $chatId . '-' . $botId,
-            $messengerUserId,
-            (string) $chatId,
-            $botId,
-            $class,
-            $this->getSerializer()->normalize($state)
+            hash: md5($messengerUserId . '-' . $chatId . '-' . $botId),
+            messengerUserId: $messengerUserId,
+            chatId: (string) $chatId,
+            telegramBotId: $botId,
+            class: $class,
+            state: $this->getSerializer()->normalize($state)
         );
         $this->getEntityManager()->persist($conversation);
         $this->getEntityManager()->flush();

@@ -83,7 +83,7 @@ class NotifyFeedbackSearchSourcesAboutNewFeedbackSearchCommandHandler
         FeedbackSearch $targetFeedbackSearch
     ): void
     {
-        $botIds = $messengerUser->getBotIds();
+        $botIds = $messengerUser->getTelegramBotIds();
 
         if ($botIds === null) {
             return;

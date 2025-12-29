@@ -50,8 +50,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             ->setLocaleCode($localeCode)
         ;
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeStateStep($this->getConversation(), $shouldSeeStep)
             ->shouldSeeReply(...$shouldSeeReplies)
             ->shouldSeeButtons(...$shouldSeeButtons)
@@ -489,8 +488,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
                 ->setStep($stateStep)
         );
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeStateStep($conversation, $shouldSeeStep)
             ->shouldSeeReply(...$shouldSeeReplies)
             ->shouldSeeButtons(...$shouldSeeButtons)

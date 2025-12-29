@@ -18,7 +18,6 @@ abstract class DatabaseTestCase extends KernelTestCase
     use ConsoleCommandRunnerTrait;
 
     protected static bool $databaseBooted = false;
-    protected static ?Fixtures $fixtures = null;
 
     public function setUp(): void
     {
@@ -180,11 +179,19 @@ abstract class DatabaseTestCase extends KernelTestCase
 
     protected function bootFixtures(array $refs): self
     {
-        if (static::$fixtures === null) {
-            static::$fixtures = new Fixtures($this->getEntityManager());
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            $em = $this->getEntityManager()->getDynamodb();
+            $schemaTool = $em->getSchemaTool();
+            try {
+                $schemaTool->dropTables();
+            } catch (Throwable) {
+            }
+            $schema = json_decode($this->runConsoleCommand('dynamodb:schema:extract'), true);
+            $schemaTool->createTables($schema);
         }
 
-        static::$fixtures->bootFixtures($refs);
+        $fixtures = new Fixtures($this->getEntityManager());
+        $fixtures->bootFixtures($refs);
 
         return $this;
     }

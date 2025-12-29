@@ -57,8 +57,8 @@ class MessengerUserUpserter
         if (empty($messengerUser->getName()) && !empty($transfer->getName())) {
             $messengerUser->setName($transfer->getName());
         }
-        if (!empty($transfer->getBotId())) {
-            $messengerUser->addBotId($transfer->getBotId());
+        if (!empty($transfer->getTelegramBotId())) {
+            $messengerUser->addTelegramBotId($transfer->getTelegramBotId());
         }
 
         $this->logger?->debug(__METHOD__, [

@@ -43,10 +43,10 @@ class TelegramBotConversationManager
         $messengerUser = $bot->getMessengerUser();
         $chatId = $this->telegramBotChatProvider->getTelegramChatByUpdate($bot->getUpdate())?->getId();
 
-//        $this->logger?->debug(__METHOD__, [
-//            'messengerUser' => $messengerUser,
-//            'chatId' => $chatId,
-//        ]);
+        $this->logger?->debug(__METHOD__, [
+            'messengerUser' => $messengerUser,
+            'chatId' => $chatId,
+        ]);
 
         if ($messengerUser === null || $chatId === null) {
             return null;
@@ -161,12 +161,12 @@ class TelegramBotConversationManager
 
         $entity->setState($state);
 
-//        $this->logger->critical('-------------------->' . __METHOD__, [
-//            'conv_hash' => $entity->getHash(),
-//            'conv_deleted_at' => $entity->getDeletedAt(),
-//            'conv_expire_at' => $entity->getExpireAt(),
-//            'state' => $state,
-//        ]);
+        $this->logger->debug(__METHOD__, [
+            'conv_hash' => $entity->getHash(),
+            'conv_deleted_at' => $entity->getDeletedAt(),
+            'conv_expire_at' => $entity->getExpireAt(),
+            'state' => $state,
+        ]);
 
         return $conversation;
     }

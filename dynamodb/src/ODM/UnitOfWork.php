@@ -8,20 +8,25 @@ use Throwable;
 
 class UnitOfWork
 {
-    /** @var array<string, object> */
-    private array $identityMap = []; // [oid => entity]
+    /**
+     * @var array<
+     *   class-string,
+     *   array<string, object> // [serializedPk => entity]
+     * >
+     */
+    private array $identities = [];
 
     /** @var array<string, array> */
-    private array $originalData = []; // [oid => serialized attributes snapshot]
+    private array $originals = []; // [oid => serialized attributes snapshot]
 
     /** @var array<string, object> */
-    private array $newEntities = [];
+    private array $inserts = [];
 
     /** @var array<string, object> */
-    private array $removedEntities = [];
+    private array $deletes = [];
 
     /** @var array<string, object> */
-    private array $dirtyEntities = [];
+    private array $updates = [];
 
     public function __construct(
         private readonly EntityManager $em,
@@ -29,73 +34,33 @@ class UnitOfWork
     {
     }
 
-    public function registerManaged(object $entity): void
+    public function register(object $entity): object
     {
-        $oid = spl_object_hash($entity);
+        $class = $entity::class;
+        $idKey = $this->getIdentityKey($entity);
 
-        if (isset($this->identityMap[$oid])) {
-            return;
+        if (isset($this->identities[$class][$idKey])) {
+            return $this->identities[$class][$idKey];
         }
 
-        // todo: do I really need this?
-        $serializedKey = $this->em->getEntitySerializer()->serializePrimaryKey($entity);
-        $cached = $this->getFromIdentityMap($entity::class, $serializedKey);
+        $this->identities[$class][$idKey] = $entity;
+        $this->originals[$idKey] = $this->em->getEntitySerializer()->serialize($entity);
 
-        if ($cached !== null) {
-            return;
-        }
-
-        $this->identityMap[$oid] = $entity;
-        $this->originalData[$oid] = $this->em->getEntitySerializer()->serialize($entity);
-
-        $this->em->getLogger()->debug(__METHOD__, [
-            'oid' => $oid,
-            'entity' => $entity,
-            'serializedItem' => $this->originalData[$oid],
-        ]);
-    }
-
-    public function getFromIdentityMap(object|string $class, array $key): ?object
-    {
-        foreach ($this->identityMap as $entity) {
-            if ($entity::class !== (is_string($class) ? $class : $entity::class)) {
-                continue;
-            }
-
-            $currentKey = $this->em->getEntitySerializer()->serializePrimaryKey($entity);
-
-            if ($currentKey == $key) {
-                return $entity;
-            }
-        }
-
-        return null;
+        return $entity;
     }
 
     public function scheduleForInsert(object $entity): void
     {
-        $this->newEntities[spl_object_hash($entity)] = $entity;
+        $entity = $this->register($entity);
+        $idKey = $this->getIdentityKey($entity);
+        $this->inserts[$idKey] = $entity;
     }
 
     public function scheduleForDelete(object $entity): void
     {
-        $this->removedEntities[spl_object_hash($entity)] = $entity;
-    }
-
-    public function scheduleIfDirty(object $entity): void
-    {
-        $oid = spl_object_hash($entity);
-
-        if (!isset($this->originalData[$oid])) {
-            return;
-        }
-
-        $current = $this->em->getEntitySerializer()->serialize($entity);
-        $original = $this->originalData[$oid];
-
-        if ($current !== $original) {
-            $this->dirtyEntities[$oid] = $entity;
-        }
+        $entity = $this->register($entity);
+        $idKey = $this->getIdentityKey($entity);
+        $this->deletes[$idKey] = $entity;
     }
 
     public function flush(): void
@@ -108,31 +73,51 @@ class UnitOfWork
         // ----------------------------
         // AUTOMATIC DIRTY DETECTION
         // ----------------------------
-        foreach ($this->identityMap as $oid => $entity) {
-            if (isset($this->newEntities[$oid]) || isset($this->removedEntities[$oid])) {
-                continue;
-            }
+        foreach ($this->identities as $class => $entities) {
+            foreach ($entities as $idKey => $entity) {
+                if (isset($this->inserts[$idKey]) || isset($this->deletes[$idKey])) {
+                    continue;
+                }
 
-            $current = $serializer->serialize($entity);
-            $original = $this->originalData[$oid];
+                $current = $serializer->serialize($entity);
+                $original = $this->originals[$idKey] ?? null;
 
-            $logger?->debug(__METHOD__, [
-                'oid' => $oid,
-                'entity' => $entity,
-                'original' => $original,
-                'current' => $current,
-                'updated' => $current !== $original,
-            ]);
+                $logger?->debug(__METHOD__, [
+                    'class' => $class,
+                    'id' => $idKey,
+                    'entity' => $entity,
+                    'original' => $original,
+                    'current' => $current,
+                    'updated' => $current !== $original,
+                ]);
 
-            if ($current !== $original) {
-                $this->dirtyEntities[$oid] = $entity;
+                if ($current !== $original) {
+                    $this->updates[$idKey] = $entity;
+                }
             }
         }
 
         $writes = [];
 
+        // DELETES
+        foreach ($this->deletes as $idKey => $entity) {
+            $class = $entity::class;
+            $metadata = $metadataLoader->getEntityMetadata($class);
+            $table = $metadata->getTable();
+            $key = $serializer->serializePrimaryKey($entity);
+
+            $writes[] = [
+                'Delete' => [
+                    'TableName' => $table,
+                    'Key' => $key,
+                ],
+            ];
+
+            unset($this->inserts[$idKey], $this->updates[$idKey]);
+        }
+
         // INSERTS
-        foreach ($this->newEntities as $entity) {
+        foreach ($this->inserts as $idKey => $entity) {
             $class = $entity::class;
             $metadata = $metadataLoader->getEntityMetadata($class);
             $table = $metadata->getTable();
@@ -153,13 +138,13 @@ class UnitOfWork
         }
 
         // UPDATES (dirty)
-        foreach ($this->dirtyEntities as $entity) {
+        foreach ($this->updates as $idKey => $entity) {
             $class = $entity::class;
             $metadata = $metadataLoader->getEntityMetadata($class);
             $table = $metadata->getTable();
 
             $newData = $serializer->serialize($entity);
-            $oldData = $this->originalData[spl_object_hash($entity)];
+            $oldData = $this->originals[$idKey];
 
             // optimistic lock?
             $hasVersion = $metadata->hasProperty('version');
@@ -189,21 +174,6 @@ class UnitOfWork
             ];
         }
 
-        // DELETES
-        foreach ($this->removedEntities as $entity) {
-            $class = $entity::class;
-            $metadata = $metadataLoader->getEntityMetadata($class);
-            $table = $metadata->getTable();
-            $key = $serializer->serializePrimaryKey($entity);
-
-            $writes[] = [
-                'Delete' => [
-                    'TableName' => $table,
-                    'Key' => $key,
-                ],
-            ];
-        }
-
         $logger->debug(__METHOD__, [
             'writes_count' => count($writes),
             'writes' => $writes,
@@ -226,7 +196,7 @@ class UnitOfWork
                 $this->em->getLogger()->error($exception->getMessage(), [
                     'writes' => $writes,
                 ]);
-                die;
+                throw $exception;
             }
             $this->afterFlush();
             return;
@@ -273,17 +243,34 @@ class UnitOfWork
 
     private function afterFlush(): void
     {
-        $this->newEntities = [];
-        $this->removedEntities = [];
-        $this->dirtyEntities = [];
+        $this->inserts = [];
+        $this->deletes = [];
+        $this->updates = [];
     }
 
     public function clear(): void
     {
-        $this->identityMap = [];
-        $this->originalData = [];
-        $this->newEntities = [];
-        $this->removedEntities = [];
-        $this->dirtyEntities = [];
+        $this->identities = [];
+        $this->originals = [];
+        $this->inserts = [];
+        $this->deletes = [];
+        $this->updates = [];
+    }
+
+    public function getById(string $class, array $key): ?object
+    {
+        $idKey = $this->getIdentityKeyByArray($key);
+
+        return $this->identities[$class][$idKey] ?? null;
+    }
+
+    public function getIdentityKeyByArray(array $key): string
+    {
+        return json_encode($key, JSON_THROW_ON_ERROR);
+    }
+
+    public function getIdentityKey(object $entity): string
+    {
+        return $this->getIdentityKeyByArray($this->em->getEntitySerializer()->serializePrimaryKey($entity));
     }
 }

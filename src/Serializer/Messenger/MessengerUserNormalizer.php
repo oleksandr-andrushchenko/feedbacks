@@ -22,7 +22,7 @@ class MessengerUserNormalizer implements NormalizerInterface
                 'messenger' => $data->getMessenger()->name,
                 'username' => $data->getUsername() === null ? null : sprintf('@%s', $data->getUsername()),
                 'name' => $data->getName() ?? null,
-                'bot_ids' => $data->getBotIds() === null ? null : implode(', ', $data->getBotIds()),
+                'bot_ids' => $data->getTelegramBotIds() === null ? null : implode(', ', $data->getTelegramBotIds()),
                 'created_at' => $data->getCreatedAt()?->format('d.m.Y H:i'),
             ]);
         }
@@ -32,7 +32,7 @@ class MessengerUserNormalizer implements NormalizerInterface
             'identifier' => $data->getIdentifier(),
             'username' => $data->getUsername() ?? null,
             'name' => $data->getName() ?? null,
-            'bot_ids' => $data->getBotIds() === null ? null : implode(', ', $data->getBotIds()),
+            'bot_ids' => $data->getTelegramBotIds() === null ? null : implode(', ', $data->getTelegramBotIds()),
             'username_history' => $data->getUsernameHistory() === null ? null : implode(', ', $data->getUsernameHistory()),
         ]);
     }

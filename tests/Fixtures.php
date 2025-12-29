@@ -68,14 +68,14 @@ class Fixtures
     public const string USER_1 = 'user_1';
     public const string USER_2 = 'user_2';
     public const string USER_3 = 'user_3';
-    public const string SEARCH_TERM_INSTAGRAM_PROFILE_URL_3 = 'search_term_instagram_profile_url_3';
+    public const string SEARCH_TERM_INSTAGRAM_PROFILE_URL_3 = 'search_term_instagram_profile_ur';
     public const string SEARCH_TERM_INSTAGRAM_USERNAME_3 = 'search_term_instagram_username_3';
-    public const string FEEDBACK_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_13_telegram_instagram_profile_url';
-    public const string FEEDBACK_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_23_telegram_instagram_username';
-    public const string FEEDBACK_LOOKUP_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_lookup_13_telegram_instagram_profile_url';
-    public const string FEEDBACK_LOOKUP_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_lookup_23_telegram_instagram_username';
-    public const string FEEDBACK_SEARCH_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_search_13_telegram_instagram_profile_url';
-    public const string FEEDBACK_SEARCH_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_search_23_telegram_instagram_username';
+    public const string FEEDBACK_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_13_telegram_instagram_p';
+    public const string FEEDBACK_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_23_telegram_instagram_u';
+    public const string FEEDBACK_LOOKUP_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_lookup_13_telegram_inst';
+    public const string FEEDBACK_LOOKUP_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_lookup_23_telegram_inst';
+    public const string FEEDBACK_SEARCH_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_search_13_telegram_inst';
+    public const string FEEDBACK_SEARCH_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_search_23_telegram_inst';
     public const string TG_BOT_CONVERSATION_1 = 'telegram_bot_conversation_1';
 
 

@@ -35,8 +35,7 @@ class FeedbacksNormalizeSearchTermsCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addOption('date', mode: InputOption::VALUE_REQUIRED, description: 'Date in mm/dd/yyyy format')
+        $this->addOption('date', mode: InputOption::VALUE_REQUIRED, description: 'Date in mm/dd/yyyy format')
             ->addOption('phones', mode: InputOption::VALUE_NONE, description: 'Normalize phone number types')
             ->addOption('country', mode: InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, description: 'Country code (-s)')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')

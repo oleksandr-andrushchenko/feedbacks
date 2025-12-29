@@ -33,8 +33,7 @@ class RestartTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             Fixtures::TG_BOT_1,
         ]);
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeActiveConversation(
                 RestartConversationTelegramBotConversation::class,
                 new TelegramBotConversationState(RestartConversationTelegramBotConversation::STEP_CONFIRM_QUERIED)
@@ -80,8 +79,7 @@ class RestartTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             new TelegramBotConversationState(RestartConversationTelegramBotConversation::STEP_CONFIRM_QUERIED)
         );
 
-        $this
-            ->typeText($this->yesButton())
+        $this->typeText($this->yesButton())
             ->shouldSeeReply(
                 ...$this->okReplies(),
             )

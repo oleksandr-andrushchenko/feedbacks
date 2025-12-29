@@ -86,6 +86,7 @@ class SearchTerm
     public function setMessengerUser(?MessengerUser $messengerUser): self
     {
         $this->messengerUser = $messengerUser;
+        $this->messengerUserId = $messengerUser?->getId();
         return $this;
     }
 

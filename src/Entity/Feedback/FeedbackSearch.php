@@ -69,6 +69,7 @@ class FeedbackSearch
     public function setUser(?User $user): self
     {
         $this->user = $user;
+        $this->userId = $user?->getId();
         return $this;
     }
 
@@ -97,6 +98,7 @@ class FeedbackSearch
     public function setMessengerUser(?MessengerUser $messengerUser): self
     {
         $this->messengerUser = $messengerUser;
+        $this->messengerUserId = $messengerUser?->getId();
         return $this;
     }
 
@@ -119,6 +121,7 @@ class FeedbackSearch
     public function setSearchTerm(?SearchTerm $searchTerm): self
     {
         $this->searchTerm = $searchTerm;
+        $this->searchTermId = $searchTerm?->getId();
         return $this;
     }
 
@@ -150,6 +153,7 @@ class FeedbackSearch
     public function setTelegramBot(?TelegramBot $telegramBot): self
     {
         $this->telegramBot = $telegramBot;
+        $this->telegramBotId = $telegramBot?->getId();
         return $this;
     }
 

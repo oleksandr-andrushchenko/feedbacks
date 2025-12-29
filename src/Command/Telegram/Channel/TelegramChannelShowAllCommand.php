@@ -29,8 +29,7 @@ class TelegramChannelShowAllCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group (inner name)')
+        $this->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group (inner name)')
             ->setDescription('Show all telegram channels info')
         ;
     }

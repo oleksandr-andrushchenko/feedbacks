@@ -30,8 +30,7 @@ class TelegramBotCommandsSyncCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->setDescription('Update telegram bot commands')
         ;
     }

@@ -8,9 +8,11 @@
                  class="App\Command\Dynamodb\DynamodbSchemaExtractCommand" lazy="true">
             <tag name="console.command" command="dynamodb:schema:extract"/>
         </service>
-        <service id="app.dynamodb_fixtures_load_command"
-                 class="App\Command\Dynamodb\DynamodbFixturesLoadCommand" lazy="true">
-            <tag name="console.command" command="dynamodb:fixtures:load"/>
+        <service id="app.dynamodb_odm_tests_run_command" class="App\Command\Dynamodb\DynamodbOdmTestsRunCommand"
+                 lazy="true">
+            <argument type="service" id="app.orm.entity_manager"/>
+            <argument type="service" id="app.user_repository"/>
+            <tag name="console.command" command="dynamodb:odm:run-tests"/>
         </service>
         <service id="app.dynamodb_from_doctrine_transfer_command"
                  class="App\Command\Dynamodb\DynamodbFromDoctrineTransferCommand" lazy="true">

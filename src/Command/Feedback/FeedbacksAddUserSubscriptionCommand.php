@@ -34,8 +34,7 @@ class FeedbacksAddUserSubscriptionCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addArgument('user', InputArgument::REQUIRED, 'User id')
+        $this->addArgument('user', InputArgument::REQUIRED, 'User id')
             ->addArgument('plan', InputArgument::REQUIRED, 'Plan name')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Add feedback user subscription')

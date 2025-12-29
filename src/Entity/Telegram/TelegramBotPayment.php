@@ -73,6 +73,7 @@ class TelegramBotPayment implements Stringable
     public function setMessengerUser(?MessengerUser $messengerUser): self
     {
         $this->messengerUser = $messengerUser;
+        $this->messengerUserId = $messengerUser?->getId();
         return $this;
     }
 
@@ -111,6 +112,7 @@ class TelegramBotPayment implements Stringable
     public function setTelegramBotPaymentMethod(?TelegramBotPaymentMethod $telegramBotPaymentMethod): self
     {
         $this->telegramBotPaymentMethod = $telegramBotPaymentMethod;
+        $this->telegramBotPaymentMethodId = $telegramBotPaymentMethod?->getId();
         return $this;
     }
 

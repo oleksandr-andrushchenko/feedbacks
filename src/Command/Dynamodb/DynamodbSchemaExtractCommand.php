@@ -25,9 +25,7 @@ class DynamodbSchemaExtractCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->setDescription('Extract and print DynamoDB schema from ' . $this->cfFilename)
-        ;
+        $this->setDescription('Extract and print DynamoDB schema from ' . $this->cfFilename);
     }
 
     public function execute(InputInterface $input, OutputInterface $output): int
