@@ -1,23 +1,25 @@
 # Read the documentation at https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/
 service: feedbacks
 
+useDotenv: true
+
 provider:
   name: aws
-  region: us-east-1
-  stage: dev
+  region: ${env:AWS_REGION}
+  stage: ${env:APP_STAGE}
   runtime: provided.al2
   environment:
-    APP_STAGE: ${ssm:/feedbacks/${sls:stage}/APP_STAGE}
     APP_ENV: ${ssm:/feedbacks/${sls:stage}/APP_ENV}
-    APP_SECRET: ${ssm:/feedbacks/${sls:stage}/APP_SECRET}
+    APP_STAGE: ${ssm:/feedbacks/${sls:stage}/APP_STAGE}
+    APP_SECRET: ${ssm:/feedbacks/${sls:stage}/APP_SECRET~true}
     SITE_BASE_URL: ${ssm:/feedbacks/${sls:stage}/SITE_BASE_URL}
     TELEGRAM_WEBHOOK_BASE_URL: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL}
     TELEGRAM_ADMIN_ID: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ADMIN_ID}
-    TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN}
-    TELEGRAM_ERRORS_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ERRORS_TOKEN}
+    TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN~true}
+    TELEGRAM_ERRORS_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ERRORS_TOKEN~true}
     LOG_ACTIVITIES: ${ssm:/feedbacks/${sls:stage}/LOG_ACTIVITIES}
-    GOOGLE_API_KEY: ${ssm:/feedbacks/${sls:stage}/GOOGLE_API_KEY}
-    DATABASE_URL: ${ssm:/feedbacks/${sls:stage}/DATABASE_URL}
+    GOOGLE_API_KEY: ${ssm:/feedbacks/${sls:stage}/GOOGLE_API_KEY~true}
+    DATABASE_URL: ${ssm:/feedbacks/${sls:stage}/DATABASE_URL~true}
     CRYPTO: ${ssm:/feedbacks/${sls:stage}/CRYPTO}
 
 plugins:
@@ -59,6 +61,186 @@ package:
 
 resources:
   Resources:
+    AppEnvParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/APP_ENV
+        Type: String
+        Value: ${env:APP_ENV}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    AppStageParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/APP_STAGE
+        Type: String
+        Value: ${env:APP_STAGE}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+      AppSecretParam:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: /feedbacks/${sls:stage}/APP_SECRET
+          Type: SecureString
+          Value: ${env:APP_SECRET}
+          Tags:
+            - Key: Environment
+              Value: !Ref TagEnvironment
+            - Key: Project
+              Value: !Ref TagProject
+            - Key: Owner
+              Value: !Ref TagOwner
+            - Key: Region
+              Value: !Ref TagRegion
+    SiteBaseUrlParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/SITE_BASE_URL
+        Type: String
+        Value: ${env:SITE_BASE_URL}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    TelegramWebhookBaseUrlParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL
+        Type: String
+        Value: ${env:TELEGRAM_WEBHOOK_BASE_URL}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    TelegramAdminIdParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/TELEGRAM_ADMIN_ID
+        Type: String
+        Value: ${env:TELEGRAM_ADMIN_ID}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    TelegramActivitiesTokenParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN
+        Type: SecureString
+        Value: ${env:TELEGRAM_ACTIVITIES_TOKEN}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    TelegramErrorsTokenParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/TELEGRAM_ERRORS_TOKEN
+        Type: SecureString
+        Value: ${env:TELEGRAM_ERRORS_TOKEN}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    LogActivitiesParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/LOG_ACTIVITIES
+        Type: String
+        Value: ${env:LOG_ACTIVITIES}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    GoogleApiKeyParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/GOOGLE_API_KEY
+        Type: SecureString
+        Value: ${env:GOOGLE_API_KEY}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    DatabaseUrlParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/DATABASE_URL
+        Type: SecureString
+        Value: ${env:DATABASE_URL}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
+    CryptoParam:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /feedbacks/${sls:stage}/CRYPTO
+        Type: String
+        Value: ${env:CRYPTO}
+        Tags:
+          - Key: Environment
+            Value: !Ref TagEnvironment
+          - Key: Project
+            Value: !Ref TagProject
+          - Key: Owner
+            Value: !Ref TagOwner
+          - Key: Region
+            Value: !Ref TagRegion
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:

@@ -231,3 +231,38 @@ load-prod-rdbms: ## Load prod RDBMS into local RDBMS
 	echo "Importing into local DB"; \
 	$(DC) exec -T $(RDBMS_CONTAINER) mysql -uroot -p1111 app < $$filename; \
 	echo "Done!"
+
+.PHONY: deploy
+deploy: ## Deploy to $(APP_ENV) / $(APP_STAGE)
+	@echo "Using APP_ENV=$(APP_ENV), APP_STAGE=$(APP_STAGE)"
+	@echo "Checking kernel log dir..."
+	@kernelLogDir=$$($(DC) run $(BE_FUNCTION_CONTAINER) sed -n '29p' vendor/bref/symfony-bridge/src/BrefKernel.php); \
+	if echo "$$kernelLogDir" | grep -q "^//"; then \
+		echo "kernel log dir has been changed"; \
+		exit 1; \
+	fi
+
+	@echo "Running PHPUnit..."
+	@if ! $(DC) run -e FORCE_SKIPPED=1 $(BE_FUNCTION_CONTAINER) php bin/phpunit; then \
+		echo "some test has been failed"; \
+		exit 1; \
+	fi
+
+	@echo "Installing composer dependencies..."
+	$(DC) run $(BE_FUNCTION_CONTAINER) composer install --prefer-dist --optimize-autoloader --no-dev
+
+	@echo "Clearing and warming up $(APP_ENV) cache..."
+	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:clear --env=$(APP_ENV)
+	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup --env=$(APP_ENV)
+
+	@echo "Deploying serverless..."
+	serverless deploy --stage=$(APP_STAGE)
+
+	@echo "Running migrations..."
+	serverless bref:cli --args="doctrine:migrations:migrate --no-interaction --all-or-nothing" --stage=$(APP_STAGE)
+
+	@echo "Installing composer dependencies for local env..."
+	$(DC) run $(BE_FUNCTION_CONTAINER) composer install
+	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup
+
+	@echo "Deployment completed!"

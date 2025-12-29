@@ -8,9 +8,16 @@ services:
     volumes:
       - .:/var/task
     environment:
+      APP_ENV: dev
+      APP_STAGE: local
+      APP_DEBUG: 1
+      SITE_BASE_URL: http://localhost:7999
+      APP_SECRET: 82ec4883705ba53bd7ecdefe8f25d000
       HANDLER: public/index.php
       DATABASE_URL: mysql://app:1111@rdbms:3306/app?serverVersion=8&charset=utf8mb4
       DYNAMODB_ENDPOINT: http://dynamodb:8000
+#      GOOGLE_API_KEY:
+      TELEGRAM_WEBHOOK_BASE_URL: https://490330b1d4cc.ngrok-free.app
 
   ###> doctrine/doctrine-bundle ###
   rdbms:
