@@ -3,17 +3,10 @@ service: feedbacks
 
 provider:
   name: aws
-  # The AWS region in which to deploy (us-east-1 is the default)
   region: us-east-1
-  # The stage of the application, e.g. dev, production, staging… ('dev' is the default)
   stage: dev
   runtime: provided.al2
   environment:
-    # Symfony environment variables
-    #should be synced with:
-    #1) .env
-    #2) .env.dist
-    #3) phpunit.xml
     APP_STAGE: ${ssm:/feedbacks/${sls:stage}/APP_STAGE}
     APP_ENV: ${ssm:/feedbacks/${sls:stage}/APP_ENV}
     APP_SECRET: ${ssm:/feedbacks/${sls:stage}/APP_SECRET}
@@ -26,46 +19,27 @@ provider:
     GOOGLE_API_KEY: ${ssm:/feedbacks/${sls:stage}/GOOGLE_API_KEY}
     DATABASE_URL: ${ssm:/feedbacks/${sls:stage}/DATABASE_URL}
     CRYPTO: ${ssm:/feedbacks/${sls:stage}/CRYPTO}
-    # todo: add vpc with private (for RDS) and public (lambda outbound internet requests) subnets
-    # @see https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html#Add_IGW_Attach_Gateway
-#  vpc:
-#    securityGroupIds:
-#      - sg-088db27809d621bd6
-#    subnetIds:
-#      - subnet-0bdb3047343de2025
-#      - subnet-0c3d57c4a615a8edb
-#      - subnet-050cb8e506d3b0f5b
-#      - subnet-04680c5f9ee08979b
-#      - subnet-01583ad711e36973c
-#      - subnet-0c5933ad81e7f772b
 
 plugins:
   - ./vendor/bref/bref
 
 functions:
-  # This function runs the Symfony website/API
   web:
     handler: public/index.php
-    timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
+    timeout: 28
     layers:
       - ${bref:layer.php-83-fpm}
     events:
       - httpApi: '*'
-  #      - schedule:
-  #          rate: rate(5 minutes)
-  #          input:
-  #            warmer: true
-  # This function let us run console commands in Lambda
   console:
     handler: bin/console
-    timeout: 120 # in seconds
+    timeout: 120
     layers:
-      - ${bref:layer.php-83} # PHP
-      - ${bref:layer.console} # The "console" layer
+      - ${bref:layer.php-83}
+      - ${bref:layer.console}
 
 package:
   patterns:
-    # Excluded files and folders for deployment
     - '!assets/**'
     - '!node_modules/**'
     - '!public/build/**'
@@ -74,14 +48,11 @@ package:
     - '!.idea/**'
     - '!.git/**'
     - '!tests/**'
-    #    - '!.env'
     - '!.env.dist'
     - '!.phpunit.result.cache'
     - '!.editorconfig'
     - '!editconfig.xml'
     - '!phpunit.xml'
-    # If you want to include files and folders that are part of excluded folders,
-    # add them at the end
     - 'var/cache/prod/**'
     - 'public/build/entrypoints.json'
     - 'public/build/manifest.json'
