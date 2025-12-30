@@ -31,7 +31,7 @@ class UserContactMessage implements Stringable
 
     public function __construct(
         #[Attribute]
-        private readonly string $id,
+        private string $id,
         private ?MessengerUser $messengerUser,
         private User $user,
         #[Attribute]

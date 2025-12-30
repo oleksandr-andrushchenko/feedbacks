@@ -44,7 +44,7 @@ class TelegramBotRequest implements Stringable
         $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): ?string
+    public function getId(): string
     {
         return $this->id;
     }

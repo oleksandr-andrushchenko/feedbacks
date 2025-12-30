@@ -27,7 +27,7 @@ class TelegramBotUpdate implements Stringable
 
     public function __construct(
         #[Attribute('telegram_bot_update_id')]
-        private readonly string $id,
+        private string $id,
         #[Attribute]
         private readonly array $data,
         private readonly TelegramBot $telegramBot,

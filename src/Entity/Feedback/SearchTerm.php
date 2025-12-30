@@ -31,6 +31,9 @@ use OA\Dynamodb\Attribute\SortKey;
 )]
 class SearchTerm
 {
+    #[Attribute('messenger_user_id')]
+    private ?string $messengerUserId = null;
+
     public function __construct(
         #[Attribute('search_term_id')]
         private string $id,
@@ -43,18 +46,10 @@ class SearchTerm
         private ?MessengerUser $messengerUser = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        #[Attribute('messenger_user_id')]
-        private ?string $messengerUserId = null,
     )
     {
         $this->messengerUserId = $this->messengerUser?->getId();
         $this->createdAt ??= new DateTimeImmutable();
-    }
-
-    public function setId(string $id): self
-    {
-        $this->id = $id;
-        return $this;
     }
 
     public function getId(): string

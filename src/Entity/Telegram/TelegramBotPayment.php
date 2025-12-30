@@ -44,7 +44,7 @@ class TelegramBotPayment implements Stringable
 
     public function __construct(
         #[Attribute('telegram_bot_payment_id')]
-        private readonly string $id,
+        private string $id,
         private MessengerUser $messengerUser,
         #[Attribute('chat_id')]
         private readonly string $chatId,

@@ -46,7 +46,7 @@ class FeedbackNotification implements Stringable
 
     public function __construct(
         #[Attribute('feedback_notification_id')]
-        private readonly string $id,
+        private string $id,
         #[Attribute]
         private readonly FeedbackNotificationType $type,
         private readonly MessengerUser $messengerUser,

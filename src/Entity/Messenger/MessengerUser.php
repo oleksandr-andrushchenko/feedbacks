@@ -48,7 +48,7 @@ class MessengerUser implements Stringable
 
     public function __construct(
         #[Attribute('messenger_user_id')]
-        private readonly string $id,
+        private string $id,
         #[Attribute]
         private readonly Messenger $messenger,
         #[Attribute]

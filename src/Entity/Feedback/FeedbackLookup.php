@@ -20,12 +20,17 @@ use OA\Dynamodb\Attribute\SortKey;
 )]
 class FeedbackLookup
 {
+    #[Attribute('search_term_id')]
+    private ?string $searchTermId = null;
+    #[Attribute('messenger_user_id')]
+    private ?string $messengerUserId = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+
     public function __construct(
         #[Attribute('feedback_lookup_id')]
-        private ?string $id = null,
+        private string $id,
         private ?SearchTerm $searchTerm = null,
-        #[Attribute('search_term_id')]
-        private ?string $searchTermId = null,
         private ?User $user = null,
         #[Attribute('user_id')]
         private ?string $userId = null,
@@ -36,33 +41,22 @@ class FeedbackLookup
         #[Attribute('local_code')]
         private ?string $localeCode = null,
         private ?MessengerUser $messengerUser = null,
-        #[Attribute('messenger_user_id')]
-        private ?string $messengerUserId = null,
         private ?TelegramBot $telegramBot = null,
-        #[Attribute('telegram_bot_id')]
-        private ?string $telegramBotId = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
     )
     {
-        $this->searchTermId ??= $this->searchTerm?->getId();
-        $this->userId ??= $this->user?->getId();
+        $this->searchTermId = $this->searchTerm?->getId();
+        $this->userId = $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
-        $this->messengerUserId ??= $this->messengerUser?->getId();
-        $this->telegramBotId ??= $this->telegramBot?->getId();
+        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->telegramBotId = $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 
-
-    public function setId(?string $id): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function getId(): ?string
+    public function getId(): string
     {
         return $this->id;
     }

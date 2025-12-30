@@ -12,6 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<TelegramChannel>
+ * @method array<TelegramChannel> findAll()
  */
 class TelegramChannelDoctrineRepository extends ServiceEntityRepository
 {

@@ -21,7 +21,9 @@
         <field name="chatId" column="chat_id" length="32" nullable="true"/>
         <field name="data" column="data" type="json"/>
 
-        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot"/>
+        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot">
+            <join-column name="bot_id" referenced-column-name="id" nullable="false"/>
+        </many-to-one>
 
         <field name="response" column="response" type="json"/>
         <field name="createdAt" column="created_at" type="datetime_immutable"/>

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Command\Dynamodb;
 
 use App\Entity\Feedback\SearchTerm;
+use App\Entity\Telegram\TelegramBot;
+use App\Entity\Telegram\TelegramBotPaymentMethod;
+use App\Entity\Telegram\TelegramChannel;
 use App\Factory\Feedback\SearchTermFeedbackFactory;
 use App\Factory\Feedback\SearchTermFeedbackLookupFactory;
 use App\Factory\Feedback\SearchTermFeedbackSearchFactory;
@@ -93,8 +96,8 @@ class DynamodbFromDoctrineTransferCommand extends Command
             'telegram_bot_payments' => $this->transferTelegramBotPayments($telegramBotIdMap, $telegramBotPaymentMethodIdMap),
             'feedback_user_subscriptions' => $this->transferFeedbackUserSubscriptions(),
             'feedback_bot_conversations' => $this->transferTelegramBotConversations($telegramBotIdMap),
-//            'telegram_bot_requests' => $this->transferTelegramBotRequests(),
-//            'telegram_bot_updates' => $this->transferTelegramBotUpdates(),
+            'telegram_bot_requests' => $this->transferTelegramBotRequests(),
+            'telegram_bot_updates' => $this->transferTelegramBotUpdates(),
             'user_contact_messages' => $this->transferUserContactMessages($telegramBotIdMap),
             'feedback_notifications' => $this->transferFeedbackNotifications($telegramBotIdMap),
         ];
@@ -133,8 +136,26 @@ class DynamodbFromDoctrineTransferCommand extends Command
         $affectedRows = 0;
         foreach ($this->telegramBotDoctrineRepository->findAll() as $telegramBot) {
             $telegramBotIdMap[$telegramBot->getId()] = $this->idGenerator->generateId();
-            $telegramBot->setId($telegramBotIdMap[$telegramBot->getId()]);
-            $this->dynamodbEntityManager->persist($telegramBot);
+            $newTelegramBot = new TelegramBot(
+                $telegramBotIdMap[$telegramBot->getId()],
+                $telegramBot->getUsername(),
+                $telegramBot->getGroup(),
+                $telegramBot->getName(),
+                $telegramBot->getToken(),
+                $telegramBot->getCountryCode(),
+                $telegramBot->getLocaleCode(),
+                $telegramBot->checkUpdates(),
+                $telegramBot->checkRequests(),
+                $telegramBot->acceptPayments(),
+                $telegramBot->getAdminIds(),
+                $telegramBot->adminOnly(),
+                $telegramBot->primary(),
+                $telegramBot->descriptionsSynced(),
+                $telegramBot->webhookSynced(),
+                $telegramBot->commandsSynced(),
+                $telegramBot->getCreatedAt()
+            );
+            $this->dynamodbEntityManager->persist($newTelegramBot);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();
@@ -146,8 +167,19 @@ class DynamodbFromDoctrineTransferCommand extends Command
         $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramChannelDoctrineRepository->findAll() as $telegramChannel) {
-            $telegramChannel->setId($this->idGenerator->generateId());
-            $this->dynamodbEntityManager->persist($telegramChannel);
+            $newTelegramChannel = new TelegramChannel(
+                $this->idGenerator->generateId(),
+                $telegramChannel->getUsername(),
+                $telegramChannel->getGroup(),
+                $telegramChannel->getName(),
+                $telegramChannel->getCountryCode(),
+                $telegramChannel->getLocaleCode(),
+                $telegramChannel->getLevel1RegionId(),
+                $telegramChannel->getChatId(),
+                $telegramChannel->primary(),
+                $telegramChannel->getCreatedAt()
+            );
+            $this->dynamodbEntityManager->persist($newTelegramChannel);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();
@@ -194,13 +226,18 @@ class DynamodbFromDoctrineTransferCommand extends Command
                 ->setHasActiveSubscription($feedback->hasActiveSubscription() ? true : null)
             ;
             foreach ($searchTerms as $searchTerm) {
-                $searchTerm->setId($this->idGenerator->generateId())
-                    ->setMessengerUserId($searchTerm->getMessengerUser()?->getId())
-                ;
-                $this->dynamodbEntityManager->persist($searchTerm);
+                $newSearchTerm = new SearchTerm(
+                    $this->idGenerator->generateId(),
+                    $searchTerm->getText(),
+                    $searchTerm->getNormalizedText(),
+                    $searchTerm->getType(),
+                    $searchTerm->getMessengerUser(),
+                    $searchTerm->getCreatedAt()
+                );
+                $this->dynamodbEntityManager->persist($newSearchTerm);
 
-                $extraSearchTerms = array_values(array_filter($searchTerms, static fn ($otherSearchTerm) => $otherSearchTerm->getId() !== $searchTerm->getId()));
-                $searchTermFeedback = $this->searchTermFeedbackFactory->createSearchTermFeedback($searchTerm, $feedback, empty($extraSearchTerms) ? null : $extraSearchTerms);
+                $extraSearchTerms = array_values(array_filter($searchTerms, static fn ($otherSearchTerm) => $otherSearchTerm->getId() !== $newSearchTerm->getId()));
+                $searchTermFeedback = $this->searchTermFeedbackFactory->createSearchTermFeedback($newSearchTerm, $feedback, empty($extraSearchTerms) ? null : $extraSearchTerms);
                 $searchTermFeedback->setTelegramBotId($telegramBotId);
                 $this->dynamodbEntityManager->persist($searchTermFeedback);
             }
@@ -219,21 +256,25 @@ class DynamodbFromDoctrineTransferCommand extends Command
             $telegramBotId = $telegramBotIdMap[$feedbackSearch->getTelegramBot()?->getId()] ?? null;
             $searchTerm = $feedbackSearch->getSearchTerm();
 
-            $searchTerm->setId($this->idGenerator->generateId())
-                ->setMessengerUserId($searchTerm->getMessengerUser()?->getId())
-            ;
-
-            $this->dynamodbEntityManager->persist($searchTerm);
+            $newSearchTerm = new SearchTerm(
+                $this->idGenerator->generateId(),
+                $searchTerm->getText(),
+                $searchTerm->getNormalizedText(),
+                $searchTerm->getType(),
+                $searchTerm->getMessengerUser(),
+                $searchTerm->getCreatedAt()
+            );
+            $this->dynamodbEntityManager->persist($newSearchTerm);
 
             $feedbackSearch
-                ->setSearchTermId($searchTerm->getId())
+                ->setSearchTermId($newSearchTerm->getId())
                 ->setUserId($feedbackSearch->getUser()?->getId())
                 ->setMessengerUserId($feedbackSearch->getMessengerUser()?->getId())
                 ->setTelegramBotId($telegramBotId)
             ;
             $this->dynamodbEntityManager->persist($feedbackSearch);
 
-            $searchTermFeedbackSearch = $this->searchTermFeedbackSearchFactory->createSearchTermFeedbackSearch($searchTerm, $feedbackSearch);
+            $searchTermFeedbackSearch = $this->searchTermFeedbackSearchFactory->createSearchTermFeedbackSearch($newSearchTerm, $feedbackSearch);
             $this->dynamodbEntityManager->persist($searchTermFeedbackSearch);
 
             $affectedRows++;
@@ -250,21 +291,25 @@ class DynamodbFromDoctrineTransferCommand extends Command
             $telegramBotId = $telegramBotIdMap[$feedbackLookup->getTelegramBot()?->getId()] ?? null;
             $searchTerm = $feedbackLookup->getSearchTerm();
 
-            $searchTerm->setId($this->idGenerator->generateId())
-                ->setMessengerUserId($searchTerm->getMessengerUser()?->getId())
-            ;
-
-            $this->dynamodbEntityManager->persist($searchTerm);
+            $newSearchTerm = new SearchTerm(
+                $this->idGenerator->generateId(),
+                $searchTerm->getText(),
+                $searchTerm->getNormalizedText(),
+                $searchTerm->getType(),
+                $searchTerm->getMessengerUser(),
+                $searchTerm->getCreatedAt()
+            );
+            $this->dynamodbEntityManager->persist($newSearchTerm);
 
             $feedbackLookup
-                ->setSearchTermId($searchTerm->getId())
+                ->setSearchTermId($newSearchTerm->getId())
                 ->setUserId($feedbackLookup->getUser()?->getId())
                 ->setMessengerUserId($feedbackLookup->getMessengerUser()?->getId())
                 ->setTelegramBotId($telegramBotId)
             ;
             $this->dynamodbEntityManager->persist($feedbackLookup);
 
-            $searchTermFeedbackLookup = $this->searchTermFeedbackLookupFactory->createSearchTermFeedbackLookup($searchTerm, $feedbackLookup);
+            $searchTermFeedbackLookup = $this->searchTermFeedbackLookupFactory->createSearchTermFeedbackLookup($newSearchTerm, $feedbackLookup);
             $this->dynamodbEntityManager->persist($searchTermFeedbackLookup);
 
             $affectedRows++;
@@ -328,11 +373,16 @@ class DynamodbFromDoctrineTransferCommand extends Command
         $affectedRows = 0;
         foreach ($this->telegramBotPaymentMethodDoctrineRepository->findAll() as $telegramBotPaymentMethod) {
             $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()] = $this->idGenerator->generateId();
-            $telegramBotPaymentMethod
-                ->setId($telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()])
-                ->setTelegramBotId($telegramBotIdMap[$telegramBotPaymentMethod->getTelegramBotId()] ?? null)
-            ;
-            $this->dynamodbEntityManager->persist($telegramBotPaymentMethod);
+            $newTelegramBotPaymentMethod = new TelegramBotPaymentMethod(
+                $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()],
+                $telegramBotPaymentMethod->getTelegramBot(),
+                $telegramBotPaymentMethod->getName(),
+                $telegramBotPaymentMethod->getToken(),
+                $telegramBotPaymentMethod->getCurrencyCodes(),
+                $telegramBotPaymentMethod->getCreatedAt(),
+            );
+            $newTelegramBotPaymentMethod->setTelegramBotId($telegramBotIdMap[$telegramBotPaymentMethod->getTelegramBotId()] ?? null);
+            $this->dynamodbEntityManager->persist($newTelegramBotPaymentMethod);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();

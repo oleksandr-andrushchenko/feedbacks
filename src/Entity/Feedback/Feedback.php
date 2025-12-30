@@ -25,9 +25,16 @@ class Feedback
 {
     private Collection $searchTerms;
 
+    #[Attribute('search_term_ids')]
+    private ?array $searchTermIds = null;
+    #[Attribute('messenger_user_id')]
+    private ?string $messengerUserId = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+
     public function __construct(
         #[Attribute('feedback_id')]
-        private ?string $id = null,
+        private string $id,
         private ?User $user = null,
         #[Attribute('user_id')]
         private ?string $userId = null,
@@ -38,12 +45,8 @@ class Feedback
         #[Attribute('has_active_subscription')]
         private ?bool $hasActiveSubscription = null,
         private ?MessengerUser $messengerUser = null,
-        #[Attribute('messenger_user_id')]
-        private ?string $messengerUserId = null,
         /** @var array<SearchTerm>|null $searchTerms */
         ?array $searchTerms = null,
-        #[Attribute('search_term_ids')]
-        private ?array $searchTermIds = null,
         #[Attribute]
         private ?Rating $rating = null,
         #[Attribute('text')]
@@ -51,25 +54,23 @@ class Feedback
         #[Attribute('telegram_channel_message_ids')]
         private ?array $telegramChannelMessageIds = null,
         private ?TelegramBot $telegramBot = null,
-        #[Attribute('telegram_bot_id')]
-        private ?string $telegramBotId = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
     )
     {
         $this->searchTerms = new ArrayCollection($searchTerms ?? []);
         $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms ?? []);
-        $this->userId ??= $this->user?->getId();
+        $this->userId = $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
-        $this->messengerUserId ??= $this->messengerUser?->getId();
+        $this->messengerUserId = $this->messengerUser?->getId();
         $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
-        $this->telegramBotId ??= $this->telegramBot?->getId();
+        $this->telegramBotId = $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): ?string
+    public function getId(): string
     {
         return $this->id;
     }

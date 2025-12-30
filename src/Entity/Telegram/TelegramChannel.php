@@ -31,8 +31,6 @@ use Stringable;
 )]
 class TelegramChannel implements Stringable
 {
-    #[Attribute('created_at')]
-    private ?DateTimeInterface $createdAt = null;
     #[Attribute('updated_at')]
     private ?DateTimeInterface $updatedAt = null;
     #[Attribute('deleted_at')]
@@ -57,16 +55,12 @@ class TelegramChannel implements Stringable
         private ?string $chatId = null,
         #[Attribute]
         private ?bool $primary = null,
+        #[Attribute('created_at')]
+        private ?DateTimeInterface $createdAt = null,
     )
     {
         $this->primary = $this->primary === true ? true : null;
         $this->createdAt ??= new DateTimeImmutable();
-    }
-
-    public function setId(string $id): self
-    {
-        $this->id = $id;
-        return $this;
     }
 
     public function getId(): string

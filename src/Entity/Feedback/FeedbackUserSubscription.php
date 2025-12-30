@@ -39,14 +39,12 @@ class FeedbackUserSubscription implements Stringable
     private ?string $messengerUserId = null;
     #[Attribute('telegram_payment_id')]
     private ?string $telegramPaymentId = null;
-    #[Attribute('created_at')]
-    private ?DateTimeInterface $createdAt = null;
     #[Attribute('updated_at')]
     private ?DateTimeInterface $updatedAt = null;
 
     public function __construct(
         #[Attribute('feedback_user_subscription_id')]
-        private readonly string $id,
+        private string $id,
         private readonly User $user,
         #[Attribute('feedback_subscription_plan_name')]
         private readonly FeedbackSubscriptionPlanName $subscriptionPlan,
@@ -54,6 +52,8 @@ class FeedbackUserSubscription implements Stringable
         private readonly DateTimeInterface $expireAt,
         private readonly ?MessengerUser $messengerUser,
         private readonly ?TelegramBotPayment $telegramPayment,
+        #[Attribute('created_at')]
+        private ?DateTimeInterface $createdAt = null,
     )
     {
         $this->userId = $this->user->getId();
