@@ -332,6 +332,11 @@ class EntityManager
         $this->unitOfWork->flush();
     }
 
+    public function clear(): void
+    {
+        $this->unitOfWork->clear();
+    }
+
     public function wrapInTransaction(callable $func): mixed
     {
         $result = $func();
