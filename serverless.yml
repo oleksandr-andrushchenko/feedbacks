@@ -1,27 +1,35 @@
 # Read the documentation at https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/
 service: feedbacks
 
-useDotenv: true
-
 provider:
   name: aws
-  region: ${env:AWS_REGION}
-  stage: ${env:APP_STAGE}
+  region: ${param:awsRegion}
+  stage: ${param:appStage}
   runtime: provided.al2
+  logRetentionInDays: 14
+  httpApi:
+    name: feedbacks-${self:provider.stage}-api
+    metrics: true
+    tags:
+      Environment: ${param:tagEnvironment}
+      Project: ${param:tagProject}
+      Owner: ${param:tagOwner}
+      Region: ${param:tagRegion}
   environment:
-    APP_ENV: ${ssm:/feedbacks/${sls:stage}/APP_ENV}
-    APP_STAGE: ${ssm:/feedbacks/${sls:stage}/APP_STAGE}
-    APP_SECRET: ${ssm:/feedbacks/${sls:stage}/APP_SECRET~true}
-    SITE_BASE_URL: ${ssm:/feedbacks/${sls:stage}/SITE_BASE_URL}
-    TELEGRAM_WEBHOOK_BASE_URL: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL}
-    TELEGRAM_ADMIN_ID: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ADMIN_ID}
-    TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN~true}
-    TELEGRAM_ERRORS_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ERRORS_TOKEN~true}
-    LOG_ACTIVITIES: ${ssm:/feedbacks/${sls:stage}/LOG_ACTIVITIES}
-    GOOGLE_API_KEY: ${ssm:/feedbacks/${sls:stage}/GOOGLE_API_KEY~true}
-    DATABASE_URL: ${ssm:/feedbacks/${sls:stage}/DATABASE_URL~true}
-    CRYPTO: ${ssm:/feedbacks/${sls:stage}/CRYPTO}
-
+    APP_ENV: ${param:appEnv}
+    APP_STAGE: ${param:appStage}
+    APP_SECRET: ${param:appSecret}
+    SITE_BASE_URL: ${param:siteBaseUrl}
+    TELEGRAM_WEBHOOK_BASE_URL: ${param:telegramWebhookBaseUrl}
+    TELEGRAM_ADMIN_ID: ${param:telegramAdminId}
+    TELEGRAM_ACTIVITIES_TOKEN: ${param:telegramActivitiesToken}
+    TELEGRAM_ERRORS_TOKEN: ${param:telegramErrorsToken}
+    LOG_ACTIVITIES: ${param:logActivities}
+    GOOGLE_API_KEY: ${param:googleApiKey}
+    DATABASE_URL: ${param:databaseUrl}
+    DYNAMODB_TABLE: ${param:dynamodbTable}
+    REPOSITORY_ENGINE: ${param:repositoryEngine}
+    CRYPTO: ${param:crypto}
 plugins:
   - ./vendor/bref/bref
 
@@ -33,12 +41,14 @@ functions:
       - ${bref:layer.php-83-fpm}
     events:
       - httpApi: '*'
+    role: WebRole
   console:
     handler: bin/console
-    timeout: 120
+    timeout: 240
     layers:
       - ${bref:layer.php-83}
       - ${bref:layer.console}
+    role: ConsoleRole
 
 package:
   patterns:
@@ -49,8 +59,9 @@ package:
     - '!var/**'
     - '!.idea/**'
     - '!.git/**'
-    - '!tests/**'
-    - '!.env.dist'
+    - '!.env.example'
+    - '!.env'
+    - '!.env.prod'
     - '!.phpunit.result.cache'
     - '!.editorconfig'
     - '!editconfig.xml'
@@ -61,190 +72,10 @@ package:
 
 resources:
   Resources:
-    AppEnvParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/APP_ENV
-        Type: String
-        Value: ${env:APP_ENV}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    AppStageParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/APP_STAGE
-        Type: String
-        Value: ${env:APP_STAGE}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-      AppSecretParam:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: /feedbacks/${sls:stage}/APP_SECRET
-          Type: SecureString
-          Value: ${env:APP_SECRET}
-          Tags:
-            - Key: Environment
-              Value: !Ref TagEnvironment
-            - Key: Project
-              Value: !Ref TagProject
-            - Key: Owner
-              Value: !Ref TagOwner
-            - Key: Region
-              Value: !Ref TagRegion
-    SiteBaseUrlParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/SITE_BASE_URL
-        Type: String
-        Value: ${env:SITE_BASE_URL}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    TelegramWebhookBaseUrlParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL
-        Type: String
-        Value: ${env:TELEGRAM_WEBHOOK_BASE_URL}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    TelegramAdminIdParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/TELEGRAM_ADMIN_ID
-        Type: String
-        Value: ${env:TELEGRAM_ADMIN_ID}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    TelegramActivitiesTokenParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN
-        Type: SecureString
-        Value: ${env:TELEGRAM_ACTIVITIES_TOKEN}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    TelegramErrorsTokenParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/TELEGRAM_ERRORS_TOKEN
-        Type: SecureString
-        Value: ${env:TELEGRAM_ERRORS_TOKEN}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    LogActivitiesParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/LOG_ACTIVITIES
-        Type: String
-        Value: ${env:LOG_ACTIVITIES}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    GoogleApiKeyParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/GOOGLE_API_KEY
-        Type: SecureString
-        Value: ${env:GOOGLE_API_KEY}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    DatabaseUrlParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/DATABASE_URL
-        Type: SecureString
-        Value: ${env:DATABASE_URL}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
-    CryptoParam:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /feedbacks/${sls:stage}/CRYPTO
-        Type: String
-        Value: ${env:CRYPTO}
-        Tags:
-          - Key: Environment
-            Value: !Ref TagEnvironment
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Region
-            Value: !Ref TagRegion
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: !Ref AWS::StackName
+        TableName: ${param:dynamodbTable}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: pk
@@ -389,9 +220,141 @@ resources:
             Projection:
               ProjectionType: ALL
         Tags:
-          - Key: Project
-            Value: !Ref TagProject
-          - Key: Owner
-            Value: !Ref TagOwner
           - Key: Environment
-            Value: !Ref TagEnvironment
+            Value: ${param:tagEnvironment}
+          - Key: Project
+            Value: ${param:tagProject}
+          - Key: Owner
+            Value: ${param:tagOwner}
+          - Key: Region
+            Value: ${param:tagRegion}
+
+    WebRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub "${WebLambdaFunction}-role"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: DynamoDB
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:GetItem
+                    - dynamodb:BatchGetItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                  Resource:
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}/index/*"
+          - PolicyName: Logs
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+        Tags:
+          - Key: Environment
+            Value: ${param:tagEnvironment}
+          - Key: Project
+            Value: ${param:tagProject}
+          - Key: Owner
+            Value: ${param:tagOwner}
+          - Key: Region
+            Value: ${param:tagRegion}
+
+    ConsoleRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: !Sub "${ConsoleLambdaFunction}-role"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: DynamoDB
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:GetItem
+                    - dynamodb:BatchGetItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                  Resource:
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}/index/*"
+          - PolicyName: Logs
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+        Tags:
+          - Key: Environment
+            Value: ${param:tagEnvironment}
+          - Key: Project
+            Value: ${param:tagProject}
+          - Key: Owner
+            Value: ${param:tagOwner}
+          - Key: Region
+            Value: ${param:tagRegion}
+
+    WebLogGroup:
+      Type: AWS::Logs::LogGroup
+      DependsOn:
+        - WebLambdaFunction
+      Properties:
+        LogGroupName: !Sub "/aws/lambda/${WebLambdaFunction}"
+        RetentionInDays: 14
+        Tags:
+          - Key: Environment
+            Value: ${param:tagEnvironment}
+          - Key: Project
+            Value: ${param:tagProject}
+          - Key: Owner
+            Value: ${param:tagOwner}
+          - Key: Region
+            Value: ${param:tagRegion}
+
+    ConsoleLogGroup:
+      Type: AWS::Logs::LogGroup
+      DependsOn:
+        - ConsoleLambdaFunction
+      Properties:
+        LogGroupName: !Sub "/aws/lambda/${ConsoleLambdaFunction}"
+        RetentionInDays: 14
+        Tags:
+          - Key: Environment
+            Value: ${param:tagEnvironment}
+          - Key: Project
+            Value: ${param:tagProject}
+          - Key: Owner
+            Value: ${param:tagOwner}
+          - Key: Region
+            Value: ${param:tagRegion}

@@ -12,7 +12,7 @@ else
 endif
 
 BE_FUNCTION_CONTAINER = be-function
-RDBMS_CONTAINER = rdbms
+MYSQL_CONTAINER = mysql
 DYNAMODB_CONTAINER = dynamodb
 
 .PHONY: help
@@ -77,7 +77,7 @@ console: ## Run Symfony console
 
 .PHONY: tests
 tests: ## Run PHPUnit tests
-	$(DC) exec -T $(BE_FUNCTION_CONTAINER) php -d output_buffering=0 bin/phpunit -c ./phpunit.xml
+	$(DC) exec -T $(BE_FUNCTION_CONTAINER) php bin/phpunit
 
 .PHONY: warmup-cache
 warmup-cache: ## Warm up Symfony cache inside be-function container
@@ -115,13 +115,13 @@ search: ## Search for a Telegram user by name
 logs: ## Tail Symfony development logs
 	$(DC) exec -it $(BE_FUNCTION_CONTAINER) tail -f var/log/dev.log
 
-.PHONY: rdbms-logs
-rdbms-logs: ## View database (MySQL) container logs
-	$(DC) logs $(RDBMS_CONTAINER) -f
+.PHONY: mysql-logs
+mysql-logs: ## View database (MySQL) container logs
+	$(DC) logs $(MYSQL_CONTAINER) -f
 
-.PHONY: rdbms-login
-rdbms-login: ## Open MySQL shell inside database container
-	$(DC) exec -it $(RDBMS_CONTAINER) mysql -uroot -p1111 -A app
+.PHONY: mysql-login
+mysql-login: ## Open MySQL shell inside database container
+	$(DC) exec -it $(MYSQL_CONTAINER) mysql -uroot -p1111 -A app
 
 .PHONY: generate-migration
 generate-migration: ## Generate a new Doctrine migration file
@@ -212,57 +212,94 @@ reload-bot: ngrok-tunnel sync-bot-webhook # Reload local tg bot
 .PHONY: reload-cache
 reload-cache: clear-cache fix-permissions # Reload local symfony cache
 
-.PHONY: rdbms-prod-login
-rdbms-prod-login: ## Open PROD MySQL shell
-	$(DC) exec -it $(RDBMS_CONTAINER) mysql -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) -A $(PROD_DB_NAME)
+.PHONY: mysql-prod-login
+mysql-prod-login: ## Open PROD MySQL shell
+	$(DC) exec -it $(MYSQL_CONTAINER) mysql -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) -A $(PROD_DB_NAME)
 
-.PHONY: dump-prod-rdbms
-dump-prod-rdbms: ## Dump prod RDBMS
+.PHONY: dump-prod-mysql
+dump-prod-mysql: ## Dump prod MySQL
 	@filename=/tmp/prod_$(shell date +%Y_%m_%d).sql; \
 	echo "Dumping prod database to $$filename"; \
-	$(DC) exec -i $(RDBMS_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
+	$(DC) exec -i $(MYSQL_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
 	head -n 30 $$filename
 
-.PHONY: load-prod-rdbms
-load-prod-rdbms: ## Load prod RDBMS into local RDBMS
+.PHONY: load-prod-mysql
+load-prod-mysql: ## Load prod MySQL into local MySQL
 	@filename=/tmp/prod_$(shell date +%Y_%m_%d).sql; \
 	echo "Dumping prod DB to $$filename"; \
-	$(DC) exec -T $(RDBMS_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
+	$(DC) exec -T $(MYSQL_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
 	echo "Importing into local DB"; \
-	$(DC) exec -T $(RDBMS_CONTAINER) mysql -uroot -p1111 app < $$filename; \
+	$(DC) exec -T $(MYSQL_CONTAINER) mysql -uroot -p1111 app < $$filename; \
 	echo "Done!"
 
-.PHONY: deploy
-deploy: ## Deploy to $(APP_ENV) / $(APP_STAGE)
-	@echo "Using APP_ENV=$(APP_ENV), APP_STAGE=$(APP_STAGE)"
-	@echo "Checking kernel log dir..."
-	@kernelLogDir=$$($(DC) run $(BE_FUNCTION_CONTAINER) sed -n '29p' vendor/bref/symfony-bridge/src/BrefKernel.php); \
-	if echo "$$kernelLogDir" | grep -q "^//"; then \
-		echo "kernel log dir has been changed"; \
-		exit 1; \
-	fi
+.PHONY: package
+package: ## Package using .env.prod
+	set -a; \
+	. ./.env.prod; \
+	set +a; \
+	echo "Packaging serverless..."; \
+	serverless package --debug \
+		--param="awsRegion=$$AWS_REGION" \
+		--param="appEnv=$$APP_ENV" \
+		--param="appSecret=$$APP_SECRET" \
+		--param="appStage=$$APP_STAGE" \
+		--param="databaseUrl=$$DATABASE_URL" \
+		--param="googleApiKey=$$GOOGLE_API_KEY" \
+		--param="logActivities=$$LOG_ACTIVITIES" \
+		--param="siteBaseUrl=$$APP_ENV" \
+		--param="telegramActivitiesToken=$$TELEGRAM_ACTIVITIES_TOKEN" \
+		--param="telegramAdminId=$$TELEGRAM_ADMIN_ID" \
+		--param="telegramErrorsToken=$$TELEGRAM_ERRORS_TOKEN" \
+		--param="telegramWebhookBaseUrl=$$TELEGRAM_WEBHOOK_BASE_URL" \
+		--param="dynamodbTable=$$DYNAMODB_TABLE" \
+		--param="repositoryEngine=$$REPOSITORY_ENGINE" \
+		--param="crypto=$$CRYPTO" \
+		--param="tagEnvironment=$$APP_ENV" \
+		--param="tagProject=$$TAG_PROJECT" \
+		--param="tagOwner=$$TAG_OWNER" \
+		--param="tagRegion=$$AWS_REGION"; \
+	echo "Packaging completed!"
 
-	@echo "Running PHPUnit..."
-	@if ! $(DC) run -e FORCE_SKIPPED=1 $(BE_FUNCTION_CONTAINER) php bin/phpunit; then \
+.PHONY: deploy
+deploy: ## Deploy using .env.prod
+	@set -a; \
+	. ./.env.prod; \
+	set +a; \
+	echo "Using APP_ENV=$$APP_ENV, APP_STAGE=$$APP_STAGE"; \
+	echo "Running PHPUnit..."; \
+	if ! $(DC) run -e FORCE_SKIPPED=1 $(BE_FUNCTION_CONTAINER) php bin/phpunit; then \
 		echo "some test has been failed"; \
 		exit 1; \
-	fi
-
-	@echo "Installing composer dependencies..."
-	$(DC) run $(BE_FUNCTION_CONTAINER) composer install --prefer-dist --optimize-autoloader --no-dev
-
-	@echo "Clearing and warming up $(APP_ENV) cache..."
-	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:clear --env=$(APP_ENV)
-	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup --env=$(APP_ENV)
-
-	@echo "Deploying serverless..."
-	serverless deploy --stage=$(APP_STAGE)
-
-	@echo "Running migrations..."
-	serverless bref:cli --args="doctrine:migrations:migrate --no-interaction --all-or-nothing" --stage=$(APP_STAGE)
-
-	@echo "Installing composer dependencies for local env..."
-	$(DC) run $(BE_FUNCTION_CONTAINER) composer install
-	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup
-
-	@echo "Deployment completed!"
+	fi; \
+	echo "Installing composer dependencies..."; \
+	$(DC) run $(BE_FUNCTION_CONTAINER) composer install --prefer-dist --optimize-autoloader --no-dev; \
+	echo "Clearing and warming up $$APP_ENV cache..."; \
+	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:clear --env=$$APP_ENV; \
+	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup --env=$$APP_ENV; \
+	echo "Deploying serverless..."; \
+	serverless deploy \
+		--param="awsRegion=$$AWS_REGION" \
+		--param="appEnv=$$APP_ENV" \
+		--param="appSecret=$$APP_SECRET" \
+		--param="appStage=$$APP_STAGE" \
+		--param="databaseUrl=$$DATABASE_URL" \
+		--param="googleApiKey=$$GOOGLE_API_KEY" \
+		--param="logActivities=$$LOG_ACTIVITIES" \
+		--param="siteBaseUrl=$$APP_ENV" \
+		--param="telegramActivitiesToken=$$TELEGRAM_ACTIVITIES_TOKEN" \
+		--param="telegramAdminId=$$TELEGRAM_ADMIN_ID" \
+		--param="telegramErrorsToken=$$TELEGRAM_ERRORS_TOKEN" \
+		--param="telegramWebhookBaseUrl=$$TELEGRAM_WEBHOOK_BASE_URL" \
+		--param="dynamodbTable=$$DYNAMODB_TABLE" \
+		--param="repositoryEngine=$$REPOSITORY_ENGINE" \
+		--param="crypto=$$CRYPTO" \
+		--param="tagEnvironment=$$APP_ENV" \
+		--param="tagProject=$$TAG_PROJECT" \
+		--param="tagOwner=$$TAG_OWNER" \
+		--param="tagRegion=$$AWS_REGION"; \
+	echo "Running migrations..."; \
+	serverless bref:cli --args="doctrine:migrations:migrate --no-interaction --all-or-nothing" --stage=$$APP_STAGE; \
+	echo "Installing composer dependencies for local env..."; \
+	$(DC) run $(BE_FUNCTION_CONTAINER) composer install; \
+	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup; \
+	echo "Deployment completed!"
