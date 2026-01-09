@@ -36,6 +36,7 @@
             <argument type="service" id="app.search_term_feedback_search_factory"/>
             <argument type="service" id="app.search_term_feedback_lookup_factory"/>
             <argument type="service" id="app.id_generator"/>
+            <argument type="service" id="app.telegram_bot_conversation_manager"/>
             <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="oa.dynamodb.entity_manager"/>
             <tag name="console.command" command="dynamodb:from-doctrine:transfer"/>

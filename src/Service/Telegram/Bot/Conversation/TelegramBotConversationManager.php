@@ -70,7 +70,7 @@ class TelegramBotConversationManager
         $this->executeConversation($bot, $entity, 'invoke');
     }
 
-    public function createTelegramConversationHash(string $messengerUserId, int $chatId, string $botId): string
+    public function createTelegramConversationHash(string $messengerUserId, int|string $chatId, string $botId): string
     {
         return md5($messengerUserId . '-' . $chatId . '-' . $botId);
     }

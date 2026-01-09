@@ -57,14 +57,20 @@ ngrok-tunnel: ## Establish ngrok tunnel
 
 .PHONY: up
 up: ## Build and start all Docker containers
-	$(DC) up -d --build --force-recreate
+	$(DC) up -d
 
 .PHONY: down
 down: ## Stop and remove all Docker containers
-	$(DC) down --remove-orphans
+	$(DC) down
 
 .PHONY: restart
 restart: down up ## Restart all Docker containers and show status
+	$(DC) ps -a
+
+.PHONY: rebuild
+rebuild: ## Rebuild all Docker containers and show status
+	$(DC) down --remove-orphans
+	$(DC) up -d --build --force-recreate
 	$(DC) ps -a
 
 .PHONY: composer-install
@@ -113,7 +119,7 @@ search: ## Search for a Telegram user by name
 
 .PHONY: logs
 logs: ## Tail Symfony development logs
-	$(DC) exec -it $(BE_FUNCTION_CONTAINER) tail -f var/log/dev.log
+	$(DC) exec -it $(BE_FUNCTION_CONTAINER) tail -f /tmp/log/dev.log
 
 .PHONY: mysql-logs
 mysql-logs: ## View database (MySQL) container logs

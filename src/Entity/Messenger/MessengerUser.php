@@ -161,13 +161,16 @@ class MessengerUser implements Stringable
         return $this;
     }
 
-    public function removeTelegramBotId(string $botId): self
+    public function removeTelegramBotId(int|string $botId): self
     {
         if ($this->telegramBotIds === null) {
             return $this;
         }
 
         $this->telegramBotIds = array_unique(array_diff($this->telegramBotIds, [$botId]));
+        if (count($this->telegramBotIds) === 0) {
+            $this->telegramBotIds = null;
+        }
 
         return $this;
     }

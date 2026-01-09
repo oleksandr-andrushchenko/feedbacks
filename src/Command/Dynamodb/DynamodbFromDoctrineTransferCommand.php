@@ -6,6 +6,7 @@ namespace App\Command\Dynamodb;
 
 use App\Entity\Feedback\SearchTerm;
 use App\Entity\Telegram\TelegramBot;
+use App\Entity\Telegram\TelegramBotConversation;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Entity\Telegram\TelegramChannel;
 use App\Factory\Feedback\SearchTermFeedbackFactory;
@@ -28,6 +29,7 @@ use App\Repository\Telegram\Channel\TelegramChannelDoctrineRepository;
 use App\Repository\User\UserContactMessageDoctrineRepository;
 use App\Repository\User\UserDoctrineRepository;
 use App\Service\IdGenerator;
+use App\Service\Telegram\Bot\Conversation\TelegramBotConversationManager;
 use Doctrine\ORM\EntityManagerInterface;
 use OA\Dynamodb\ODM\EntityManager;
 use Symfony\Component\Console\Command\Command;
@@ -62,6 +64,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
         private readonly SearchTermFeedbackSearchFactory $searchTermFeedbackSearchFactory,
         private readonly SearchTermFeedbackLookupFactory $searchTermFeedbackLookupFactory,
         private readonly IdGenerator $idGenerator,
+        private readonly TelegramBotConversationManager $telegramBotConversationManager,
         private readonly EntityManagerInterface $doctrineEntityManager,
         private readonly EntityManager $dynamodbEntityManager,
     )
@@ -88,7 +91,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
             'telegram_bots' => $this->transferTelegramBots($telegramBotIdMap),
             'telegram_channels' => $this->transferTelegramChannels(),
             'users' => $this->transferUsers(),
-            'messenger_users' => $this->transferMessengerUsers(),
+            'messenger_users' => $this->transferMessengerUsers($telegramBotIdMap),
             'feedbacks' => $this->transferFeedbacks($telegramBotIdMap),
             'feedback_searches' => $this->transferFeedbackSearches($telegramBotIdMap),
             'feedback_lookups' => $this->transferFeedbackLookups($telegramBotIdMap),
@@ -198,12 +201,19 @@ class DynamodbFromDoctrineTransferCommand extends Command
         return $affectedRows;
     }
 
-    private function transferMessengerUsers(): int
+    private function transferMessengerUsers(array $telegramBotIdMap): int
     {
         $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->messengerUserDoctrineRepository->findAll() as $messengerUser) {
             $messengerUser->setUserId($messengerUser->getUser()?->getId());
+            foreach ($messengerUser->getTelegramBotIds() as $telegramBotId) {
+                $newTelegramBotId = $telegramBotIdMap[$telegramBotId] ?? null;
+                if ($newTelegramBotId === null) {
+                    continue;
+                }
+                $messengerUser->removeTelegramBotId($telegramBotId)->addTelegramBotId($newTelegramBotId);
+            }
             $this->dynamodbEntityManager->persist($messengerUser);
             $affectedRows++;
         }
@@ -357,10 +367,23 @@ class DynamodbFromDoctrineTransferCommand extends Command
         $this->doctrineEntityManager->clear();
         $affectedRows = 0;
         foreach ($this->telegramBotConversationDoctrineRepository->findAll() as $telegramBotConversation) {
-            $telegramBotConversation
-                ->setTelegramBotId($telegramBotIdMap[$telegramBotConversation->getTelegramBotId()] ?? null)
-            ;
-            $this->dynamodbEntityManager->persist($telegramBotConversation);
+            $telegramBotId = $telegramBotIdMap[$telegramBotConversation->getTelegramBotId()] ?? null;
+            if ($telegramBotId === null) {
+                continue;
+            }
+            $newTelegramBotConversation = new TelegramBotConversation(
+                $this->telegramBotConversationManager->createTelegramConversationHash(
+                    $telegramBotConversation->getMessengerUserId(),
+                    $telegramBotConversation->getChatId(),
+                    $telegramBotId,
+                ),
+                $telegramBotConversation->getMessengerUserId(),
+                $telegramBotConversation->getChatId(),
+                $telegramBotId,
+                $telegramBotConversation->getClass(),
+                $telegramBotConversation->getState()
+            );
+            $this->dynamodbEntityManager->persist($newTelegramBotConversation);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();
