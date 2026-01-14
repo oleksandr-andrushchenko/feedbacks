@@ -43,11 +43,11 @@ class FeedbackSearcher
                     countryCode: $searchTermFeedback->getUserCountryCode(),
                     localeCode: $searchTermFeedback->getUserLocaleCode(),
                     hasActiveSubscription: $searchTermFeedback->hasUserActiveSubscription(),
-                    messengerUserId: $searchTermFeedback->getMessengerUserId(),
-                    // todo: add extra search terms
-                    searchTermIds: [$searchTermFeedback->getSearchTermId()],
                     rating: $searchTermFeedback->getFeedbackRating(),
+                    // todo: add extra search terms
                     text: $searchTermFeedback->getFeedbackText(),
+                    searchTermIds: [$searchTermFeedback->getSearchTermId()],
+                    messengerUserId: $searchTermFeedback->getMessengerUserId(),
                 ),
                 $searchTermFeedbacks
             );

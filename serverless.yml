@@ -26,9 +26,9 @@ provider:
     TELEGRAM_ERRORS_TOKEN: ${param:telegramErrorsToken}
     LOG_ACTIVITIES: ${param:logActivities}
     GOOGLE_API_KEY: ${param:googleApiKey}
-    DATABASE_URL: ${param:databaseUrl}
+    DB_URL: ${param:dbUrl}
     DYNAMODB_TABLE: ${param:dynamodbTable}
-    REPOSITORY_ENGINE: ${param:repositoryEngine}
+    DB_ENGINE: ${param:dbEngine}
     CRYPTO: ${param:crypto}
 plugins:
   - ./vendor/bref/bref

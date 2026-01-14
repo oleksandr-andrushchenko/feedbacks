@@ -24,7 +24,7 @@
         <field name="localeCode" column="locale_code" length="2"/>
         <field name="level1RegionId" column="level_1_region_id" length="32" nullable="true"/>
         <field name="chatId" column="chat_id" type="bigint" nullable="true"/>
-        <field name="primary" column="_primary" type="boolean">
+        <field name="primary" column="_primary" type="boolean" nullable="true">
             <options>
                 <option name="default">1</option>
             </options>

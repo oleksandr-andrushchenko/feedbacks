@@ -249,7 +249,7 @@ package: ## Package using .env.prod
 		--param="appEnv=$$APP_ENV" \
 		--param="appSecret=$$APP_SECRET" \
 		--param="appStage=$$APP_STAGE" \
-		--param="databaseUrl=$$DATABASE_URL" \
+		--param="dbUrl=$$DB_URL" \
 		--param="googleApiKey=$$GOOGLE_API_KEY" \
 		--param="logActivities=$$LOG_ACTIVITIES" \
 		--param="siteBaseUrl=$$APP_ENV" \
@@ -258,7 +258,7 @@ package: ## Package using .env.prod
 		--param="telegramErrorsToken=$$TELEGRAM_ERRORS_TOKEN" \
 		--param="telegramWebhookBaseUrl=$$TELEGRAM_WEBHOOK_BASE_URL" \
 		--param="dynamodbTable=$$DYNAMODB_TABLE" \
-		--param="repositoryEngine=$$REPOSITORY_ENGINE" \
+		--param="dbEngine=$$DB_ENGINE" \
 		--param="crypto=$$CRYPTO" \
 		--param="tagEnvironment=$$APP_ENV" \
 		--param="tagProject=$$TAG_PROJECT" \
@@ -288,7 +288,7 @@ deploy: ## Deploy using .env.prod
 		--param="appEnv=$$APP_ENV" \
 		--param="appSecret=$$APP_SECRET" \
 		--param="appStage=$$APP_STAGE" \
-		--param="databaseUrl=$$DATABASE_URL" \
+		--param="dbUrl=$$DB_URL" \
 		--param="googleApiKey=$$GOOGLE_API_KEY" \
 		--param="logActivities=$$LOG_ACTIVITIES" \
 		--param="siteBaseUrl=$$APP_ENV" \
@@ -297,7 +297,7 @@ deploy: ## Deploy using .env.prod
 		--param="telegramErrorsToken=$$TELEGRAM_ERRORS_TOKEN" \
 		--param="telegramWebhookBaseUrl=$$TELEGRAM_WEBHOOK_BASE_URL" \
 		--param="dynamodbTable=$$DYNAMODB_TABLE" \
-		--param="repositoryEngine=$$REPOSITORY_ENGINE" \
+		--param="dbEngine=$$DB_ENGINE" \
 		--param="crypto=$$CRYPTO" \
 		--param="tagEnvironment=$$APP_ENV" \
 		--param="tagProject=$$TAG_PROJECT" \
@@ -309,3 +309,7 @@ deploy: ## Deploy using .env.prod
 	$(DC) run $(BE_FUNCTION_CONTAINER) composer install; \
 	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup; \
 	echo "Deployment completed!"
+
+.PHONY: open
+open: ## Show local site URL
+	@echo "🌐 Visit http://localhost:$(BE_FUNCTION_PORT) in your browser manually."

@@ -23,17 +23,17 @@
                 <option name="unsigned">true</option>
             </options>
         </field>
-        <field name="checkUpdates" column="check_updates" type="boolean">
+        <field name="checkUpdates" column="check_updates" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="checkRequests" column="check_requests" type="boolean">
+        <field name="checkRequests" column="check_requests" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>
         </field>
-        <field name="acceptPayments" column="accept_payments" type="boolean">
+        <field name="acceptPayments" column="accept_payments" type="boolean" nullable="true">
             <options>
                 <option name="default">0</option>
             </options>

@@ -41,10 +41,10 @@ class FeedbackSearchSearcher
                     id: $searchTermFeedbackSearch->getFeedbackSearchId(),
                     // todo: add extra search terms
                     searchTerm: $searchTermFeedbackSearch->getSearchTerm(),
-                    userId: $searchTermFeedbackSearch->getUserId(),
                     hasActiveSubscription: $searchTermFeedbackSearch->hasUserActiveSubscription(),
                     countryCode: $searchTermFeedbackSearch->getUserCountryCode(),
                     localeCode: $searchTermFeedbackSearch->getUserLocaleCode(),
+                    userId: $searchTermFeedbackSearch->getUserId(),
                     messengerUserId: $searchTermFeedbackSearch->getMessengerUserId(),
                     telegramBotId: $searchTermFeedbackSearch->getTelegramBotId(),
                 ),

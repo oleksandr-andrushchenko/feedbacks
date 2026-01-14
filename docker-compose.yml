@@ -13,7 +13,7 @@ services:
       HANDLER: public/index.php
       DOCUMENT_ROOT: public
       SITE_BASE_URL: http://localhost:${BE_FUNCTION_PORT}
-      DATABASE_URL: mysql://app:1111@mysql:3306/app?serverVersion=8&charset=utf8mb4
+      DB_URL: mysql://app:1111@mysql:3306/app?serverVersion=8&charset=utf8mb4
       DYNAMODB_ENDPOINT: http://dynamodb:8000
 
   mysql:

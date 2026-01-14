@@ -25,7 +25,7 @@
         <env name="APP_STAGE" value="local"/>
         <env name="SITE_BASE_URL" value="http://localhost"/>
         <env name="TELEGRAM_WEBHOOK_BASE_URL" value="http://localhost"/>
-        <env name="DATABASE_URL" value="mysql://app:1111@mysql:3306/app_test?serverVersion=8&amp;charset=utf8mb4"
+        <env name="DB_URL" value="mysql://app:1111@mysql:3306/app_test?serverVersion=8&amp;charset=utf8mb4"
              force="true"/>
         <env name="DYNAMODB_TABLE" value="app_test"/>
 

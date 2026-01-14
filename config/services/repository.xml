@@ -5,12 +5,12 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="app.repository_engine">%env(REPOSITORY_ENGINE)%</parameter>
+        <parameter key="app.db_engine">%env(DB_ENGINE)%</parameter>
     </parameters>
 
     <services>
         <service id="app.entity_repository_config" class="App\Model\Repository\EntityRepositoryConfig" lazy="true">
-            <argument>%app.repository_engine%</argument>
+            <argument>%app.db_engine%</argument>
         </service>
         <service id="app.entity_repository" class="App\Repository\EntityRepository" abstract="true">
             <argument type="service" id="app.entity_repository_config"/>

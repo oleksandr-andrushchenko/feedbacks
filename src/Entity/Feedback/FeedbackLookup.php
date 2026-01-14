@@ -22,10 +22,6 @@ class FeedbackLookup
 {
     #[Attribute('search_term_id')]
     private ?string $searchTermId = null;
-    #[Attribute('messenger_user_id')]
-    private ?string $messengerUserId = null;
-    #[Attribute('telegram_bot_id')]
-    private ?string $telegramBotId = null;
 
     public function __construct(
         #[Attribute('feedback_lookup_id')]
@@ -44,6 +40,10 @@ class FeedbackLookup
         private ?TelegramBot $telegramBot = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
     )
     {
         $this->searchTermId = $this->searchTerm?->getId();
@@ -51,8 +51,8 @@ class FeedbackLookup
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
-        $this->messengerUserId = $this->messengerUser?->getId();
-        $this->telegramBotId = $this->telegramBot?->getId();
+        $this->messengerUserId ??= $this->messengerUser?->getId();
+        $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 

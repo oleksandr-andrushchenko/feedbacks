@@ -25,10 +25,6 @@ class Feedback
 {
     private Collection $searchTerms;
 
-    #[Attribute('search_term_ids')]
-    private ?array $searchTermIds = null;
-    #[Attribute('messenger_user_id')]
-    private ?string $messengerUserId = null;
     #[Attribute('telegram_bot_id')]
     private ?string $telegramBotId = null;
 
@@ -56,15 +52,19 @@ class Feedback
         private ?TelegramBot $telegramBot = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
+        #[Attribute('search_term_ids')]
+        private ?array $searchTermIds = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
     )
     {
         $this->searchTerms = new ArrayCollection($searchTerms ?? []);
-        $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms ?? []);
+        $this->searchTermIds ??= array_map(static fn ($term) => $term->getId(), $searchTerms ?? []);
         $this->userId = $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
-        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
         $this->telegramBotId = $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
