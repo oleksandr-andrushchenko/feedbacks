@@ -14,7 +14,7 @@ framework:
           allow_no_senders: true
         middleware:
           - validation
-          - doctrine_transaction
+#          - doctrine_transaction
       #      app.query_bus:
       #        middleware:
       #          - validation
