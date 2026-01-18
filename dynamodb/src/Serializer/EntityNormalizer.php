@@ -24,6 +24,7 @@ readonly class EntityNormalizer
         protected MetadataLoader $metadataLoader,
         protected NormalizerInterface $normalizer,
         protected ?LoggerInterface $logger = null,
+        protected ?string $normalizeFormat = 'dynamodb',
     )
     {
     }
@@ -223,7 +224,7 @@ readonly class EntityNormalizer
             $propertyValue = $reflectionProperty->getValue($entity);
 
             /** @var scalar $currentFieldValue */
-            $currentFieldValue = $this->normalizer->normalize($propertyValue);
+            $currentFieldValue = $this->normalizer->normalize($propertyValue, $this->normalizeFormat);
             if ($skipEmpty && empty($currentFieldValue)) {
                 continue;
             }
@@ -325,7 +326,7 @@ readonly class EntityNormalizer
             }
 
             /** @var scalar $currentFieldValue */
-            $currentFieldValue = $this->normalizer->normalize($value);
+            $currentFieldValue = $this->normalizer->normalize($value, $this->normalizeFormat);
 
             $finalValue[] = $currentFieldValue;
         }
@@ -353,7 +354,7 @@ readonly class EntityNormalizer
             $propertyValue = $reflectionProperty?->getValue($entity);
 
             if (false === $attr->ignoreIfNull() || null !== $propertyValue) {
-                $attributes[$attr->getName() ?: $prop] = $this->normalizer->normalize($propertyValue);
+                $attributes[$attr->getName() ?: $prop] = $this->normalizer->normalize($propertyValue, $this->normalizeFormat);
             }
         }
 

@@ -45,7 +45,7 @@ class SubscribeTelegramBotConversationStateNormalizer implements NormalizerInter
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof SubscribeTelegramBotConversationState;
+        return $data instanceof SubscribeTelegramBotConversationState && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): SubscribeTelegramBotConversationState
@@ -66,7 +66,7 @@ class SubscribeTelegramBotConversationStateNormalizer implements NormalizerInter
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === SubscribeTelegramBotConversationState::class;
+        return is_array($data) && $type === SubscribeTelegramBotConversationState::class && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

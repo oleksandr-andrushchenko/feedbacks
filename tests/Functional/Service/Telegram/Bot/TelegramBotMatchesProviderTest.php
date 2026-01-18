@@ -27,8 +27,6 @@ class TelegramBotMatchesProviderTest extends TestCase
         int $expectedPoints,
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $user = $this->makeUser(...$userAddressComponents);
         $bot = $this->makeBot(...$botAddressComponents);
         $provider = new TelegramBotMatchesProvider($this->createMock(TelegramBotRepository::class));
@@ -83,8 +81,6 @@ class TelegramBotMatchesProviderTest extends TestCase
         array $expectedBotIds,
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $user = $this->makeUser(...$userAddressComponents);
         $bots = array_map(function (array $botAddressComponents) {
             $id = array_shift($botAddressComponents);
@@ -110,7 +106,7 @@ class TelegramBotMatchesProviderTest extends TestCase
                 localeCode: 'en'
             )
         );
-        $actualBotIds = array_map(static fn (TelegramBot $bot): string => $bot->getId(), $actualBots);
+        $actualBotIds = array_map(static fn (TelegramBot $bot): int|string => $bot->getId(), $actualBots);
 
         $this->assertEquals($expectedBotIds, $actualBotIds);
     }
@@ -222,11 +218,11 @@ class TelegramBotMatchesProviderTest extends TestCase
     private function makeBot(
         string $countryCode = '',
         string $localeCode = '',
-        int $id = null
+        int|string $id = null
     ): TelegramBot
     {
         return $this->createConfiguredMock(TelegramBot::class, [
-            'getId' => $id,
+            'getId' => $id ?? 'dummy' . mt_rand(0, 9999),
             'getCountryCode' => $countryCode,
             'getLocaleCode' => $localeCode,
         ]);

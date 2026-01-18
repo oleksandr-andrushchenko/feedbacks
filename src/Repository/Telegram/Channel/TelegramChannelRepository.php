@@ -20,8 +20,20 @@ use App\Repository\EntityRepository;
  * @method TelegramChannel|null findOneNonDeletedByUsername(string $username)
  * @method TelegramChannel|null findOnePrimaryNonDeletedByBot(TelegramBot $bot)
  * @method TelegramChannel|null findOnePrimaryNonDeletedByChannel(TelegramChannel $channel)
- * @method TelegramChannel[] findPrimaryNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode)
  */
 class TelegramChannelRepository extends EntityRepository
 {
+    /**
+     * @param TelegramBotGroupName $group
+     * @param string $countryCode
+     * @return TelegramChannel[]
+     */
+    public function findPrimaryNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
+    {
+        if ($this->getConfig()->isDynamodb()) {
+            return $this->getDynamodb()->findPrimaryNonDeletedByGroupAndCountry($group, $countryCode);
+        }
+
+        return $this->getDoctrine()->findPrimaryNonDeletedByGroupAndCountry($group, $countryCode);
+    }
 }

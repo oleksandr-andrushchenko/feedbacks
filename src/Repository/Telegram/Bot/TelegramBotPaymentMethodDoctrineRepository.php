@@ -28,7 +28,7 @@ class TelegramBotPaymentMethodDoctrineRepository extends ServiceEntityRepository
     public function findActiveByBot(TelegramBot $bot): array
     {
         return $this->findBy([
-            'bot' => $bot,
+            'telegramBot' => $bot,
             'deletedAt' => null,
         ]);
     }
@@ -36,7 +36,7 @@ class TelegramBotPaymentMethodDoctrineRepository extends ServiceEntityRepository
     public function findOneActiveByBotAndName(TelegramBot $bot, TelegramBotPaymentMethodName $name): ?TelegramBotPaymentMethod
     {
         return $this->findOneBy([
-            'bot' => $bot,
+            'telegramBot' => $bot,
             'name' => $name,
             'deletedAt' => null,
         ]);

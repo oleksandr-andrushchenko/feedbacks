@@ -44,7 +44,7 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof CreateFeedbackTelegramBotConversationState;
+        return $data instanceof CreateFeedbackTelegramBotConversationState && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): TelegramBotConversationState
@@ -65,7 +65,7 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === CreateFeedbackTelegramBotConversationState::class;
+        return is_array($data) && $type === CreateFeedbackTelegramBotConversationState::class && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

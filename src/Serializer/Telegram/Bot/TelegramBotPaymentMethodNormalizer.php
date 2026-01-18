@@ -20,6 +20,8 @@ class TelegramBotPaymentMethodNormalizer implements NormalizerInterface, Denorma
     public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         return [
+            'id' => $data->getId(),
+            'telegram_bot_id' => $data->getTelegramBotId(),
             'name' => $data->getName()->value,
             'currency' => $data->getCurrency(),
             'countries' => $data->getCountries() === null ? null : $data->getCountries(),
@@ -28,22 +30,25 @@ class TelegramBotPaymentMethodNormalizer implements NormalizerInterface, Denorma
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof TelegramBotPaymentMethod;
+        return $data instanceof TelegramBotPaymentMethod && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): TelegramBotPaymentMethod
     {
-        return new $type(
+        return new TelegramBotPaymentMethod(
+            $data['id'],
+            null,
             TelegramBotPaymentMethodName::from($data['name']),
             '***',
             $data['currency'],
             $data['countries'] ?? null,
+            telegramBotId: $data['telegram_bot_id'] ?? null,
         );
     }
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === TelegramBotPaymentMethod::class;
+        return is_array($data) && $type === TelegramBotPaymentMethod::class && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

@@ -40,7 +40,7 @@ class CountryNormalizer implements NormalizerInterface, DenormalizerInterface
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Country
     {
         if ($format === 'internal') {
-            return new $type(
+            return new Country(
                 $data['c'],
                 $data['cu'],
                 $data['l'],

@@ -54,6 +54,7 @@ ngrok-tunnel: ## Establish ngrok tunnel
 	sed -i "/^TELEGRAM_WEBHOOK_BASE_URL=/c\TELEGRAM_WEBHOOK_BASE_URL=$$NGROK_URL" .env; \
 	echo "✅ Ngrok URL: $$NGROK_URL"; \
 	echo ".env updated with TELEGRAM_WEBHOOK_BASE_URL=$$NGROK_URL"
+	$(MAKE) restart-be-function
 
 .PHONY: up
 up: ## Build and start all Docker containers
@@ -62,6 +63,10 @@ up: ## Build and start all Docker containers
 .PHONY: down
 down: ## Stop and remove all Docker containers
 	$(DC) down
+
+.PHONY: restart-be-function
+restart-be-function: ## Restart be-function Docker container
+	$(DC) restart $(BE_FUNCTION_CONTAINER)
 
 .PHONY: restart
 restart: down up ## Restart all Docker containers and show status
@@ -142,6 +147,7 @@ create-local-dynamodb: ## Create local DynamoDB table
 	@echo "🚀 Creating local DynamoDB table $(DYNAMODB_TABLE)..."
 	if AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
 		aws dynamodb describe-table \
+		--profile "$(AWS_PROFILE_NAME)" \
 		--region "$(AWS_REGION)" \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
@@ -154,6 +160,7 @@ create-local-dynamodb: ## Create local DynamoDB table
 		cat /tmp/dynamodb_schema.json; \
 		AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
 		aws dynamodb create-table \
+			--profile "$(AWS_PROFILE_NAME)" \
 			--region "$(AWS_REGION)" \
 			--cli-input-json file:///tmp/dynamodb_schema.json \
 			--table-name "$(DYNAMODB_TABLE)" \
@@ -168,6 +175,7 @@ fetch-local-dynamodb: ## Fetch 100 records from local DynamoDB
 	@echo "📦 Fetching 100 records from $(DYNAMODB_TABLE)..."
 	AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
 	aws dynamodb scan \
+		--profile "$(AWS_PROFILE_NAME)" \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--limit 100 \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" \
@@ -180,11 +188,13 @@ drop-local-dynamodb: ## Drop DynamoDB table in local DynamoDB
 	@echo "🗑️ Dropping local DynamoDB table $(DYNAMODB_TABLE)..."
 	if AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
 		aws dynamodb describe-table \
+		--profile "$(AWS_PROFILE_NAME)" \
 		--region "$(AWS_REGION)" \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
 		AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
 		aws dynamodb delete-table \
+			--profile "$(AWS_PROFILE_NAME)" \
 			--region "$(AWS_REGION)" \
 			--table-name "$(DYNAMODB_TABLE)" \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \

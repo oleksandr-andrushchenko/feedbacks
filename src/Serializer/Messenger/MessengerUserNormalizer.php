@@ -39,7 +39,7 @@ class MessengerUserNormalizer implements NormalizerInterface
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof MessengerUser;
+        return $data instanceof MessengerUser && in_array($format, ['activity'], true);
     }
 
     public function getSupportedTypes(?string $format): array

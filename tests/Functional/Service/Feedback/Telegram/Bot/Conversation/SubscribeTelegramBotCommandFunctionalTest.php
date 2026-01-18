@@ -42,8 +42,6 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
         array $shouldSeeButtons
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,
@@ -172,8 +170,6 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
         ?int $shouldSeeStep
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,
@@ -301,8 +297,6 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
         ?int $shouldSeeStep
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,
@@ -388,8 +382,9 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
         ?int $shouldSeeStep
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            $this->markTestSkipped();
+        }
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,

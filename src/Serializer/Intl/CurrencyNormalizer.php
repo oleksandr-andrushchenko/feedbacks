@@ -39,7 +39,7 @@ class CurrencyNormalizer implements NormalizerInterface, DenormalizerInterface
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Currency
     {
         if ($format === 'internal') {
-            return new $type(
+            return new Currency(
                 $data['c'],
                 $data['r'],
                 $data['e'],

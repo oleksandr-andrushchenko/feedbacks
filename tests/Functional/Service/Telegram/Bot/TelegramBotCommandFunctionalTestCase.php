@@ -38,6 +38,7 @@ use App\Tests\Traits\Telegram\Bot\TelegramBotRepositoryProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotUpdateFixtureProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotUpdateHandlerTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotUserProviderTrait;
+use App\Tests\Traits\Telegram\TelegramBotConversationManagerTrait;
 use App\Tests\Traits\TranslatorProviderTrait;
 use App\Tests\Traits\User\UserRepositoryProviderTrait;
 use App\Transfer\Feedback\SearchTermTransfer;
@@ -71,6 +72,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     use UserRepositoryProviderTrait;
     use IdGeneratorProviderTrait;
     use MessengerUserServiceProviderTrait;
+    use TelegramBotConversationManagerTrait;
 
     protected ?TelegramBot $bot;
     protected ?TelegramBotAwareHelper $tg;
@@ -145,19 +147,13 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
 
     protected function createConversation(string $class, TelegramBotConversationState $state): TelegramBotConversation
     {
-        $messengerUserId = $this->getUpdateMessengerUser()->getId();
-        $chatId = $this->getUpdateChatId();
-        $botId = $this->getBot()->getEntity()->getId();
-
-        $conversation = new TelegramBotConversation(
-            hash: md5($messengerUserId . '-' . $chatId . '-' . $botId),
-            messengerUserId: $messengerUserId,
-            chatId: (string) $chatId,
-            telegramBotId: $botId,
-            class: $class,
-            state: $this->getSerializer()->normalize($state)
+        $conversation = $this->getTelegramBotConversationManager()->createTelegramConversation(
+            $this->getBot()
+                ->setUpdate($this->getUpdate())
+                ->setMessengerUser($this->getUpdateMessengerUser()),
+            $class,
+            $state
         );
-        $this->getEntityManager()->persist($conversation);
         $this->getEntityManager()->flush();
 
         return $conversation;

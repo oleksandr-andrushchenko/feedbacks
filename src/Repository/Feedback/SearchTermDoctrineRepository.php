@@ -29,15 +29,6 @@ class SearchTermDoctrineRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function findOneByNormalizedTextTypeText(string $normalizedText, SearchTermType $type, string $text): ?SearchTerm
-    {
-        return $this->findOneBy([
-            'normalizedText' => $normalizedText,
-            'type' => $type,
-            'text' => $text,
-        ]);
-    }
-
     public function findByPeriod(DateTimeInterface $from, DateTimeInterface $to): iterable
     {
         $queryBuilder = $this->createQueryBuilder('fst');

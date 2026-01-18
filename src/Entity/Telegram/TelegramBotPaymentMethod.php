@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
@@ -16,18 +17,22 @@ use Stringable;
 #[Entity(
     new PartitionKey('TELEGRAM_BOT_PAYMENT_METHOD', ['id']),
     new SortKey('META'),
+    [
+        new GlobalIndex(
+            'TELEGRAM_BOT_PAYMENT_METHODS_BY_TELEGRAM_BOT',
+            new PartitionKey(null, ['telegramBotId'], 'telegram_bot_payment_method_telegram_bot_id_pk')
+        ),
+    ],
 )]
 class TelegramBotPaymentMethod implements Stringable
 {
     #[Attribute('deleted_at')]
     private ?DateTimeInterface $deletedAt = null;
-    #[Attribute('telegram_bot_id')]
-    private ?string $telegramBotId = null;
 
     public function __construct(
         #[Attribute('telegram_bot_payment_method_id')]
         private string $id,
-        private readonly TelegramBot $telegramBot,
+        private readonly ?TelegramBot $telegramBot = null,
         #[Attribute]
         private readonly TelegramBotPaymentMethodName $name,
         #[Attribute]
@@ -36,9 +41,11 @@ class TelegramBotPaymentMethod implements Stringable
         private readonly array $currencyCodes,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
     )
     {
-        $this->telegramBotId = $this->telegramBot?->getId();
+        $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 

@@ -25,12 +25,12 @@ class MessengerUserTransferNormalizer implements NormalizerInterface, Denormaliz
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof MessengerUserTransfer;
+        return $data instanceof MessengerUserTransfer && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): MessengerUserTransfer
     {
-        return new $type(
+        return new MessengerUserTransfer(
             Messenger::from($data['messenger']),
             $data['identifier'],
             $data['username'] ?? null,
@@ -41,7 +41,7 @@ class MessengerUserTransferNormalizer implements NormalizerInterface, Denormaliz
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === MessengerUserTransfer::class;
+        return is_array($data) && $type === MessengerUserTransfer::class && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

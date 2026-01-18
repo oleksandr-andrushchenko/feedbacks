@@ -45,26 +45,35 @@ class EntityRepository
     }
 
     /**
-     * @param QueryArgs $queryArgs
+     * @param AbstractOpArgs $args
      * @return T|null
      */
-    public function queryOne(QueryArgs $queryArgs): ?object
+    public function queryOne(AbstractOpArgs $args): ?object
     {
-        return $this->em->queryOne($this->entityClass, $queryArgs);
+        return $this->em->readOne($this->entityClass, $args);
     }
 
     /**
-     * @param QueryArgs $queryArgs
+     * @param AbstractOpArgs $args
      * @return array<T>
      */
-    public function queryMany(QueryArgs $queryArgs): array
+    public function queryMany(AbstractOpArgs $args): array
     {
-        return $this->em->query($this->entityClass, $queryArgs)->getResult(true);
+        return $this->em->readMany($this->entityClass, $args);
     }
 
     public function updateOneByQueryReturn(UpdateArgs $updateArgs, array $keyFieldValues): ?object
     {
         return $this->em->updateOneByQueryReturn($this->entityClass, $updateArgs, $keyFieldValues);
+    }
+
+    /**
+     * @param AbstractOpArgs $args
+     * @return int
+     */
+    public function countByArgs(AbstractOpArgs $args): int
+    {
+        return $this->em->count($this->entityClass, $args);
     }
 
     public function setLogger(?LoggerInterface $logger): void

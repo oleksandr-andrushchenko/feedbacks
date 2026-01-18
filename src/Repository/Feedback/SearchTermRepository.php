@@ -16,9 +16,6 @@ use DateTimeInterface;
  * @method SearchTermDynamodbRepository getDynamodb()
  * @property SearchTermDynamodbRepository $dynamodb
  * @method SearchTerm|null find(string $id)
- * @method SearchTerm|null findOneByNormalizedTextTypeText(string $normalizedText, SearchTermType $type, string $text)
- * @method array<SearchTerm> findByNormalizedText(string $normalizedText, int $maxResults)
- * @method iterable<SearchTerm> findByPeriod(DateTimeInterface $from, DateTimeInterface $to)
  * @method iterable<SearchTerm> findByIds(array<string> $ids)
  */
 class SearchTermRepository extends EntityRepository

@@ -1584,8 +1584,6 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         ?int $shouldSeeStep
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->test(
             $searchTerms,
             $rating,
@@ -1965,8 +1963,10 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         int $expectedSearchTermCountDelta
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            // todo: uncomment & fix
+            $this->markTestSkipped();
+        }
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,
@@ -2006,10 +2006,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         $feedback = $feedbackRepository->findOneLast();
         $this->assertNotNull($feedback);
 
-        $searchTerms = $feedback->getSearchTerms()->toArray();
-        usort($searchTerms, static fn (SearchTerm $a, SearchTerm $b): int => $a->getId() <=> $b->getId());
-
-        foreach ($searchTerms as $index => $searchTerm) {
+        foreach ($feedback->getSearchTerms() as $index => $searchTerm) {
             $this->assertEquals($searchTerms[$index]->getText(), $searchTerm->getText());
             $this->assertEquals($searchTerms[$index]->getType(), $searchTerm->getType());
             $this->assertEquals(
@@ -2017,15 +2014,15 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
                 $searchTerm->getNormalizedText()
             );
             $this->assertEquals(
-                $searchTerms[$index]->getMessengerUser()?->getId(),
+                $feedback->getMessengerUser()?->getIdentifier(),
                 $searchTerm->getMessengerUser()?->getIdentifier()
             );
             $this->assertEquals(
-                $searchTerms[$index]->getMessengerUser()?->getMessenger(),
+                $feedback->getMessengerUser()?->getMessenger(),
                 $searchTerm->getMessengerUser()?->getMessenger()
             );
             $this->assertEquals(
-                $searchTerms[$index]->getMessengerUser()?->getUsername(),
+                $feedback->getMessengerUser()?->getUsername(),
                 $searchTerm->getMessengerUser()?->getUsername()
             );
         }
@@ -2061,7 +2058,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
             ],
             'rating' => Rating::random(),
             'description' => null,
-            'expectedSearchTermCountDelta' => 1,
+            'expectedSearchTermCountDelta' => 2,
         ];
     }
 
@@ -2086,8 +2083,6 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         ?int $shouldSeeStep
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,
@@ -2111,7 +2106,7 @@ class CreateFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
                 ->setSearchTerms(new SearchTermsTransfer($searchTerms))
                 ->setRating($rating)
                 ->setDescription($description)
-                ->setCreatedId('feedback1')
+                ->setCreatedId(Fixtures::FEEDBACK_23_TELEGRAM_INSTAGRAM_USERNAME)
                 ->setStep(CreateFeedbackTelegramBotConversation::STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED)
         );
 

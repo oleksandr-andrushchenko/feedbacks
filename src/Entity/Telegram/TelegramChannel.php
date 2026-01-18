@@ -63,7 +63,7 @@ class TelegramChannel implements Stringable
         $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): string
+    public function getId(): string|int
     {
         return $this->id;
     }

@@ -19,10 +19,6 @@ use OA\Dynamodb\Attribute\SortKey;
     new SortKey('META'),
     [
         new GlobalIndex(
-            'SEARCH_TERMS_BY_NORMALIZED_TEXT',
-            new PartitionKey(null, ['normalizedText'], 'search_term_normalized_text_pk')
-        ),
-        new GlobalIndex(
             'SEARCH_TERMS_BY_CREATED',
             new PartitionKey('SEARCH_TERM', [], 'search_term_pk'),
             new SortKey(null, ['createdAt'], 'search_term_created_sk'),
@@ -31,9 +27,6 @@ use OA\Dynamodb\Attribute\SortKey;
 )]
 class SearchTerm
 {
-    #[Attribute('messenger_user_id')]
-    private ?string $messengerUserId = null;
-
     public function __construct(
         #[Attribute('search_term_id')]
         private string $id,
@@ -46,9 +39,11 @@ class SearchTerm
         private ?MessengerUser $messengerUser = null,
         #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
     )
     {
-        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 

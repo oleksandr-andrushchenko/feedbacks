@@ -94,7 +94,9 @@ class FeedbackCreator
 
         $searchTerms = [];
         foreach ($transfer->getSearchTerms()->getItemsAsArray() as $searchTerm) {
-            $searchTerms[] = $this->searchTermUpserter->upsertSearchTerm($searchTerm);
+            $searchTerm = $this->searchTermUpserter->upsertSearchTerm($searchTerm);
+            $searchTerm->setMessengerUser($messengerUser);
+            $searchTerms[] = $searchTerm;
         }
 
         return $this->feedbackFactory->createFeedback(

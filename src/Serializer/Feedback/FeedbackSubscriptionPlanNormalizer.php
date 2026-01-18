@@ -30,12 +30,12 @@ class FeedbackSubscriptionPlanNormalizer implements NormalizerInterface, Denorma
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof FeedbackSubscriptionPlan;
+        return $data instanceof FeedbackSubscriptionPlan && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): FeedbackSubscriptionPlan
     {
-        return new $type(
+        return new FeedbackSubscriptionPlan(
             FeedbackSubscriptionPlanName::from($data['name']),
             $data['datetime_modifier'],
             $data['default_price'],
@@ -46,7 +46,7 @@ class FeedbackSubscriptionPlanNormalizer implements NormalizerInterface, Denorma
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === FeedbackSubscriptionPlan::class;
+        return is_array($data) && $type === FeedbackSubscriptionPlan::class && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

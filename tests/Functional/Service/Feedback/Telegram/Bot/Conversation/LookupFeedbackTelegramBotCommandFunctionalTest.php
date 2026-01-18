@@ -398,8 +398,10 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         ?int $shouldSeeStep
     ): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            // todo: uncomment & fix
+            $this->markTestSkipped();
+        }
         $this->bootFixtures([
             Fixtures::USER_1,
             Fixtures::USER_2,

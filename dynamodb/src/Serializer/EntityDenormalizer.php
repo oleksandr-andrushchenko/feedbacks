@@ -15,6 +15,7 @@ readonly class EntityDenormalizer
     public function __construct(
         protected MetadataLoader $metadataLoader,
         protected DenormalizerInterface $denormalizer,
+        protected ?string $denormalizeFormat = 'dynamodb',
     ) {
     }
 
@@ -42,6 +43,6 @@ readonly class EntityDenormalizer
             }
         }
 
-        return $this->denormalizer->denormalize($normalizedData, $class);
+        return $this->denormalizer->denormalize($normalizedData, $class, $this->denormalizeFormat);
     }
 }

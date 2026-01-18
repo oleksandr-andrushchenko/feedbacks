@@ -30,8 +30,6 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
 
     public function testDeletedWithReplacementTelegramBotRequest(): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::TG_BOT_1,
         ]);
@@ -54,8 +52,6 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
 
     public function testNonPrimaryWithoutReplacementTelegramBotRequest(): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::TG_BOT_1,
         ]);
@@ -71,8 +67,6 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
 
     public function testNonPrimaryWithReplacementTelegramBotRequest(): void
     {
-        // todo: uncomment & fix
-        $this->markTestSkipped();
         $this->bootFixtures([
             Fixtures::TG_BOT_1,
         ]);
@@ -81,6 +75,7 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
         $bot->setPrimary(false);
         $entityManager = $this->getEntityManager();
         $newBot = $this->copyBot($bot);
+        $newBot->setPrimary(true);
         $entityManager->persist($newBot);
         $entityManager->flush();
 
@@ -102,7 +97,8 @@ class TelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestC
             name: $bot->getName() . ' Copy',
             token: 'token',
             countryCode: $bot->getCountryCode(),
-            localeCode: $bot->getLocaleCode()
+            localeCode: $bot->getLocaleCode(),
+            primary: $bot->primary(),
         );
     }
 }

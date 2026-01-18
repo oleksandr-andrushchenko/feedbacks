@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OA\Dynamodb\ODM;
 
 use Aws\DynamoDb\DynamoDbClient;
-use Generator;
 use OA\Dynamodb\Metadata\MetadataLoader;
 use OA\Dynamodb\Serializer\EntitySerializer;
 use Psr\Log\LoggerInterface;
@@ -173,15 +172,15 @@ class EntityManager
     /**
      * @template T
      * @param class-string<T> $class
-     * @param QueryArgs $queryArgs
+     * @param AbstractOpArgs $args
      * @return object|null
      */
-    public function queryOne(string $class, QueryArgs $queryArgs): ?object
+    public function readOne(string $class, AbstractOpArgs $args): ?object
     {
-        $queryArgs->limit(1);
+        $args->limit(1);
 
         /** @var array<int, T> $result */
-        $result = $this->query($class, $queryArgs)->getResult(true);
+        $result = $this->readMany($class, $args);
 
         return $result[0] ?? null;
     }
@@ -189,96 +188,42 @@ class EntityManager
     /**
      * @template T
      * @param class-string<T> $class
-     * @param QueryArgs $queryArgs
-     * @return ResultStream
+     * @param AbstractOpArgs $args
+     * @return array<int, T>
      */
-    public function query(string $class, QueryArgs $queryArgs): ResultStream
+    public function readMany(string $class, AbstractOpArgs $args): array
     {
-        $generator = (function () use ($class, $queryArgs): Generator {
-            try {
-                $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
-                $queryArgs->tableName($table);
-                $params = $this->opArgsBuilder->serialize($queryArgs);
+        $output = [];
+        $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
+        $args->tableName($table);
+        $params = $this->opArgsBuilder->serialize($args);
+        $remainingLimit = $params['Limit'] ?? null;
 
-                $remainingLimit = $params['Limit'] ?? null;
-
-                do {
-                    if ($remainingLimit !== null) {
-                        $params['Limit'] = $remainingLimit;
-                    }
-
-                    $this->logger?->debug(__METHOD__, [
-                        'class' => $class,
-                        'params' => $params,
-                    ]);
-
-                    $result = $this->dynamoDbClient->query($params);
-
-                    foreach ($result['Items'] ?? [] as $item) {
-                        $entity = $this->entitySerializer->deserialize($item, $class);
-                        $entity = $this->unitOfWork->register($entity);
-
-                        yield $entity;
-
-                        if ($remainingLimit !== null && --$remainingLimit <= 0) {
-                            return;
-                        }
-                    }
-
-                    $params['ExclusiveStartKey'] = $result['LastEvaluatedKey'] ?? null;
-
-                } while (!empty($params['ExclusiveStartKey']));
-
-            } catch (Throwable $exception) {
-                $this->logger?->error($exception);
-                throw new EntityManagerException(
-                    sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
-                );
+        do {
+            if ($remainingLimit !== null) {
+                $params['Limit'] = $remainingLimit;
             }
-        })();
 
-        return new ResultStream($generator);
-    }
-
-    public function scan(string $class, ScanArgs $scanArgs): ResultStream
-    {
-        $generator = (function () use ($class, $scanArgs): Generator {
-            try {
-                $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
-                $scanArgs->tableName($table);
-                $params = $this->opArgsBuilder->serialize($scanArgs);
-                $remainingLimit = $params['Limit'] ?? null;
-
-                do {
-                    if ($remainingLimit !== null) {
-                        $params['Limit'] = $remainingLimit;
-                    }
-
-                    $result = $this->dynamoDbClient->scan($params);
-
-                    foreach ($result['Items'] ?? [] as $item) {
-                        $entity = $this->entitySerializer->deserialize($item, $class);
-                        $entity = $this->unitOfWork->register($entity);
-
-                        yield $entity;
-
-                        if ($remainingLimit !== null && --$remainingLimit <= 0) {
-                            return;
-                        }
-                    }
-
-                    $params['ExclusiveStartKey'] = $result['LastEvaluatedKey'] ?? null;
-
-                } while (!empty($params['ExclusiveStartKey']));
-            } catch (Throwable $exception) {
-                $this->logger?->error($exception);
-                throw new EntityManagerException(
-                    sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
-                );
+            if ($args instanceof QueryArgs) {
+                $result = $this->dynamoDbClient->query($params);
+            } else {
+                $result = $this->dynamoDbClient->scan($params);
             }
-        })();
 
-        return new ResultStream($generator);
+            foreach ($result['Items'] ?? [] as $item) {
+                $entity = $this->entitySerializer->deserialize($item, $class);
+                $entity = $this->unitOfWork->register($entity);
+
+                $output[] = $entity;
+
+                if ($remainingLimit !== null && --$remainingLimit <= 0) {
+                    break 2;
+                }
+            }
+            $params['ExclusiveStartKey'] = $result['LastEvaluatedKey'] ?? null;
+        } while (!empty($params['ExclusiveStartKey']));
+
+        return $output;
     }
 
     /**
@@ -315,6 +260,18 @@ class EntityManager
                 sprintf('An error occurred. %s: %s', $exception::class, $exception->getMessage())
             );
         }
+    }
+
+    public function count(string $class, AbstractOpArgs $args): int
+    {
+        $table = $this->metadataLoader->getEntityMetadata($class)->getTable();
+        $args->tableName($table);
+        $params = $this->opArgsBuilder->serialize($args);
+
+        if ($args instanceof QueryArgs) {
+            return $this->dynamoDbClient->query($params)['Count'];
+        }
+        return $this->dynamoDbClient->scan($params)['Count'];
     }
 
     public function persist(object $entity): void

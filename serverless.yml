@@ -120,6 +120,8 @@ resources:
             AttributeType: S
           - AttributeName: search_term_feedback_lookup_created_at_sk
             AttributeType: S
+          - AttributeName: telegram_bot_payment_method_telegram_bot_id_pk
+            AttributeType: S
         KeySchema:
           - AttributeName: pk
             KeyType: HASH
@@ -217,6 +219,12 @@ resources:
                 KeyType: HASH
               - AttributeName: search_term_feedback_lookup_created_at_sk
                 KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: TELEGRAM_BOT_PAYMENT_METHODS_BY_TELEGRAM_BOT
+            KeySchema:
+              - AttributeName: telegram_bot_payment_method_telegram_bot_id_pk
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
         Tags:

@@ -11,6 +11,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
 use OA\Dynamodb\Attribute\PartitionKey;
 use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
@@ -18,6 +19,12 @@ use Stringable;
 #[Entity(
     new PartitionKey('TELEGRAM_BOT_PAYMENT', ['id']),
     new SortKey('META'),
+    [
+        new GlobalIndex(
+            'TELEGRAM_BOT_PAYMENTS_BY_TELEGRAM_BOT',
+            new PartitionKey(null, ['telegramBotId'], 'telegram_bot_payment_telegram_bot_id_pk')
+        ),
+    ],
 )]
 class TelegramBotPayment implements Stringable
 {

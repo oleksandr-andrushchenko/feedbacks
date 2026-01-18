@@ -34,6 +34,9 @@ class SearchTermsTransfer
         return $this->items;
     }
 
+    /**
+     * @return SearchTermTransfer[]
+     */
     public function getItemsAsArray(): array
     {
         return $this->items ?? [];

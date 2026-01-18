@@ -83,7 +83,7 @@ class TelegramBot implements Stringable
         $this->commandsSynced = $this->commandsSynced === true ? true : null;
     }
 
-    public function getId(): string
+    public function getId(): int|string
     {
         return $this->id;
     }
@@ -255,15 +255,14 @@ class TelegramBot implements Stringable
         return $this;
     }
 
-    public function primary(): ?bool
+    public function primary(): bool
     {
-        return $this->primary;
+        return $this->primary === true;
     }
 
     public function setPrimary(?bool $primary): self
     {
-        $this->primary = $primary;
-
+        $this->primary = $primary === true ? true : null;
         return $this;
     }
 
