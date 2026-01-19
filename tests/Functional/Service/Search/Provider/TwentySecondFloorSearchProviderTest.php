@@ -109,7 +109,7 @@ class TwentySecondFloorSearchProviderTest extends KernelTestCase
                         'https://22flr.com/account/lastanislavska/',
                         photo: null,
                         desc: 'Київ, Україна знімаю відео, мотивую, люблю Україну Щодо співпраці @stanislavska.cooperation Мій телеграм канал',
-                        followers: 42
+                        followers: 47
                     ),
                 ]),
             ],

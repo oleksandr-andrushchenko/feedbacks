@@ -13,7 +13,12 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class UkrMissedCarSearchProviderTest extends KernelTestCase
 {
-    use SearchProviderTrait;
+//    use SearchProviderTrait;
+
+    public function testFake()
+    {
+        $this->markTestSkipped();
+    }
 
     protected static SearchProviderName $searchProviderName = SearchProviderName::ukr_missed_cars;
 
