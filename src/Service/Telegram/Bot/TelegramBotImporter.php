@@ -114,13 +114,14 @@ class TelegramBotImporter
             }
             if (
                 $bot !== null
-                && !$bot->webhookSynced()
+//                && !$bot->webhookSynced()
                 && !$this->telegramBotRemover->telegramBotRemoved($bot)
                 && $mode & self::MODE_SYNC_WEBHOOKS
             ) {
                 try {
                     $this->telegramBotWebhookSyncer->syncTelegramWebhook($bot);
                     $message .= ': [🟢 OK] webhook';
+                    $result->incWebhookSyncedCount();
                 } catch (Throwable $exception) {
                     $message .= ': [🔴 FAIL] webhook - ' . $exception->getMessage();
                 }

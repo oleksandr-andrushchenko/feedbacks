@@ -14,6 +14,7 @@ class ImportResult
         private int $unchangedCount = 0,
         private int $skippedCount = 0,
         private int $failedCount = 0,
+        private int $webhookSyncedCount = 0,
     )
     {
     }
@@ -86,5 +87,15 @@ class ImportResult
     public function incFailedCount(): void
     {
         $this->failedCount++;
+    }
+
+    public function incWebhookSyncedCount(): void
+    {
+        $this->webhookSyncedCount++;
+    }
+
+    public function getWebhookSyncedCount(): int
+    {
+        return $this->webhookSyncedCount;
     }
 }

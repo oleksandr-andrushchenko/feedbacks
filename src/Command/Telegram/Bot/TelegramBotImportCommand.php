@@ -85,9 +85,10 @@ class TelegramBotImportCommand extends Command
 
         $io->success(
             sprintf(
-                'Telegram bots have been imported, created: %d, updated: %d, deleted: %d, restored: %d, unchanged: %d, skipped: %d, failed: %d',
+                'Telegram bots have been imported, created: %d, updated: %d, webhook synced: %d, deleted: %d, restored: %d, unchanged: %d, skipped: %d, failed: %d',
                 $result->getCreatedCount(),
                 $result->getUpdatedCount(),
+                $result->getWebhookSyncedCount(),
                 $result->getDeletedCount(),
                 $result->getRestoredCount(),
                 $result->getUnchangedCount(),
