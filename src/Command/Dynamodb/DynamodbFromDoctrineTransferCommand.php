@@ -97,7 +97,7 @@ class DynamodbFromDoctrineTransferCommand extends Command
             'feedback_lookups' => $this->transferFeedbackLookups($telegramBotIdMap),
             'telegram_bot_payment_methods' => $this->transferTelegramBotPaymentMethods($telegramBotIdMap, $telegramBotPaymentMethodIdMap),
             'telegram_bot_payments' => $this->transferTelegramBotPayments($telegramBotIdMap, $telegramBotPaymentMethodIdMap),
-            'feedback_user_subscriptions' => $this->transferFeedbackUserSubscriptions(),
+//            'feedback_user_subscriptions' => $this->transferFeedbackUserSubscriptions(),
             'feedback_bot_conversations' => $this->transferTelegramBotConversations($telegramBotIdMap),
             'telegram_bot_requests' => $this->transferTelegramBotRequests(),
             'telegram_bot_updates' => $this->transferTelegramBotUpdates(),
