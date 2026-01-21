@@ -5,22 +5,22 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="app.stage">%env(APP_STAGE)%</parameter>
-        <parameter key="app.site_base_url">%env(SITE_BASE_URL)%</parameter>
-        <parameter key="app.telegram_admin_id">%env(int:TELEGRAM_ADMIN_ID)%</parameter>
+        <parameter key="app.stage">%env(resolve:APP_STAGE)%</parameter>
+        <parameter key="app.site_base_url">%env(resolve:SITE_BASE_URL)%</parameter>
+        <parameter key="app.telegram_admin_id">%env(resolve:int:TELEGRAM_ADMIN_ID)%</parameter>
 
         <parameter key="app.default_locale">en</parameter>
         <parameter key="app.default_currency">USD</parameter>
 
         <parameter key="app.data_dir">%kernel.project_dir%/data</parameter>
 
-        <parameter key="app.telegram_activities_token">%env(TELEGRAM_ACTIVITIES_TOKEN)%</parameter>
+        <parameter key="app.telegram_activities_token">%env(resolve:TELEGRAM_ACTIVITIES_TOKEN)%</parameter>
         <parameter key="app.telegram_activities_channel">%app.telegram_admin_id%</parameter>
 
-        <parameter key="app.telegram_errors_token">%env(TELEGRAM_ERRORS_TOKEN)%</parameter>
+        <parameter key="app.telegram_errors_token">%env(resolve:TELEGRAM_ERRORS_TOKEN)%</parameter>
         <parameter key="app.telegram_errors_channel">%app.telegram_admin_id%</parameter>
 
-        <parameter key="app.log_activities">%env(bool:LOG_ACTIVITIES)%</parameter>
+        <parameter key="app.log_activities">true</parameter>
 
         <parameter key="app.contact_options" type="collection">
             <parameter key="feedbacks">%app.feedbacks_contact_options%</parameter>

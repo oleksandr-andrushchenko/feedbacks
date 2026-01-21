@@ -35,7 +35,7 @@ framework:
 
     transports:
       # https://symfony.com/doc/current/messenger.html#transport-configuration
-      # async: '%env(MESSENGER_TRANSPORT_DSN)%'
+      # async: '%env(resolve:MESSENGER_TRANSPORT_DSN)%'
       # failed: 'doctrine://default?queue_name=failed'
       sync: 'sync://'
 

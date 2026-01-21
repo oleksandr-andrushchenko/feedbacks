@@ -1,37 +1,41 @@
 # Read the documentation at https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/
-service: feedbacks
+service: ${env:AWS_PROJECT}
 
 provider:
   name: aws
-  region: ${param:awsRegion}
-  stage: ${param:appStage}
   runtime: provided.al2
   logRetentionInDays: 14
   httpApi:
-    name: feedbacks-${self:provider.stage}-api
+    name: ${env:AWS_PROJECT}-${sls:stage}-api
     metrics: true
-    tags:
-      Environment: ${param:tagEnvironment}
-      Project: ${param:tagProject}
-      Owner: ${param:tagOwner}
-      Region: ${param:tagRegion}
   environment:
-    APP_ENV: ${param:appEnv}
-    APP_STAGE: ${param:appStage}
-    APP_SECRET: ${param:appSecret}
-    SITE_BASE_URL: ${param:siteBaseUrl}
-    TELEGRAM_WEBHOOK_BASE_URL: ${param:telegramWebhookBaseUrl}
-    TELEGRAM_ADMIN_ID: ${param:telegramAdminId}
-    TELEGRAM_ACTIVITIES_TOKEN: ${param:telegramActivitiesToken}
-    TELEGRAM_ERRORS_TOKEN: ${param:telegramErrorsToken}
-    LOG_ACTIVITIES: ${param:logActivities}
-    GOOGLE_API_KEY: ${param:googleApiKey}
-    DB_URL: ${param:dbUrl}
-    DYNAMODB_TABLE: ${param:dynamodbTable}
-    DB_ENGINE: ${param:dbEngine}
-    CRYPTO: ${param:crypto}
+    APP_STAGE: ${sls:stage}
+    APP_ENV: ${env:APP_ENV}
+    APP_DEBUG: ${env:APP_DEBUG}
+    APP_SECRET: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/APP_SECRET}
+    SITE_BASE_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/SITE_BASE_URL}
+    TELEGRAM_WEBHOOK_BASE_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL}
+    TELEGRAM_ADMIN_ID: ${env:TELEGRAM_ADMIN_ID}
+    TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN}
+    TELEGRAM_ERRORS_TOKEN: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ERRORS_TOKEN}
+    GOOGLE_API_KEY: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/GOOGLE_API_KEY}
+    DB_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/DB_URL}
+    DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
+    DB_ENGINE: ${env:DB_ENGINE}
+    CRYPTO: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/CRYPTO}
+  tags:
+    Stage: ${sls:stage}
+    Project: ${env:AWS_PROJECT}
+    Owner: ${env:AWS_OWNER}
+    Region: ${aws:region}
+
 plugins:
   - ./vendor/bref/bref
+  - serverless-dotenv-plugin
+
+custom:
+  dotenv:
+    path: .env.${sls:stage}
 
 functions:
   web:
@@ -75,7 +79,7 @@ resources:
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${param:dynamodbTable}
+        TableName: ${env:DYNAMODB_TABLE}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: pk
@@ -228,19 +232,19 @@ resources:
             Projection:
               ProjectionType: ALL
         Tags:
-          - Key: Environment
-            Value: ${param:tagEnvironment}
+          - Key: Stage
+            Value: ${sls:stage}
           - Key: Project
-            Value: ${param:tagProject}
+            Value: ${env:AWS_PROJECT}
           - Key: Owner
-            Value: ${param:tagOwner}
+            Value: ${env:AWS_OWNER}
           - Key: Region
-            Value: ${param:tagRegion}
+            Value: ${aws:region}
 
     WebRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub "${WebLambdaFunction}-role"
+        RoleName: ${env:AWS_PROJECT}-${sls:stage}-web-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -249,6 +253,16 @@ resources:
                 Service: lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
+          - PolicyName: Parameters
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ssm:GetParameter
+                    - ssm:GetParameters
+                  Resource:
+                    - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${env:AWS_PROJECT}/${sls:stage}/*"
           - PolicyName: DynamoDB
             PolicyDocument:
               Version: "2012-10-17"
@@ -258,13 +272,14 @@ resources:
                     - dynamodb:PutItem
                     - dynamodb:GetItem
                     - dynamodb:BatchGetItem
+                    - dynamodb:BatchWriteItem
                     - dynamodb:UpdateItem
                     - dynamodb:DeleteItem
                     - dynamodb:Query
                     - dynamodb:Scan
                   Resource:
-                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}"
-                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}/index/*"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}/index/*"
           - PolicyName: Logs
             PolicyDocument:
               Version: "2012-10-17"
@@ -276,19 +291,19 @@ resources:
                     - logs:PutLogEvents
                   Resource: "*"
         Tags:
-          - Key: Environment
-            Value: ${param:tagEnvironment}
+          - Key: Stage
+            Value: ${sls:stage}
           - Key: Project
-            Value: ${param:tagProject}
+            Value: ${env:AWS_PROJECT}
           - Key: Owner
-            Value: ${param:tagOwner}
+            Value: ${env:AWS_OWNER}
           - Key: Region
-            Value: ${param:tagRegion}
+            Value: ${aws:region}
 
     ConsoleRole:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: !Sub "${ConsoleLambdaFunction}-role"
+        RoleName: ${env:AWS_PROJECT}-${sls:stage}-console-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -297,6 +312,16 @@ resources:
                 Service: lambda.amazonaws.com
               Action: sts:AssumeRole
         Policies:
+          - PolicyName: Parameters
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ssm:GetParameter
+                    - ssm:GetParameters
+                  Resource:
+                    - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${env:AWS_PROJECT}/${sls:stage}/*"
           - PolicyName: DynamoDB
             PolicyDocument:
               Version: "2012-10-17"
@@ -306,13 +331,14 @@ resources:
                     - dynamodb:PutItem
                     - dynamodb:GetItem
                     - dynamodb:BatchGetItem
+                    - dynamodb:BatchWriteItem
                     - dynamodb:UpdateItem
                     - dynamodb:DeleteItem
                     - dynamodb:Query
                     - dynamodb:Scan
                   Resource:
-                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}"
-                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${param:dynamodbTable}/index/*"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}/index/*"
           - PolicyName: Logs
             PolicyDocument:
               Version: "2012-10-17"
@@ -324,45 +350,90 @@ resources:
                     - logs:PutLogEvents
                   Resource: "*"
         Tags:
-          - Key: Environment
-            Value: ${param:tagEnvironment}
+          - Key: Stage
+            Value: ${sls:stage}
           - Key: Project
-            Value: ${param:tagProject}
+            Value: ${env:AWS_PROJECT}
           - Key: Owner
-            Value: ${param:tagOwner}
+            Value: ${env:AWS_OWNER}
           - Key: Region
-            Value: ${param:tagRegion}
+            Value: ${aws:region}
 
     WebLogGroup:
       Type: AWS::Logs::LogGroup
-      DependsOn:
-        - WebLambdaFunction
       Properties:
-        LogGroupName: !Sub "/aws/lambda/${WebLambdaFunction}"
+        LogGroupName: !Sub "/aws/lambda/${self:service}-${sls:stage}-web"
         RetentionInDays: 14
         Tags:
-          - Key: Environment
-            Value: ${param:tagEnvironment}
+          - Key: Stage
+            Value: ${sls:stage}
           - Key: Project
-            Value: ${param:tagProject}
+            Value: ${env:AWS_PROJECT}
           - Key: Owner
-            Value: ${param:tagOwner}
+            Value: ${env:AWS_OWNER}
           - Key: Region
-            Value: ${param:tagRegion}
+            Value: ${aws:region}
 
     ConsoleLogGroup:
       Type: AWS::Logs::LogGroup
-      DependsOn:
-        - ConsoleLambdaFunction
       Properties:
-        LogGroupName: !Sub "/aws/lambda/${ConsoleLambdaFunction}"
+        LogGroupName: !Sub "/aws/lambda/${self:service}-${sls:stage}-console"
         RetentionInDays: 14
         Tags:
-          - Key: Environment
-            Value: ${param:tagEnvironment}
+          - Key: Stage
+            Value: ${sls:stage}
           - Key: Project
-            Value: ${param:tagProject}
+            Value: ${env:AWS_PROJECT}
           - Key: Owner
-            Value: ${param:tagOwner}
+            Value: ${env:AWS_OWNER}
           - Key: Region
-            Value: ${param:tagRegion}
+            Value: ${aws:region}
+
+    AppSecretParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/APP_SECRET
+        Type: SecureString
+        Value: ${env:APP_SECRET}
+    SiteBaseUrlParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/SITE_BASE_URL
+        Type: String
+        Value: ${env:SITE_BASE_URL}
+    TelegramWebhookBaseUrlParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL
+        Type: String
+        Value: ${env:TELEGRAM_WEBHOOK_BASE_URL}
+    TelegramActivitiesTokenParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN
+        Type: SecureString
+        Value: ${env:TELEGRAM_ACTIVITIES_TOKEN}
+    TelegramErrorsTokenParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ERRORS_TOKEN
+        Type: SecureString
+        Value: ${env:TELEGRAM_ERRORS_TOKEN}
+    GoogleApiKeyParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/GOOGLE_API_KEY
+        Type: SecureString
+        Value: ${env:GOOGLE_API_KEY}
+    DbUrlParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/DB_URL
+        Type: SecureString
+        Value: ${env:DB_URL}
+    CryptoParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: /${env:AWS_PROJECT}/${sls:stage}/CRYPTO
+        Type: String
+        Value: ${env:CRYPTO}

@@ -73,17 +73,17 @@
         <parameter key="app.search.confirm_step">false</parameter>
         <parameter key="app.search.create_confirm_step">false</parameter>
         <parameter key="app.search.search_providers" type="collection">
-            <parameter>otzyvua</parameter>
-            <parameter>clarity</parameter>
+<!--            <parameter>otzyvua</parameter>-->
+<!--            <parameter>clarity</parameter>-->
             <parameter>searches</parameter>
-            <parameter>ukr_corrupts</parameter>
+<!--            <parameter>ukr_corrupts</parameter>-->
             <!--            <parameter>ukr_missed</parameter>-->
-            <parameter>ukr_missed_cars</parameter>
+<!--            <parameter>ukr_missed_cars</parameter>-->
             <parameter>business_guide</parameter>
-            <parameter>ukr_wanted_persons</parameter>
-            <parameter>blackbox</parameter>
-            <parameter>twenty_second_floor</parameter>
-            <parameter>clean_talk</parameter>
+<!--            <parameter>ukr_wanted_persons</parameter>-->
+<!--            <parameter>blackbox</parameter>-->
+<!--            <parameter>twenty_second_floor</parameter>-->
+<!--            <parameter>clean_talk</parameter>-->
             <parameter>should_i_answer</parameter>
         </parameter>
 

@@ -12,8 +12,18 @@ services:
     environment:
       HANDLER: public/index.php
       DOCUMENT_ROOT: public
-      SITE_BASE_URL: http://localhost:${BE_FUNCTION_PORT}
+      APP_STAGE: local
+      APP_ENV: dev
+      APP_DEBUG: 1
+      APP_SECRET: dummy
       DB_URL: mysql://app:1111@mysql:3306/app?serverVersion=8&charset=utf8mb4
+      DYNAMODB_TABLE: app
+      TELEGRAM_ADMIN_ID: 0
+      TELEGRAM_ACTIVITIES_TOKEN: 0:dummy
+      TELEGRAM_ERRORS_TOKEN: 0:dummy
+      GOOGLE_API_KEY: dummy
+      CRYPTO: '{"btc":"btc-address","eth":"eth-address"}'
+      SITE_BASE_URL: http://localhost:${BE_FUNCTION_PORT}
       DYNAMODB_ENDPOINT: http://dynamodb:8000
 
   mysql:

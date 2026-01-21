@@ -5,7 +5,7 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="app.telegram_webhook_base_url">%env(TELEGRAM_WEBHOOK_BASE_URL)%</parameter>
+        <parameter key="app.telegram_webhook_base_url">%env(resolve:TELEGRAM_WEBHOOK_BASE_URL)%</parameter>
     </parameters>
 
     <services>

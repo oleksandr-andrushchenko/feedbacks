@@ -145,10 +145,10 @@ run-migrations: ## Execute pending Doctrine migrations
 .PHONY: create-local-dynamodb
 create-local-dynamodb: ## Create local DynamoDB table
 	@echo "🚀 Creating local DynamoDB table $(DYNAMODB_TABLE)..."
-	if AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
+	if AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb describe-table \
-		--profile "$(AWS_PROFILE_NAME)" \
-		--region "$(AWS_REGION)" \
+		--profile dummy \
+		--region us-east-1 \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
 		echo "⚠️ Table $(DYNAMODB_TABLE) already exists, skipping creation."; \
@@ -158,10 +158,10 @@ create-local-dynamodb: ## Create local DynamoDB table
 		if [ ! -s /tmp/dynamodb_schema.json ]; then echo '❌ Failed to generate valid DynamoDB schema JSON'; exit 1; fi; \
 		echo "📄 Generated schema:"; \
 		cat /tmp/dynamodb_schema.json; \
-		AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
+		AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb create-table \
-			--profile "$(AWS_PROFILE_NAME)" \
-			--region "$(AWS_REGION)" \
+			--profile dummy \
+			--region us-east-1 \
 			--cli-input-json file:///tmp/dynamodb_schema.json \
 			--table-name "$(DYNAMODB_TABLE)" \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \
@@ -173,29 +173,29 @@ create-local-dynamodb: ## Create local DynamoDB table
 .PHONY: fetch-local-dynamodb
 fetch-local-dynamodb: ## Fetch 100 records from local DynamoDB
 	@echo "📦 Fetching 100 records from $(DYNAMODB_TABLE)..."
-	AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
+	AWS_KEY=dummy AWS_SECRET=dummy \
 	aws dynamodb scan \
-		--profile "$(AWS_PROFILE_NAME)" \
+		--profile dummy \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--limit 100 \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" \
-		--region "$(AWS_REGION)" \
+		--region us-east-1 \
 		--no-cli-pager \
 		--output json
 
 .PHONY: drop-local-dynamodb
 drop-local-dynamodb: ## Drop DynamoDB table in local DynamoDB
 	@echo "🗑️ Dropping local DynamoDB table $(DYNAMODB_TABLE)..."
-	if AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
+	if AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb describe-table \
-		--profile "$(AWS_PROFILE_NAME)" \
-		--region "$(AWS_REGION)" \
+		--profile dummy \
+		--region us-east-1 \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
-		AWS_KEY=$(AWS_KEY) AWS_SECRET=$(AWS_SECRET) \
+		AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb delete-table \
-			--profile "$(AWS_PROFILE_NAME)" \
-			--region "$(AWS_REGION)" \
+			--profile dummy \
+			--region us-east-1 \
 			--table-name "$(DYNAMODB_TABLE)" \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \
 			--no-cli-pager; \
@@ -228,97 +228,51 @@ reload-bot: ngrok-tunnel sync-bot-webhook # Reload local tg bot
 .PHONY: reload-cache
 reload-cache: clear-cache fix-permissions # Reload local symfony cache
 
-.PHONY: mysql-prod-login
-mysql-prod-login: ## Open PROD MySQL shell
-	$(DC) exec -it $(MYSQL_CONTAINER) mysql -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) -A $(PROD_DB_NAME)
-
-.PHONY: dump-prod-mysql
-dump-prod-mysql: ## Dump prod MySQL
-	@filename=/tmp/prod_$(shell date +%Y_%m_%d).sql; \
-	echo "Dumping prod database to $$filename"; \
-	$(DC) exec -i $(MYSQL_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
-	head -n 30 $$filename
-
-.PHONY: load-prod-mysql
-load-prod-mysql: ## Load prod MySQL into local MySQL
-	@filename=/tmp/prod_$(shell date +%Y_%m_%d).sql; \
-	echo "Dumping prod DB to $$filename"; \
-	$(DC) exec -T $(MYSQL_CONTAINER) mysqldump -h$(PROD_DB_HOST) -u$(PROD_DB_USER) -p$(PROD_DB_PASS) $(PROD_DB_NAME) > $$filename; \
-	echo "Importing into local DB"; \
-	$(DC) exec -T $(MYSQL_CONTAINER) mysql -uroot -p1111 app < $$filename; \
-	echo "Done!"
-
-.PHONY: package
-package: ## Package using .env.prod
-	set -a; \
-	. ./.env.prod; \
-	set +a; \
-	echo "Packaging serverless..."; \
-	serverless package --debug \
-		--param="awsRegion=$$AWS_REGION" \
-		--param="appEnv=$$APP_ENV" \
-		--param="appSecret=$$APP_SECRET" \
-		--param="appStage=$$APP_STAGE" \
-		--param="dbUrl=$$DB_URL" \
-		--param="googleApiKey=$$GOOGLE_API_KEY" \
-		--param="logActivities=$$LOG_ACTIVITIES" \
-		--param="siteBaseUrl=$$APP_ENV" \
-		--param="telegramActivitiesToken=$$TELEGRAM_ACTIVITIES_TOKEN" \
-		--param="telegramAdminId=$$TELEGRAM_ADMIN_ID" \
-		--param="telegramErrorsToken=$$TELEGRAM_ERRORS_TOKEN" \
-		--param="telegramWebhookBaseUrl=$$TELEGRAM_WEBHOOK_BASE_URL" \
-		--param="dynamodbTable=$$DYNAMODB_TABLE" \
-		--param="dbEngine=$$DB_ENGINE" \
-		--param="crypto=$$CRYPTO" \
-		--param="tagEnvironment=$$APP_ENV" \
-		--param="tagProject=$$TAG_PROJECT" \
-		--param="tagOwner=$$TAG_OWNER" \
-		--param="tagRegion=$$AWS_REGION"; \
-	echo "Packaging completed!"
+.PHONY: deploy-params
+deploy-params: ## Deploy params
+	@echo "🔐 Deploying params in $(AWS_REGION)..."
+	aws cloudformation deploy \
+		--region "$(AWS_REGION)" \
+		--template-file cf-params.yml \
+		--stack-name "$(AWS_PROJECT)-$(APP_STAGE)-params" \
+		--capabilities CAPABILITY_NAMED_IAM \
+		--no-fail-on-empty-changeset \
+		--parameter-overrides \
+			Project="$(AWS_PROJECT)" \
+			Stage="$(APP_STAGE)" \
+			AppSecret="$(APP_SECRET)" \
+			SiteBaseUrl="$(SITE_BASE_URL)" \
+			TelegramWebhookBaseUrl="$(TELEGRAM_WEBHOOK_BASE_URL)" \
+			TelegramActivitiesToken="$(TELEGRAM_ACTIVITIES_TOKEN)" \
+			TelegramErrorsToken="$(TELEGRAM_ERRORS_TOKEN)" \
+			GoogleApiKey="$(GOOGLE_API_KEY)" \
+			DbUrl="$(DB_URL)" \
+			Crypto="$(CRYPTO)" \
+		--tags \
+			Project="$(AWS_PROJECT)" \
+			Owner="$(AWS_OWNER)" \
+			Stage="$(APP_STAGE)" \
+			Region="$(AWS_REGION)"
+	@echo "✅ Parameters deployment triggered!"
 
 .PHONY: deploy
-deploy: ## Deploy using .env.prod
-	@set -a; \
-	. ./.env.prod; \
-	set +a; \
-	echo "Using APP_ENV=$$APP_ENV, APP_STAGE=$$APP_STAGE"; \
-	echo "Running PHPUnit..."; \
-	if ! $(DC) run -e FORCE_SKIPPED=1 $(BE_FUNCTION_CONTAINER) php bin/phpunit; then \
-		echo "some test has been failed"; \
-		exit 1; \
-	fi; \
-	echo "Installing composer dependencies..."; \
-	$(DC) run $(BE_FUNCTION_CONTAINER) composer install --prefer-dist --optimize-autoloader --no-dev; \
-	echo "Clearing and warming up $$APP_ENV cache..."; \
-	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:clear --env=$$APP_ENV; \
-	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup --env=$$APP_ENV; \
-	echo "Deploying serverless..."; \
-	serverless deploy \
-		--param="awsRegion=$$AWS_REGION" \
-		--param="appEnv=$$APP_ENV" \
-		--param="appSecret=$$APP_SECRET" \
-		--param="appStage=$$APP_STAGE" \
-		--param="dbUrl=$$DB_URL" \
-		--param="googleApiKey=$$GOOGLE_API_KEY" \
-		--param="logActivities=$$LOG_ACTIVITIES" \
-		--param="siteBaseUrl=$$APP_ENV" \
-		--param="telegramActivitiesToken=$$TELEGRAM_ACTIVITIES_TOKEN" \
-		--param="telegramAdminId=$$TELEGRAM_ADMIN_ID" \
-		--param="telegramErrorsToken=$$TELEGRAM_ERRORS_TOKEN" \
-		--param="telegramWebhookBaseUrl=$$TELEGRAM_WEBHOOK_BASE_URL" \
-		--param="dynamodbTable=$$DYNAMODB_TABLE" \
-		--param="dbEngine=$$DB_ENGINE" \
-		--param="crypto=$$CRYPTO" \
-		--param="tagEnvironment=$$APP_ENV" \
-		--param="tagProject=$$TAG_PROJECT" \
-		--param="tagOwner=$$TAG_OWNER" \
-		--param="tagRegion=$$AWS_REGION"; \
-	echo "Running migrations..."; \
-	serverless bref:cli --args="doctrine:migrations:migrate --no-interaction --all-or-nothing" --stage=$$APP_STAGE; \
-	echo "Installing composer dependencies for local env..."; \
-	$(DC) run $(BE_FUNCTION_CONTAINER) composer install; \
-	$(DC) run $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup; \
-	echo "Deployment completed!"
+deploy: ## PROD deploy
+	@echo "Using APP_ENV=$(APP_ENV), APP_STAGE=$(APP_STAGE), AWS_PROJECT=$(AWS_PROJECT), AWS_REGION=$(AWS_REGION)"
+	@echo "Installing composer dependencies and warming prod cache..."
+	$(DC_PROD) run --rm $(BE_FUNCTION_CONTAINER) bash -c " \
+		composer install --prefer-dist --optimize-autoloader --no-dev && \
+		rm -rf var/cache/$(APP_ENV) && \
+		APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:clear --env=$(APP_ENV) && \
+		APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:warmup --env=$(APP_ENV) \
+	"
+	@echo "Deploying serverless..."
+	serverless deploy --region $(AWS_REGION) --stage $(APP_STAGE)
+#	@echo "Running migrations..."
+#	serverless bref:cli --args="doctrine:migrations:migrate --no-interaction --all-or-nothing" --region $(AWS_REGION) --stage $(APP_STAGE)
+	@echo "Installing composer dependencies for local dev..."
+	$(DC) exec -T $(BE_FUNCTION_CONTAINER) composer install
+	$(DC) exec -T $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup
+	@echo "✅ Deployment completed!"
 
 .PHONY: open
 open: ## Show local site URL

@@ -45,6 +45,8 @@
 
 # TODO
 * investigate telegram_updates table
+* remove payments/limits
+* simplify conversations: input everything at once (use AI)
 
 
 * queues
