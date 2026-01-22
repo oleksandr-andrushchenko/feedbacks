@@ -47,6 +47,8 @@
 * investigate telegram_updates table
 * remove payments/limits
 * simplify conversations: input everything at once (use AI)
+* simplify output: one single response message
+* use param store runtime retrieval
 
 
 * queues
