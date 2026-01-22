@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Address\Address;
-use App\Entity\Location;
 use App\Exception\AddressGeocodeFailedException;
+use App\Model\Address\Address;
+use App\Model\Location;
 
 interface AddressGeocoderInterface
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Intl\Locale;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Intl\Locale;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Intl\LocaleProvider;
 use App\Service\Telegram\Bot\Chat\TelegramBotMatchesChatSender;
@@ -18,10 +18,10 @@ use Longman\TelegramBot\Entities\KeyboardButton;
 
 class LocaleTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CHANGE_CONFIRM_QUERIED = 5;
-    public const STEP_GUESS_LOCALE_QUERIED = 10;
-    public const STEP_LOCALE_QUERIED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
+    public const int STEP_CHANGE_CONFIRM_QUERIED = 5;
+    public const int STEP_GUESS_LOCALE_QUERIED = 10;
+    public const int STEP_LOCALE_QUERIED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
 
     public function __construct(
         private readonly LocaleProvider $localeProvider,
@@ -248,7 +248,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation implements T
         }
 
         if ($locale->getCode() !== $tg->getLocaleCode()) {
-            $tg->getBot()->getMessengerUser()->getUser()
+            $tg->getBot()->getUser()
                 ->setLocaleCode($locale->getCode())
             ;
             $this->telegramBotLocaleSwitcher->switchLocale($locale);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Bot\Api;
 
 use App\Entity\Telegram\TelegramBot;
-use App\Entity\Telegram\TelegramBotMyCommands;
+use App\Model\Telegram\TelegramBotMyCommands;
 use App\Service\Telegram\Bot\TelegramBotMyCommandsProvider;
 use App\Service\Telegram\Bot\TelegramBotRegistry;
 

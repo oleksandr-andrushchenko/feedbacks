@@ -1,6 +1,0 @@
-App\Entity\Telegram\TelegramBotUpdate:
-  telegram_update_{1..2}:
-    __construct:
-      id: <current()>
-      data: <([])>
-      bot: '@telegram_bot_1'

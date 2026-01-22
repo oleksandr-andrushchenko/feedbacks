@@ -6,13 +6,13 @@ namespace App\Tests\Functional\Service\Telegram\Bot;
 
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBotConversation;
-use App\Entity\Telegram\TelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Messenger\Messenger;
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Telegram\Bot\TelegramBot;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Telegram\Bot\TelegramBotChatProvider;
@@ -22,9 +22,11 @@ use App\Tests\DatabaseTestCase;
 use App\Tests\Fixtures;
 use App\Tests\Traits\EntityManagerProviderTrait;
 use App\Tests\Traits\Feedback\SearchTermParserProviderTrait;
+use App\Tests\Traits\IdGeneratorProviderTrait;
 use App\Tests\Traits\Intl\CountryProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserProfileUrlProviderTrait;
 use App\Tests\Traits\Messenger\MessengerUserRepositoryProviderTrait;
+use App\Tests\Traits\Messenger\MessengerUserServiceProviderTrait;
 use App\Tests\Traits\SerializerProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotAwareHelperProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotChatProviderTrait;
@@ -36,13 +38,15 @@ use App\Tests\Traits\Telegram\Bot\TelegramBotRepositoryProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotUpdateFixtureProviderTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotUpdateHandlerTrait;
 use App\Tests\Traits\Telegram\Bot\TelegramBotUserProviderTrait;
+use App\Tests\Traits\Telegram\TelegramBotConversationManagerTrait;
 use App\Tests\Traits\TranslatorProviderTrait;
+use App\Tests\Traits\User\UserRepositoryProviderTrait;
 use App\Transfer\Feedback\SearchTermTransfer;
 use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Entities\KeyboardButton;
 use Longman\TelegramBot\Entities\Update;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
@@ -65,6 +69,10 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     use TelegramBotChatProviderTrait;
     use TelegramBotRepositoryProviderTrait;
     use CountryProviderTrait;
+    use UserRepositoryProviderTrait;
+    use IdGeneratorProviderTrait;
+    use MessengerUserServiceProviderTrait;
+    use TelegramBotConversationManagerTrait;
 
     protected ?TelegramBot $bot;
     protected ?TelegramBotAwareHelper $tg;
@@ -90,7 +98,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     protected function getBot(): TelegramBot
     {
         if ($this->bot === null) {
-            $bot = $this->getTelegramBotRepository()->findAnyOneByUsername(Fixtures::BOT_USERNAME_1);
+            $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
             $this->bot = $this->getTelegramBotRegistry()->getTelegramBot($bot);
         }
 
@@ -117,7 +125,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         return $this->update;
     }
 
-    protected static function getContainer(): ContainerInterface
+    protected static function getContainer(): Container
     {
         return parent::getContainer();
     }
@@ -139,19 +147,13 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
 
     protected function createConversation(string $class, TelegramBotConversationState $state): TelegramBotConversation
     {
-        $messengerUserId = $this->getUpdateMessengerUser()->getId();
-        $chatId = $this->getUpdateChatId();
-        $botId = $this->getBot()->getEntity()->getId();
-
-        $conversation = new TelegramBotConversation(
-            $messengerUserId . '-' . $chatId . '-' . $botId,
-            $messengerUserId,
-            (string) $chatId,
-            $botId,
+        $conversation = $this->getTelegramBotConversationManager()->createTelegramConversation(
+            $this->getBot()
+                ->setUpdate($this->getUpdate())
+                ->setMessengerUser($this->getUpdateMessengerUser()),
             $class,
-            $this->getSerializer()->normalize($state)
+            $state
         );
-        $this->getEntityManager()->persist($conversation);
         $this->getEntityManager()->flush();
 
         return $conversation;
@@ -160,6 +162,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     protected function createPaymentMethod(TelegramBotPaymentMethodName $name): TelegramBotPaymentMethod
     {
         $paymentMethod = new TelegramBotPaymentMethod(
+            $this->getIdGenerator()->generateId(),
             $this->getBot()->getEntity(),
             $name,
             'any',
@@ -214,7 +217,11 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
 
     protected function getUser(): ?User
     {
-        return $this->getUpdateMessengerUser()?->getUser();
+        $messengerUser = $this->getUpdateMessengerUser();
+        if ($messengerUser === null) {
+            return null;
+        }
+        return $this->getMessengerUserService()->getUser($messengerUser);
     }
 
     protected function getConversation(): ?TelegramBotConversation
@@ -223,7 +230,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         $chatId = $this->getUpdateChatId();
         $botId = $this->getBot()->getEntity()->getId();
 
-        return $this->getTelegramBotConversationRepository()->findOneByHash($messengerUserId . '-' . $chatId . '-' . $botId);
+        return $this->getTelegramBotConversationRepository()->findOneNonDeletedByHash(md5($messengerUserId . '-' . $chatId . '-' . $botId));
     }
 
     protected function shouldSeeConversation(?string $expectedClass, ?TelegramBotConversationState $expectedState, bool $active): static
@@ -467,7 +474,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
     protected function assertConversationActive(?TelegramBotConversation $conversation): void
     {
         $this->assertNotNull($conversation);
-        $this->assertNotNull($this->getTelegramBotConversationRepository()->findOneByHash($conversation->getHash()));
+        $this->assertNotNull($this->getTelegramBotConversationRepository()->findOneNonDeletedByHash($conversation->getHash()));
     }
 
     protected function assertConversationInactive(?TelegramBotConversation $conversation): void
@@ -475,7 +482,7 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         if ($conversation === null) {
             $this->assertNull(null);
         } else {
-            $this->assertNull($this->getTelegramBotConversationRepository()->findOneByHash($conversation->getHash()));
+            $this->assertNull($this->getTelegramBotConversationRepository()->findOneNonDeletedByHash($conversation->getHash()));
         }
     }
 

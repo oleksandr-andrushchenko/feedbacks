@@ -8,12 +8,12 @@ use App\Enum\Telegram\TelegramBotGroupName;
 use App\Exception\Intl\CountryNotFoundException;
 use App\Exception\Intl\LocaleNotFoundException;
 use App\Exception\Telegram\Bot\TelegramBotGroupNotFoundException;
-use App\Transfer\Telegram\TelegramBotTransfer;
 use App\Service\Intl\CountryProvider;
 use App\Service\Intl\LocaleProvider;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\TelegramBotCreator;
 use App\Service\Telegram\Bot\TelegramBotInfoProvider;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Transfer\Telegram\TelegramBotTransfer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,7 +25,7 @@ class TelegramBotCreateCommand extends Command
 {
     public function __construct(
         private readonly TelegramBotCreator $telegramBotCreator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly TelegramBotInfoProvider $telegramBotInfoProvider,
         private readonly CountryProvider $countryProvider,
         private readonly LocaleProvider $localeProvider,
@@ -39,8 +39,7 @@ class TelegramBotCreateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('group', InputArgument::REQUIRED, 'Telegram Group (inner name)')
+        $this->addArgument('group', InputArgument::REQUIRED, 'Telegram Group (inner name)')
             ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addArgument('name', InputArgument::REQUIRED, 'Telegram Name')
             ->addArgument('token', InputArgument::REQUIRED, 'Telegram Token')

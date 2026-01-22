@@ -93,7 +93,7 @@ class TelegramBotUpdateHandler
             }
 
             if ($bot->deleted() || !$bot->primary()) {
-                $newBot = $this->telegramBotRepository->findOnePrimaryByBot($bot->getEntity());
+                $newBot = $this->telegramBotRepository->findOnePrimaryNonDeletedByBot($bot->getEntity());
 
                 if ($newBot === null) {
                     $this->logger->warning('Primary bot has not been found to replace deleted/non-primary one', [

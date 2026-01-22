@@ -1,71 +1,62 @@
 # Read the documentation at https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/
-service: feedbacks
+service: ${env:AWS_PROJECT}
 
 provider:
   name: aws
-  # The AWS region in which to deploy (us-east-1 is the default)
-  region: us-east-1
-  # The stage of the application, e.g. dev, production, staging… ('dev' is the default)
-  stage: dev
   runtime: provided.al2
+  logRetentionInDays: 14
+  httpApi:
+    name: ${env:AWS_PROJECT}-${sls:stage}-api
+    metrics: true
   environment:
-    # Symfony environment variables
-    #should be synced with:
-    #1) .env
-    #2) .env.dist
-    #3) phpunit.xml
-    APP_STAGE: ${ssm:/feedbacks/${sls:stage}/APP_STAGE}
-    APP_ENV: ${ssm:/feedbacks/${sls:stage}/APP_ENV}
-    APP_SECRET: ${ssm:/feedbacks/${sls:stage}/APP_SECRET}
-    SITE_BASE_URL: ${ssm:/feedbacks/${sls:stage}/SITE_BASE_URL}
-    TELEGRAM_WEBHOOK_BASE_URL: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL}
-    TELEGRAM_ADMIN_ID: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ADMIN_ID}
-    TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN}
-    TELEGRAM_ERRORS_TOKEN: ${ssm:/feedbacks/${sls:stage}/TELEGRAM_ERRORS_TOKEN}
-    LOG_ACTIVITIES: ${ssm:/feedbacks/${sls:stage}/LOG_ACTIVITIES}
-    GOOGLE_API_KEY: ${ssm:/feedbacks/${sls:stage}/GOOGLE_API_KEY}
-    DATABASE_URL: ${ssm:/feedbacks/${sls:stage}/DATABASE_URL}
-    CRYPTO: ${ssm:/feedbacks/${sls:stage}/CRYPTO}
-    # todo: add vpc with private (for RDS) and public (lambda outbound internet requests) subnets
-    # @see https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Internet_Gateway.html#Add_IGW_Attach_Gateway
-#  vpc:
-#    securityGroupIds:
-#      - sg-088db27809d621bd6
-#    subnetIds:
-#      - subnet-0bdb3047343de2025
-#      - subnet-0c3d57c4a615a8edb
-#      - subnet-050cb8e506d3b0f5b
-#      - subnet-04680c5f9ee08979b
-#      - subnet-01583ad711e36973c
-#      - subnet-0c5933ad81e7f772b
+    APP_STAGE: ${sls:stage}
+    APP_ENV: ${env:APP_ENV}
+    APP_DEBUG: ${env:APP_DEBUG}
+    APP_SECRET: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/APP_SECRET}
+    SITE_BASE_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/SITE_BASE_URL}
+    TELEGRAM_WEBHOOK_BASE_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL}
+    TELEGRAM_ADMIN_ID: ${env:TELEGRAM_ADMIN_ID}
+    TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN}
+    TELEGRAM_ERRORS_TOKEN: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ERRORS_TOKEN}
+    GOOGLE_API_KEY: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/GOOGLE_API_KEY}
+    DB_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/DB_URL}
+    DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
+    DB_ENGINE: ${env:DB_ENGINE}
+    CRYPTO: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/CRYPTO}
+  tags:
+    Stage: ${sls:stage}
+    Project: ${env:AWS_PROJECT}
+    Owner: ${env:AWS_OWNER}
+    Region: ${aws:region}
 
 plugins:
   - ./vendor/bref/bref
+  - serverless-dotenv-plugin
+
+custom:
+  dotenv:
+    path: .env
+    include: [ ]
 
 functions:
-  # This function runs the Symfony website/API
   web:
     handler: public/index.php
-    timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
+    timeout: 28
     layers:
       - ${bref:layer.php-83-fpm}
     events:
       - httpApi: '*'
-  #      - schedule:
-  #          rate: rate(5 minutes)
-  #          input:
-  #            warmer: true
-  # This function let us run console commands in Lambda
+    role: WebRole
   console:
     handler: bin/console
-    timeout: 120 # in seconds
+    timeout: 240
     layers:
-      - ${bref:layer.php-83} # PHP
-      - ${bref:layer.console} # The "console" layer
+      - ${bref:layer.php-83}
+      - ${bref:layer.console}
+    role: ConsoleRole
 
 package:
   patterns:
-    # Excluded files and folders for deployment
     - '!assets/**'
     - '!node_modules/**'
     - '!public/build/**'
@@ -73,15 +64,15 @@ package:
     - '!var/**'
     - '!.idea/**'
     - '!.git/**'
-    - '!tests/**'
-    #    - '!.env'
-    - '!.env.dist'
+    - '!.env.example'
+    - '!.env'
+    - '!package-lock.json'
+    - '!package.json'
+    - '!Makefile'
     - '!.phpunit.result.cache'
     - '!.editorconfig'
     - '!editconfig.xml'
     - '!phpunit.xml'
-    # If you want to include files and folders that are part of excluded folders,
-    # add them at the end
     - 'var/cache/prod/**'
     - 'public/build/entrypoints.json'
     - 'public/build/manifest.json'
@@ -91,22 +82,312 @@ resources:
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: !Ref AWS::StackName
+        TableName: ${env:DYNAMODB_TABLE}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
           - AttributeName: pk
             AttributeType: S
           - AttributeName: sk
             AttributeType: S
+          - AttributeName: telegram_bot_username_pk
+            AttributeType: S
+          - AttributeName: telegram_bot_pk
+            AttributeType: S
+          - AttributeName: telegram_bot_group_country_locale_sk
+            AttributeType: S
+          - AttributeName: telegram_channel_username_pk
+            AttributeType: S
+          - AttributeName: telegram_channel_pk
+            AttributeType: S
+          - AttributeName: telegram_channel_group_country_locale_sk
+            AttributeType: S
+          - AttributeName: level_1_region_pk
+            AttributeType: S
+          - AttributeName: level_1_region_country_code_name_sk
+            AttributeType: S
+          - AttributeName: messenger_user_messenger_identifier_pk
+            AttributeType: S
+          - AttributeName: messenger_user_messenger_username_pk
+            AttributeType: S
+          - AttributeName: messenger_user_user_pk
+            AttributeType: S
+          - AttributeName: feedback_user_subscription_messenger_user_id_pk
+            AttributeType: S
+          - AttributeName: feedback_user_subscription_user_id_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_normalized_text_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_created_at_sk
+            AttributeType: S
+          - AttributeName: search_term_feedback_search_normalized_text_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_search_created_at_sk
+            AttributeType: S
+          - AttributeName: search_term_feedback_lookup_normalized_text_pk
+            AttributeType: S
+          - AttributeName: search_term_feedback_lookup_created_at_sk
+            AttributeType: S
+          - AttributeName: telegram_bot_payment_method_telegram_bot_id_pk
+            AttributeType: S
         KeySchema:
-          - AttributeName: pk # e.g. "USER#1"
+          - AttributeName: pk
             KeyType: HASH
-          - AttributeName: sk # e.g. "META", "1759086095241"
+          - AttributeName: sk
             KeyType: RANGE
+        TimeToLiveSpecification:
+          Enabled: true
+          AttributeName: expire_at
+        GlobalSecondaryIndexes:
+          - IndexName: TELEGRAM_BOTS_BY_USERNAME
+            KeySchema:
+              - AttributeName: telegram_bot_username_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE
+            KeySchema:
+              - AttributeName: telegram_bot_pk
+                KeyType: HASH
+              - AttributeName: telegram_bot_group_country_locale_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: TELEGRAM_CHANNELS_BY_USERNAME
+            KeySchema:
+              - AttributeName: telegram_channel_username_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE
+            KeySchema:
+              - AttributeName: telegram_channel_pk
+                KeyType: HASH
+              - AttributeName: telegram_channel_group_country_locale_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: LEVEL_1_REGIONS_BY_COUNTRY_NAME
+            KeySchema:
+              - AttributeName: level_1_region_pk
+                KeyType: HASH
+              - AttributeName: level_1_region_country_code_name_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: MESSENGER_USERS_BY_MESSENGER_IDENTIFIER
+            KeySchema:
+              - AttributeName: messenger_user_messenger_identifier_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: MESSENGER_USERS_BY_MESSENGER_USERNAME
+            KeySchema:
+              - AttributeName: messenger_user_messenger_username_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: MESSENGER_USERS_BY_USER
+            KeySchema:
+              - AttributeName: messenger_user_user_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: FEEDBACK_USER_SUBSCRIPTIONS_BY_MESSENGER_USER
+            KeySchema:
+              - AttributeName: feedback_user_subscription_messenger_user_id_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: FEEDBACK_USER_SUBSCRIPTIONS_BY_USER
+            KeySchema:
+              - AttributeName: feedback_user_subscription_user_id_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          - IndexName: SEARCH_TERM_FEEDBACKS_BY_SEARCH_TERM_NORMALIZED_TEXT_CREATED
+            KeySchema:
+              - AttributeName: search_term_feedback_normalized_text_pk
+                KeyType: HASH
+              - AttributeName: search_term_feedback_created_at_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: SEARCH_TERM_FEEDBACK_SEARCHES_BY_SEARCH_TERM_NORMALIZED_TEXT_CREATED
+            KeySchema:
+              - AttributeName: search_term_feedback_search_normalized_text_pk
+                KeyType: HASH
+              - AttributeName: search_term_feedback_search_created_at_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: SEARCH_TERM_FEEDBACK_LOOKUPS_BY_SEARCH_TERM_NORMALIZED_TEXT_CREATED
+            KeySchema:
+              - AttributeName: search_term_feedback_lookup_normalized_text_pk
+                KeyType: HASH
+              - AttributeName: search_term_feedback_lookup_created_at_sk
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: TELEGRAM_BOT_PAYMENT_METHODS_BY_TELEGRAM_BOT
+            KeySchema:
+              - AttributeName: telegram_bot_payment_method_telegram_bot_id_pk
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
         Tags:
+          - Key: Stage
+            Value: ${sls:stage}
           - Key: Project
-            Value: !Ref TagProject
+            Value: ${env:AWS_PROJECT}
           - Key: Owner
-            Value: !Ref TagOwner
-          - Key: Environment
-            Value: !Ref TagEnvironment
+            Value: ${env:AWS_OWNER}
+          - Key: Region
+            Value: ${aws:region}
+
+    WebRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${env:AWS_PROJECT}-${sls:stage}-web-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: Parameters
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ssm:GetParameter
+                    - ssm:GetParameters
+                  Resource:
+                    - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${env:AWS_PROJECT}/${sls:stage}/*"
+          - PolicyName: DynamoDB
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:GetItem
+                    - dynamodb:BatchGetItem
+                    - dynamodb:BatchWriteItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                  Resource:
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}/index/*"
+          - PolicyName: Logs
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+        Tags:
+          - Key: Stage
+            Value: ${sls:stage}
+          - Key: Project
+            Value: ${env:AWS_PROJECT}
+          - Key: Owner
+            Value: ${env:AWS_OWNER}
+          - Key: Region
+            Value: ${aws:region}
+
+    ConsoleRole:
+      Type: AWS::IAM::Role
+      Properties:
+        RoleName: ${env:AWS_PROJECT}-${sls:stage}-console-role
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        Policies:
+          - PolicyName: Parameters
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - ssm:GetParameter
+                    - ssm:GetParameters
+                  Resource:
+                    - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${env:AWS_PROJECT}/${sls:stage}/*"
+          - PolicyName: DynamoDB
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - dynamodb:PutItem
+                    - dynamodb:GetItem
+                    - dynamodb:BatchGetItem
+                    - dynamodb:BatchWriteItem
+                    - dynamodb:UpdateItem
+                    - dynamodb:DeleteItem
+                    - dynamodb:Query
+                    - dynamodb:Scan
+                  Resource:
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}"
+                    - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}/index/*"
+          - PolicyName: Logs
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - logs:CreateLogGroup
+                    - logs:CreateLogStream
+                    - logs:PutLogEvents
+                  Resource: "*"
+        Tags:
+          - Key: Stage
+            Value: ${sls:stage}
+          - Key: Project
+            Value: ${env:AWS_PROJECT}
+          - Key: Owner
+            Value: ${env:AWS_OWNER}
+          - Key: Region
+            Value: ${aws:region}
+
+    WebLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: !Sub "/aws/lambda/${self:service}-${sls:stage}-web"
+        RetentionInDays: 14
+        Tags:
+          - Key: Stage
+            Value: ${sls:stage}
+          - Key: Project
+            Value: ${env:AWS_PROJECT}
+          - Key: Owner
+            Value: ${env:AWS_OWNER}
+          - Key: Region
+            Value: ${aws:region}
+
+    ConsoleLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        LogGroupName: !Sub "/aws/lambda/${self:service}-${sls:stage}-console"
+        RetentionInDays: 14
+        Tags:
+          - Key: Stage
+            Value: ${sls:stage}
+          - Key: Project
+            Value: ${env:AWS_PROJECT}
+          - Key: Owner
+            Value: ${env:AWS_OWNER}
+          - Key: Region
+            Value: ${aws:region}

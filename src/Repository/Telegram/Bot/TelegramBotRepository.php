@@ -6,83 +6,35 @@ namespace App\Repository\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBot;
 use App\Enum\Telegram\TelegramBotGroupName;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<TelegramBot>
- *
- * @method TelegramBot|null find($id, $lockMode = null, $lockVersion = null)
- * @method TelegramBot|null findOneBy(array $criteria, array $orderBy = null)
- * @method TelegramBot[]    findAll()
- * @method TelegramBot[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends EntityRepository<TelegramBot>
+ * @method TelegramBotDoctrineRepository getDoctrine()
+ * @property TelegramBotDoctrineRepository $doctrine
+ * @method TelegramBotDynamodbRepository getDynamodb()
+ * @property TelegramBotDynamodbRepository $dynamodb
+ * @method TelegramBot[] findAll()
+ * @method TelegramBot|null find(string $id)
+ * @method TelegramBot|null findOneByUsername(string $username)
+ * @method TelegramBot|null findOneNonDeletedByUsername(string $username)
+ * @method TelegramBot[] findNonDeletedByGroup(TelegramBotGroupName $group)
+ * @method TelegramBot[] findNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode)
+ * @method TelegramBot|null findOnePrimaryNonDeletedByBot(TelegramBot $bot)
+ * @method TelegramBot[] findPrimaryNonDeletedByGroupAndIds(TelegramBotGroupName $group, array $ids)
  */
-class TelegramBotRepository extends ServiceEntityRepository
+class TelegramBotRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    /**
+     * @param TelegramBotGroupName $group
+     * @return TelegramBot[]
+     */
+    public function findPrimaryNonDeletedByGroup(TelegramBotGroupName $group): array
     {
-        parent::__construct($registry, TelegramBot::class);
-    }
+        if ($this->getConfig()->isDynamodb()) {
+            return $this->getDynamodb()->findPrimaryNonDeletedByGroup($group);
+        }
 
-    public function findAnyOneByUsername(string $username): ?TelegramBot
-    {
-        return $this->findOneBy([
-            'username' => $username,
-        ]);
-    }
-
-    public function findOneByUsername(string $username): ?TelegramBot
-    {
-        return $this->findOneBy([
-            'username' => $username,
-            'deletedAt' => null,
-        ]);
-    }
-
-    public function findByGroup(TelegramBotGroupName $group): array
-    {
-        return $this->findBy([
-            'group' => $group,
-            'deletedAt' => null,
-        ]);
-    }
-
-    public function findPrimaryByGroup(TelegramBotGroupName $group): array
-    {
-        return $this->findBy([
-            'group' => $group,
-            'primary' => true,
-            'deletedAt' => null,
-        ]);
-    }
-
-    public function findByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
-    {
-        return $this->findBy([
-            'group' => $group,
-            'countryCode' => $countryCode,
-            'deletedAt' => null,
-        ]);
-    }
-
-    public function findOnePrimaryByBot(TelegramBot $bot): ?TelegramBot
-    {
-        return $this->findOneBy([
-            'group' => $bot->getGroup(),
-            'countryCode' => $bot->getCountryCode(),
-            'localeCode' => $bot->getLocaleCode(),
-            'primary' => true,
-            'deletedAt' => null,
-        ]);
-    }
-
-    public function findPrimaryByGroupAndIds(TelegramBotGroupName $group, array $ids): array
-    {
-        return $this->findBy([
-            'id' => $ids,
-            'group' => $group,
-            'primary' => true,
-            'deletedAt' => null,
-        ]);
+        return $this->getDoctrine()->findPrimaryNonDeletedByGroup($group);
     }
 }

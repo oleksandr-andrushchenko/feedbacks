@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Service\Search\Viewer\Telegram;
 
 use App\Entity\Feedback\Feedback;
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
+use App\Service\Feedback\FeedbackService;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackTelegramReplySignViewProvider;
 use App\Service\Feedback\Telegram\View\MultipleSearchTermTelegramViewProvider;
 use App\Service\Intl\TimeProvider;
@@ -23,12 +24,13 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
         Modifier $modifier,
         private readonly MultipleSearchTermTelegramViewProvider $multipleSearchTermTelegramViewProvider,
         private readonly FeedbackTelegramReplySignViewProvider $feedbackTelegramReplySignViewProvider,
+        private readonly FeedbackService $feedbackService,
     )
     {
         parent::__construct($searchViewerCompose->withTransDomain('feedback'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         $full = $context['full'] ?? false;
         $this->showLimits = !$full;
@@ -98,7 +100,7 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
                 ->add($m->bracketsModifier($this->trans('search_terms', locale: $locale)))
                 ->apply(
                     $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView(
-                        $item->getSearchTerms()->toArray(),
+                        $this->feedbackService->getSearchTerms($item),
                         addSecrets: !$full,
                         locale: $locale
                     )
@@ -113,7 +115,7 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
                 ->add($m->slashesModifier())
                 ->add($m->spoilerModifier())
                 ->add($m->bracketsModifier($this->trans('description', locale: $locale)))
-                ->apply($item->getDescription()),
+                ->apply($item->getText()),
             $m->create()
                 ->add($m->conditionalModifier($addCountry))
                 ->add($m->slashesModifier())
@@ -122,7 +124,7 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
                 ->apply($item->getCountryCode()),
             $m->create()
                 ->add($m->conditionalModifier($addTime))
-                ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $item->getUser()->getTimezone(), locale: $locale))
+                ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $this->feedbackService->getUser($item)->getTimezone(), locale: $locale))
                 ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
                 ->apply($item->getCreatedAt()),
         ];

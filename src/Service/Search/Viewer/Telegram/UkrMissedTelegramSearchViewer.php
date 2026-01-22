@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\UkrMissed\UkrMissedDisappearedPersons;
-use App\Entity\Search\UkrMissed\UkrMissedPerson;
-use App\Entity\Search\UkrMissed\UkrMissedWantedPersons;
+use App\Entity\Feedback\SearchTerm;
+use App\Model\Search\UkrMissed\UkrMissedDisappearedPersons;
+use App\Model\Search\UkrMissed\UkrMissedPerson;
+use App\Model\Search\UkrMissed\UkrMissedWantedPersons;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class UkrMissedTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -21,7 +21,7 @@ class UkrMissedTelegramSearchViewer extends SearchViewer implements SearchViewer
         parent::__construct($searchViewerCompose->withTransDomain('ukr_missed'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;
@@ -36,7 +36,7 @@ class UkrMissedTelegramSearchViewer extends SearchViewer implements SearchViewer
         };
     }
 
-    private function getDisappearedPersonsMessage(UkrMissedDisappearedPersons $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getDisappearedPersonsMessage(UkrMissedDisappearedPersons $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
 
@@ -50,7 +50,7 @@ class UkrMissedTelegramSearchViewer extends SearchViewer implements SearchViewer
         ;
     }
 
-    private function getWantedPersonsMessage(UkrMissedWantedPersons $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getWantedPersonsMessage(UkrMissedWantedPersons $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
 
@@ -64,7 +64,7 @@ class UkrMissedTelegramSearchViewer extends SearchViewer implements SearchViewer
         ;
     }
 
-    public function getWrapMessageCallback(FeedbackSearchTerm $searchTerm, bool $full): callable
+    public function getWrapMessageCallback(SearchTerm $searchTerm, bool $full): callable
     {
         $m = $this->modifier;
 

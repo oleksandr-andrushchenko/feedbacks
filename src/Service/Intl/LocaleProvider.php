@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Intl;
 
-use App\Entity\Intl\Locale;
+use App\Model\Intl\Locale;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class LocaleProvider

@@ -1,0 +1,4 @@
+aws:
+  _enable_config_builder: false
+  version: latest
+  region: "%env(resolve:AWS_REGION)%"

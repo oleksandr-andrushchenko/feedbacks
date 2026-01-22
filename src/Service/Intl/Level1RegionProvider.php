@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Intl;
 
-use App\Entity\Intl\Country;
 use App\Entity\Intl\Level1Region;
-use App\Entity\Location;
 use App\Exception\AddressGeocodeFailedException;
 use App\Exception\TimezoneGeocodeFailedException;
+use App\Model\Intl\Country;
+use App\Model\Location;
 use App\Repository\Intl\Level1RegionRepository;
 use App\Service\AddressGeocoderInterface;
 use App\Service\TimezoneGeocoderInterface;
@@ -103,6 +103,11 @@ class Level1RegionProvider
             domain: sprintf('level_1_region.%s', $level1Region->getCountryCode()),
             locale: $localeCode
         );
+    }
+
+    public function getLevel1Region(string $id): Level1Region
+    {
+        return $this->level1RegionRepository->find($id);
     }
 
     private function denormalize(array $record): Level1Region

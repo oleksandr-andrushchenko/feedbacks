@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer\Intl;
 
-use App\Entity\Intl\Country;
+use App\Model\Intl\Country;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -40,7 +40,7 @@ class CountryNormalizer implements NormalizerInterface, DenormalizerInterface
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Country
     {
         if ($format === 'internal') {
-            return new $type(
+            return new Country(
                 $data['c'],
                 $data['cu'],
                 $data['l'],

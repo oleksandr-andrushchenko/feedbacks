@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Subscription;
 
-use App\Entity\Feedback\FeedbackSubscriptionPlan;
 use App\Enum\Feedback\FeedbackSubscriptionPlanName;
+use App\Model\Feedback\Telegram\FeedbackSubscriptionPlan;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FeedbackSubscriptionPlanProvider

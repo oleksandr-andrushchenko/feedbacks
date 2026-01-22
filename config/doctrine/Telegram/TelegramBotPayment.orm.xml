@@ -15,14 +15,14 @@
 
         <field name="chatId" column="chat_id" type="bigint"/>
 
-        <many-to-one field="method" target-entity="App\Entity\Telegram\TelegramBotPaymentMethod"/>
+        <many-to-one field="telegramBotPaymentMethod" target-entity="App\Entity\Telegram\TelegramBotPaymentMethod"/>
 
         <field name="purpose" column="purpose"/>
         <field name="priceAmount" column="price_amount" type="decimal" precision="7" scale="2"/>
         <field name="priceCurrency" column="price_currency"/>
         <field name="payload" column="payload" type="json"/>
 
-        <many-to-one field="bot" target-entity="App\Entity\Telegram\TelegramBot">
+        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot">
             <join-column nullable="false"/>
         </many-to-one>
 

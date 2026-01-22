@@ -1,9 +1,0 @@
-App\Entity\Telegram\TelegramBotConversation:
-  telegram_conversation_create_feedback_search_term_queried:
-    __construct:
-      id: <('1-'.\App\Tests\Fixtures::TELEGRAM_CHAT_ID_1.'-1')>
-      messengerUserId: 1
-      chatId: <(\App\Tests\Fixtures::TELEGRAM_CHAT_ID_1)>
-      botId: 1
-      class: <(\App\Service\Telegram\Conversation\CreateFeedbackTelegramConversation::class)>
-      state: <(['step'=>\App\Service\Telegram\Conversation\CreateFeedbackTelegramConversation::STEP_SEARCH_TERM_QUERIED])>

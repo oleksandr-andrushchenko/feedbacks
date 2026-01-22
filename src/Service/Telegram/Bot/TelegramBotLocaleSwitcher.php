@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot;
 
-use App\Entity\Intl\Locale;
+use App\Model\Intl\Locale;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Translation\LocaleSwitcher;
 
@@ -19,6 +19,7 @@ class TelegramBotLocaleSwitcher
     public function syncLocale(TelegramBot $bot, Request $request): void
     {
         $messengerUser = $bot->getMessengerUser();
+        $user = $bot->getUser();
 
         $localeCode = null;
 
@@ -26,10 +27,10 @@ class TelegramBotLocaleSwitcher
             $localeCode = $bot->getEntity()->getLocaleCode();
         }
 
-        $localeCode ??= $messengerUser?->getUser()?->getLocaleCode();
+        $localeCode ??= $user?->getLocaleCode();
         $localeCode ??= $this->localeSwitcher->getLocale();
 
-        $messengerUser?->getUser()->setLocaleCode($localeCode);
+        $user?->setLocaleCode($localeCode);
         $this->setLocale($localeCode);
         $request->setLocale($this->localeSwitcher->getLocale());
     }

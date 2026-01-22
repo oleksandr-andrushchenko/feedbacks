@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\Telegram\Bot\SubscribeTelegramBotConversationState;
-use App\Entity\Messenger\MessengerUser;
-use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
-use App\Entity\User\User;
 use App\Enum\Feedback\FeedbackSubscriptionPlanName;
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
+use App\Model\Feedback\Telegram\Bot\SubscribeTelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Conversation\SubscribeTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
+use App\Tests\Fixtures;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;
 use App\Tests\Traits\Feedback\FeedbackLookupRepositoryProviderTrait;
 use App\Tests\Traits\Feedback\FeedbackSubscriptionPlanProviderTrait;
@@ -45,9 +43,16 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
         ]);
 
         array_map(
@@ -55,8 +60,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             $paymentMethodNames
         );
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeStateStep(
                 $this->getConversation(),
                 SubscribeTelegramBotConversation::STEP_SUBSCRIPTION_PLAN_QUERIED
@@ -167,10 +171,17 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
-            TelegramBotPaymentMethod::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
+            Fixtures::TG_BOT_PAYMENT_METHOD_1,
         ]);
 
         $conversation = $this->createConversation(
@@ -181,8 +192,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
                 ->setStep(SubscribeTelegramBotConversation::STEP_CURRENCY_QUERIED)
         );
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeStateStep($conversation, $shouldSeeStep)
             ->shouldSeeReply(...$shouldSeeReply)
             ->shouldSeeButtons(...$shouldSeeButtons)
@@ -288,10 +298,17 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
     ): void
     {
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
-            TelegramBotPaymentMethod::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
+            Fixtures::TG_BOT_PAYMENT_METHOD_1,
         ]);
 
         $conversation = $this->createConversation(
@@ -303,8 +320,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
                 ->setStep(SubscribeTelegramBotConversation::STEP_SUBSCRIPTION_PLAN_QUERIED)
         );
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeStateStep($conversation, $shouldSeeStep)
             ->shouldSeeReply(...$shouldSeeReply)
             ->shouldSeeButtons(...$shouldSeeButtons)
@@ -366,11 +382,21 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
         ?int $shouldSeeStep
     ): void
     {
+        if ($this->getEntityManager()->getConfig()->isDynamodb()) {
+            $this->markTestSkipped();
+        }
         $this->bootFixtures([
-            User::class,
-            MessengerUser::class,
-            TelegramBot::class,
-            TelegramBotPaymentMethod::class,
+            Fixtures::USER_1,
+            Fixtures::USER_2,
+            Fixtures::USER_3,
+            Fixtures::MESSENGER_USER_1_TELEGRAM,
+            Fixtures::MESSENGER_USER_1_INSTAGRAM,
+            Fixtures::MESSENGER_USER_2_TELEGRAM,
+            Fixtures::MESSENGER_USER_2_INSTAGRAM,
+            Fixtures::MESSENGER_USER_3_TELEGRAM,
+            Fixtures::MESSENGER_USER_3_INSTAGRAM,
+            Fixtures::TG_BOT_1,
+            Fixtures::TG_BOT_PAYMENT_METHOD_1,
         ]);
 
         $conversation = $this->createConversation(
@@ -386,8 +412,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
         $paymentRepository = $this->getTelegramBotPaymentRepository();
         $previousPaymentCount = $paymentRepository->count([]);
 
-        $this
-            ->typeText($input)
+        $this->typeText($input)
             ->shouldSeeStateStep($conversation, $shouldSeeStep)
             ->shouldSeeReply(...$shouldSeeReply)
             ->shouldSeeButtons(...$shouldSeeButtons)

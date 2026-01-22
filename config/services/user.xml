@@ -5,33 +5,54 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="app.user_repository" class="App\Repository\User\UserRepository">
-            <argument type="service" id="doctrine"/>
+        <service id="app.user_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\User\UserDynamodbRepository"/>
+        <service id="app.user_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\User\UserDoctrineRepository"/>
+        <service id="app.user_repository" parent="app.entity_repository" class="App\Repository\User\UserRepository">
+            <argument type="service" id="app.user_doctrine_repository"/>
+            <argument type="service" id="app.user_dynamodb_repository"/>
         </service>
-        <service id="app.user_contact_message_repository" class="App\Repository\User\UserContactMessageRepository">
-            <argument type="service" id="doctrine"/>
+
+        <service id="app.user_contact_message_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\User\UserContactMessageDoctrineRepository"/>
+        <service id="app.user_contact_message_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\User\UserContactMessageDynamodbRepository"/>
+        <service id="app.user_contact_message_repository" parent="app.entity_repository"
+                 class="App\Repository\User\UserContactMessageRepository">
+            <argument type="service" id="app.user_contact_message_doctrine_repository"/>
+            <argument type="service" id="app.user_contact_message_dynamodb_repository"/>
         </service>
+
         <service id="app.user_contact_message_validator"
                  class="App\Validator\User\UserContactMessageTransferValidator" lazy="true">
             <argument type="service" id="app.validator_helper"/>
             <tag name="validator.constraint_validator" alias="app.user_contact_message_validator"/>
         </service>
         <service id="app.user_upserter" class="App\Service\User\UserUpserter" lazy="true">
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.id_generator"/>
+            <argument type="service" id="app.messenger_user_service"/>
         </service>
         <service id="app.user_data_purger" class="App\Service\User\UserDataPurger" lazy="true">
             <argument type="service" id="app.messenger_user_repository"/>
         </service>
         <service id="app.user_contact_message_creator" class="App\Service\User\UserContactMessageCreator">
             <argument type="service" id="app.validator"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
         </service>
         <service id="app.user_contact_message_normalizer" class="App\Serializer\User\UserContactMessageNormalizer"
                  lazy="true">
+            <argument type="service" id="app.user_contact_message_service"/>
             <tag name="serializer.normalizer" priority="-940"/>
+        </service>
+        <service id="app.user_contact_message_service" class="App\Service\User\UserContactMessageService">
+            <argument type="service" id="app.user_contact_message_repository"/>
+            <argument type="service" id="app.user_repository"/>
+            <argument type="service" id="app.messenger_user_repository"/>
+            <argument type="service" id="app.telegram_bot_repository"/>
         </service>
     </services>
 </container>

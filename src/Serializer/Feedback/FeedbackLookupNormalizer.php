@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace App\Serializer\Feedback;
 
 use App\Entity\Feedback\FeedbackLookup;
+use App\Service\Feedback\FeedbackLookupService;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class FeedbackLookupNormalizer implements NormalizerInterface
 {
+    public function __construct(
+        private readonly FeedbackLookupService $feedbackLookupService,
+    )
+    {
+    }
+
     /**
      * @param FeedbackLookup $data
      * @param string|null $format
@@ -18,17 +25,18 @@ class FeedbackLookupNormalizer implements NormalizerInterface
     public function normalize(mixed $data, string $format = null, array $context = []): array
     {
         if ($format === 'activity') {
-            $user = $data->getMessengerUser();
+            $searchTerm = $this->feedbackLookupService->getSearchTerm($data);
+            $telegramBot = $this->feedbackLookupService->getTelegramBot($data);
+            $messengerUser = $this->feedbackLookupService->getMessengerUser($data);
 
             $result = [];
 
-            if (!empty($user->getUsername())) {
-                $result['user'] = sprintf('@%s', $user->getUsername());
+            if (!empty($messengerUser->getUsername())) {
+                $result['user'] = sprintf('@%s', $messengerUser->getUsername());
             }
 
-            $result[$data->getSearchTerm()->getType()->name] = $data->getSearchTerm()->getText();
-
-            $result['bot'] = sprintf('@%s', $data->getTelegramBot()->getUsername());
+            $result[$searchTerm->getType()->name] = $searchTerm->getText();
+            $result['bot'] = sprintf('@%s', $telegramBot->getUsername());
 
             return $result;
         }

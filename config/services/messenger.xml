@@ -5,10 +5,18 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="app.messenger_user_repository" class="App\Repository\Messenger\MessengerUserRepository">
-            <argument type="service" id="doctrine"/>
+        <service id="app.messenger_user_dynamodb_repository" parent="oa.dynamodb.entity_repository"
+                 class="App\Repository\Messenger\MessengerUserDynamodbRepository"/>
+        <service id="app.messenger_user_doctrine_repository" parent="app.doctrine.entity_repository"
+                 class="App\Repository\Messenger\MessengerUserDoctrineRepository"/>
+        <service id="app.messenger_user_repository" parent="app.entity_repository"
+                 class="App\Repository\Messenger\MessengerUserRepository">
+            <argument type="service" id="app.messenger_user_doctrine_repository"/>
+            <argument type="service" id="app.messenger_user_dynamodb_repository"/>
         </service>
-        <service id="app.messenger_user_transfer_normalizer" class="App\Serializer\Messenger\MessengerUserTransferNormalizer">
+
+        <service id="app.messenger_user_transfer_normalizer"
+                 class="App\Serializer\Messenger\MessengerUserTransferNormalizer">
             <tag name="serializer.normalizer" priority="-979"/>
         </service>
         <service id="app.messenger_user_normalizer" class="App\Serializer\Messenger\MessengerUserNormalizer">
@@ -16,11 +24,15 @@
         </service>
         <service id="app.messenger_user_upserter" class="App\Service\Messenger\MessengerUserUpserter" lazy="true">
             <argument type="service" id="app.messenger_user_repository"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="logger"/>
         </service>
         <service id="app.messenger_user_profile_url_provider"
                  class="App\Service\Messenger\MessengerUserProfileUrlProvider" lazy="true"/>
+        <service id="app.messenger_user_service" class="App\Service\Messenger\MessengerUserService" lazy="true">
+            <argument type="service" id="app.user_repository"/>
+        </service>
     </services>
 </container>

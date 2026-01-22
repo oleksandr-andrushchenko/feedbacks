@@ -12,8 +12,10 @@ use App\Enum\Feedback\FeedbackSubscriptionPlanName;
 use App\Message\Event\Feedback\FeedbackUserSubscriptionCreatedEvent;
 use App\Repository\Feedback\FeedbackUserSubscriptionRepository;
 use App\Service\IdGenerator;
+use App\Service\Messenger\MessengerUserService;
+use App\Service\ORM\EntityManager;
+use App\Service\Telegram\TelegramBotPaymentService;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class FeedbackSubscriptionManager
@@ -21,19 +23,22 @@ class FeedbackSubscriptionManager
     public function __construct(
         private readonly FeedbackSubscriptionPlanProvider $feedbackSubscriptionPlanProvider,
         private readonly FeedbackUserSubscriptionRepository $feedbackUserSubscriptionRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
+        private readonly MessengerUserService $messengerUserService,
+        private readonly TelegramBotPaymentService $telegramBotPaymentService,
     )
     {
     }
 
     public function createFeedbackUserSubscriptionByTelegramPayment(TelegramBotPayment $payment): FeedbackUserSubscription
     {
-        $messengerUser = $payment->getMessengerUser();
+        $messengerUser = $this->telegramBotPaymentService->getMessengerUser($payment);
+        $user = $this->messengerUserService->getUser($messengerUser);
 
         return $this->createFeedbackUserSubscription(
-            $messengerUser->getUser(),
+            $user,
             FeedbackSubscriptionPlanName::fromName($payment->getPurpose()),
             $messengerUser,
             $payment
@@ -54,8 +59,8 @@ class FeedbackSubscriptionManager
             $user,
             $subscriptionPlan->getName(),
             (new DateTimeImmutable())->modify($subscriptionPlan->getDatetimeModifier()),
-            messengerUser: $messengerUser,
-            telegramPayment: $telegramPayment
+            $messengerUser,
+            $telegramPayment
         );
         $this->entityManager->persist($subscription);
 
@@ -72,7 +77,7 @@ class FeedbackSubscriptionManager
      */
     public function getSubscriptions(MessengerUser $messengerUser): array
     {
-        $user = $messengerUser->getUser();
+        $user = $this->messengerUserService->getUser($messengerUser);
 
         if ($user === null) {
             return $this->feedbackUserSubscriptionRepository->findByMessengerUser($messengerUser);
@@ -105,15 +110,17 @@ class FeedbackSubscriptionManager
 
     public function hasActiveSubscription(MessengerUser $messengerUser): bool
     {
-        if ($messengerUser->getUser()?->getSubscriptionExpireAt() === null) {
+        $user = $this->messengerUserService->getUser($messengerUser);
+        if ($user?->getSubscriptionExpireAt() === null) {
             return false;
         }
 
-        return new DateTimeImmutable() < $messengerUser->getUser()->getSubscriptionExpireAt();
+        return new DateTimeImmutable() < $user->getSubscriptionExpireAt();
     }
 
     public function hasSubscription(MessengerUser $messengerUser): bool
     {
-        return $messengerUser->getUser()?->getSubscriptionExpireAt() !== null;
+        $user = $this->messengerUserService->getUser($messengerUser);
+        return $user?->getSubscriptionExpireAt() !== null;
     }
 }

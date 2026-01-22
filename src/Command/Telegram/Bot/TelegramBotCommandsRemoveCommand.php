@@ -6,8 +6,8 @@ namespace App\Command\Telegram\Bot;
 
 use App\Exception\Telegram\Bot\TelegramBotNotFoundException;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotCommandsRemover;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,7 @@ class TelegramBotCommandsRemoveCommand extends Command
     public function __construct(
         private readonly TelegramBotRepository $telegramBotRepository,
         private readonly TelegramBotCommandsRemover $telegramBotCommandsRemover,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -30,8 +30,7 @@ class TelegramBotCommandsRemoveCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->setDescription('Remove telegram bot commands')
         ;
     }
@@ -44,7 +43,7 @@ class TelegramBotCommandsRemoveCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $username = $input->getArgument('username');
-        $bot = $this->telegramBotRepository->findOneByUsername($username);
+        $bot = $this->telegramBotRepository->findOneNonDeletedByUsername($username);
 
         if ($bot === null) {
             throw new TelegramBotNotFoundException($username);

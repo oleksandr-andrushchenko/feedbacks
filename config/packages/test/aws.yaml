@@ -1,0 +1,7 @@
+aws:
+  credentials:
+    key: dummy
+    secret: dummy
+
+  DynamoDb:
+    endpoint: "%env(resolve:DYNAMODB_ENDPOINT)%"

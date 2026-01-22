@@ -5,47 +5,16 @@ declare(strict_types=1);
 namespace App\Repository\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotConversation;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<TelegramBotConversation>
- *
- * @method TelegramBotConversation|null find($id, $lockMode = null, $lockVersion = null)
- * @method TelegramBotConversation|null findOneBy(array $criteria, array $orderBy = null)
- * @method TelegramBotConversation[] findAll()
- * @method TelegramBotConversation[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends EntityRepository<TelegramBotConversation>
+ * @method TelegramBotConversationDoctrineRepository getDoctrine()
+ * @property TelegramBotConversationDoctrineRepository $doctrine
+ * @method TelegramBotConversationDynamodbRepository getDynamodb()
+ * @property TelegramBotConversationDynamodbRepository $dynamodb
+ * @method TelegramBotConversation|null findOneNonDeletedByHash(string $hash)
  */
-class TelegramBotConversationRepository extends ServiceEntityRepository
+class TelegramBotConversationRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, TelegramBotConversation::class);
-    }
-
-    public function findOneByHash(string $hash): ?TelegramBotConversation
-    {
-        $records = $this->findByHash($hash);
-
-        if (count($records) === 0) {
-            return null;
-        }
-
-        $return = $records[0];
-
-        foreach ($records as $record) {
-            if ($record->getCreatedAt() > $return) {
-                $return = $record;
-            }
-        }
-
-        return $return;
-    }
-
-    public function findByHash(string $hash): array
-    {
-        return $this->findBy([
-            'hash' => $hash,
-        ]);
-    }
 }

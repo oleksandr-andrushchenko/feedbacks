@@ -14,7 +14,7 @@
                 <option name="unsigned">true</option>
             </options>
         </id>
-        <many-to-one field="bot" target-entity="App\Entity\Telegram\TelegramBot"/>
+        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot"/>
         <field name="name" column="name" type="smallint" enum-type="App\Enum\Telegram\TelegramBotPaymentMethodName">
             <options>
                 <option name="unsigned">true</option>

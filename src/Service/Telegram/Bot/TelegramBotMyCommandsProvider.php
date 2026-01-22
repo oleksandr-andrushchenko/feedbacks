@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot;
 
-use App\Entity\Telegram\TelegramBotCommandHandler;
-use App\Entity\Telegram\TelegramBotHandlerInterface;
-use App\Entity\Telegram\TelegramBotMyCommands;
+use App\Model\Telegram\TelegramBotCommandHandler;
+use App\Model\Telegram\TelegramBotHandlerInterface;
+use App\Model\Telegram\TelegramBotMyCommands;
 use App\Service\Telegram\Bot\Group\TelegramBotGroupRegistry;
 use Longman\TelegramBot\Entities\BotCommandScope\BotCommandScopeChat;
 use Longman\TelegramBot\Entities\BotCommandScope\BotCommandScopeDefault;

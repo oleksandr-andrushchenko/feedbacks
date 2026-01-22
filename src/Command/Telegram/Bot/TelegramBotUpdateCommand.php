@@ -12,10 +12,10 @@ use App\Exception\Telegram\Bot\TelegramBotNotFoundException;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
 use App\Service\Intl\CountryProvider;
 use App\Service\Intl\LocaleProvider;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\TelegramBotInfoProvider;
 use App\Service\Telegram\Bot\TelegramBotUpdater;
 use App\Transfer\Telegram\TelegramBotTransfer;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,7 +28,7 @@ class TelegramBotUpdateCommand extends Command
     public function __construct(
         private readonly TelegramBotRepository $telegramBotRepository,
         private readonly TelegramBotUpdater $telegramBotUpdater,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly TelegramBotInfoProvider $telegramBotInfoProvider,
         private readonly CountryProvider $countryProvider,
         private readonly LocaleProvider $localeProvider,
@@ -42,8 +42,7 @@ class TelegramBotUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group (inner name)')
             ->addOption('name', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Name')
             ->addOption('token', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Token')
@@ -67,7 +66,7 @@ class TelegramBotUpdateCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $username = $input->getArgument('username');
-        $bot = $this->telegramBotRepository->findOneByUsername($username);
+        $bot = $this->telegramBotRepository->findOneNonDeletedByUsername($username);
 
         if ($bot === null) {
             throw new TelegramBotNotFoundException($username);

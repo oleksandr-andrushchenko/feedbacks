@@ -7,9 +7,9 @@ namespace App\Controller;
 use App\Enum\Site\SitePage;
 use App\Exception\Telegram\Bot\TelegramBotNotFoundException;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Site\TelegramSiteViewResponseFactory;
 use App\Service\Telegram\Bot\TelegramBotUpdateHandler;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,7 +20,7 @@ class TelegramController
     public function __construct(
         private readonly TelegramBotRepository $telegramBotRepository,
         private readonly TelegramBotUpdateHandler $telegramBotUpdateHandler,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly TelegramSiteViewResponseFactory $telegramSiteViewResponseFactory,
         private readonly LoggerInterface $logger,
     )
@@ -43,7 +43,7 @@ class TelegramController
     public function webhook(string $username, Request $request): Response
     {
         try {
-            $bot = $this->telegramBotRepository->findAnyOneByUsername($username);
+            $bot = $this->telegramBotRepository->findOneByUsername($username);
 
             if ($bot === null) {
                 throw new TelegramBotNotFoundException($username);

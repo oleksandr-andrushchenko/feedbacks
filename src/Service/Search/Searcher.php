@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Search;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Search\SearchProviderName;
 use App\Service\Search\Provider\SearchProviderInterface;
 use App\Service\Search\Viewer\SearchViewerInterface;
@@ -23,13 +23,13 @@ class Searcher
     }
 
     /**
-     * @param FeedbackSearchTerm $searchTerm
+     * @param SearchTerm $searchTerm
      * @param callable $render
      * @param array $context
      * @param SearchProviderName[]|null $providers
      * @return void
      */
-    public function search(FeedbackSearchTerm $searchTerm, callable $render, array $context = [], array $providers = null): void
+    public function search(SearchTerm $searchTerm, callable $render, array $context = [], array $providers = null): void
     {
         $showLimits = false;
 

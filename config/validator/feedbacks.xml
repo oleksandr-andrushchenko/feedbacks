@@ -7,13 +7,13 @@
     <class name="App\Transfer\Feedback\SearchTermTransfer">
         <constraint name="App\Validator\Feedback\SearchTermTransferConstraint"/>
     </class>
-    <class name="App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState">
+    <class name="App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState">
         <constraint name="App\Validator\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationStateConstraint"/>
     </class>
-    <class name="App\Entity\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState">
+    <class name="App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState">
         <constraint name="App\Validator\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationStateConstraint"/>
     </class>
-    <class name="App\Entity\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState">
+    <class name="App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState">
         <constraint name="App\Validator\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationStateConstraint"/>
     </class>
 </constraint-mapping>

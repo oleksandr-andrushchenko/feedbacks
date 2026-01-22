@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Intl\Ukr;
 
-use App\Entity\PersonName;
+use App\Model\PersonName;
 use App\Service\Util\String\MbUcFirster;
 
 /**

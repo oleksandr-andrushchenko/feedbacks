@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\UkrWantedPerson\UkrWantedPerson;
-use App\Entity\Search\UkrWantedPerson\UkrWantedPersons;
+use App\Entity\Feedback\SearchTerm;
+use App\Model\Search\UkrWantedPerson\UkrWantedPerson;
+use App\Model\Search\UkrWantedPerson\UkrWantedPersons;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -20,7 +20,7 @@ class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements Search
         parent::__construct($searchViewerCompose->withTransDomain('ukr_wanted_persons'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;
@@ -35,7 +35,7 @@ class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements Search
         };
     }
 
-    public function getPersonWrapMessageCallback(FeedbackSearchTerm $searchTerm, bool $full): callable
+    public function getPersonWrapMessageCallback(SearchTerm $searchTerm, bool $full): callable
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();
@@ -122,7 +122,7 @@ class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements Search
         ];
     }
 
-    private function getPersonsMessage(UkrWantedPersons $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonsMessage(UkrWantedPersons $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
 
@@ -136,7 +136,7 @@ class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements Search
         ;
     }
 
-    private function getPersonMessage(UkrWantedPerson $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonMessage(UkrWantedPerson $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
 

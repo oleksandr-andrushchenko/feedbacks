@@ -14,10 +14,10 @@ use App\Repository\Telegram\Channel\TelegramChannelRepository;
 use App\Service\Intl\CountryProvider;
 use App\Service\Intl\Level1RegionProvider;
 use App\Service\Intl\LocaleProvider;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Channel\TelegramChannelInfoProvider;
 use App\Service\Telegram\Channel\TelegramChannelUpdater;
 use App\Transfer\Telegram\TelegramChannelTransfer;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -30,7 +30,7 @@ class TelegramChannelUpdateCommand extends Command
     public function __construct(
         private readonly TelegramChannelRepository $telegramChannelRepository,
         private readonly TelegramChannelUpdater $telegramChannelUpdater,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly TelegramChannelInfoProvider $telegramChannelInfoProvider,
         private readonly CountryProvider $countryProvider,
         private readonly LocaleProvider $localeProvider,
@@ -45,8 +45,7 @@ class TelegramChannelUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group (inner name)')
             ->addOption('name', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Name')
             ->addOption('country', mode: InputOption::VALUE_REQUIRED, description: 'Country code')
@@ -67,7 +66,7 @@ class TelegramChannelUpdateCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $username = $input->getArgument('username');
-        $channel = $this->telegramChannelRepository->findOneByUsername($username);
+        $channel = $this->telegramChannelRepository->findOneNonDeletedByUsername($username);
 
         if ($channel === null) {
             throw new TelegramBotNotFoundException($username);

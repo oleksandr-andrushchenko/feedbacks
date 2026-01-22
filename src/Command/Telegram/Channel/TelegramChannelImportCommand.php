@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command\Telegram\Channel;
 
-use App\Entity\ImportResult;
+use App\Model\ImportResult;
 use App\Service\Doctrine\DryRunner;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Channel\TelegramChannelImporter;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,7 +22,7 @@ class TelegramChannelImportCommand extends Command
         private readonly string $dataDir,
         private readonly TelegramChannelImporter $telegramChannelImporter,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -33,8 +33,9 @@ class TelegramChannelImportCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+        $this->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+            ->addOption('drop-existing', mode: InputOption::VALUE_NONE, description: 'Drop existing channels')
+            ->addOption('undo-remove-for-updated', mode: InputOption::VALUE_NONE, description: 'Undo remove (deleted_at) for updated channels')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Import telegram channels')
         ;
@@ -64,8 +65,11 @@ class TelegramChannelImportCommand extends Command
             }
         }
 
+        $mode = 0;
+        $mode |= $input->getOption('drop-existing') ? TelegramChannelImporter::MODE_DROP_EXISTING : 0;
+        $mode |= $input->getOption('undo-remove-for-updated') ? TelegramChannelImporter::MODE_UNDO_REMOVE_FOR_UPDATED : 0;
         $logger = static fn (string $message) => $io->note($message);
-        $func = fn () => $this->telegramChannelImporter->importTelegramChannels($filename, $logger);
+        $func = fn () => $this->telegramChannelImporter->importTelegramChannels($filename, $mode, $logger);
 
         if ($dryRun) {
             $result = $this->dryRunner->dryRun($func, readUncommitted: true);

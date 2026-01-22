@@ -4,10 +4,6 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <parameters>
-        <parameter key="fidry_alice_data_fixtures.default_purge_mode">no_purge</parameter>
-    </parameters>
-
     <services>
         <service id="app.telegram_bot_message_sender"
                  class="App\Tests\Fake\Service\Telegram\Bot\Api\FakeTelegramBotMessageSender" lazy="true"/>

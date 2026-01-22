@@ -26,7 +26,7 @@ class TelegramBotValidator
     public function validateTelegramBot(TelegramBot $bot): void
     {
         if ($bot->primary()) {
-            $existing = $this->telegramBotRepository->findOnePrimaryByBot($bot);
+            $existing = $this->telegramBotRepository->findOnePrimaryNonDeletedByBot($bot);
 
             if ($existing !== null && $existing->getId() !== $bot->getId()) {
                 throw new LogicException(sprintf('"%s" Primary Telegram bot already has the same settings', $existing->getUsername()));

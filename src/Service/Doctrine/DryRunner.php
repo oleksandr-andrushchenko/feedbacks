@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service\Doctrine;
 
+use App\Service\ORM\EntityManager;
 use Doctrine\DBAL\TransactionIsolationLevel;
-use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
 use Throwable;
 
 class DryRunner
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
     }

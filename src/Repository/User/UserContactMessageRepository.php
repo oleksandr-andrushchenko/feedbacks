@@ -5,21 +5,16 @@ declare(strict_types=1);
 namespace App\Repository\User;
 
 use App\Entity\User\UserContactMessage;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<UserContactMessage>
- *
- * @method UserContactMessage|null find($id, $lockMode = null, $lockVersion = null)
- * @method UserContactMessage|null findOneBy(array $criteria, array $orderBy = null)
- * @method UserContactMessage[]    findAll()
- * @method UserContactMessage[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends EntityRepository<UserContactMessage>
+ * @method UserContactMessageDoctrineRepository getDoctrine()
+ * @property-read  UserContactMessageDoctrineRepository $doctrine
+ * @method UserContactMessageDynamodbRepository getDynamodb()
+ * @property-read  UserContactMessageDynamodbRepository $dynamodb
+ * @method UserContactMessage|null find(string $id)
  */
-class UserContactMessageRepository extends ServiceEntityRepository
+class UserContactMessageRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, UserContactMessage::class);
-    }
 }

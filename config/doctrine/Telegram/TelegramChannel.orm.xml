@@ -5,7 +5,7 @@
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="App\Entity\Telegram\TelegramChannel"
-            repository-class="App\Repository\Telegram\Channel\TelegramChannelRepository" table="telegram_channels">
+            repository-class="App\Repository\Telegram\Channel\TelegramChannelDoctrineRepository" table="telegram_channels">
 
         <id name="id" column="id" type="smallint">
             <generator/>
@@ -24,7 +24,7 @@
         <field name="localeCode" column="locale_code" length="2"/>
         <field name="level1RegionId" column="level_1_region_id" length="32" nullable="true"/>
         <field name="chatId" column="chat_id" type="bigint" nullable="true"/>
-        <field name="primary" column="_primary" type="boolean">
+        <field name="primary" column="_primary" type="boolean" nullable="true">
             <options>
                 <option name="default">1</option>
             </options>

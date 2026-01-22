@@ -7,5 +7,11 @@
     <services>
         <defaults autowire="false" autoconfigure="false"/>
         <prototype namespace="App\" resource="../src/" exclude="../src/{DependencyInjection,Entity,Kernel.php}"/>
+
+        <service id="app.orm.entity_manager" class="App\Service\ORM\EntityManager" lazy="true">
+            <argument type="service" id="app.entity_repository_config"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="oa.dynamodb.entity_manager"/>
+        </service>
     </services>
 </container>

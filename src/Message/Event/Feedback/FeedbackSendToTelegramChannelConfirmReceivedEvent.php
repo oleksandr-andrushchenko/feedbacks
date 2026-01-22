@@ -6,6 +6,9 @@ namespace App\Message\Event\Feedback;
 
 use App\Entity\Feedback\Feedback;
 
+/**
+ * @see FeedbackSendToTelegramChannelConfirmReceivedEventHandler
+ */
 readonly class FeedbackSendToTelegramChannelConfirmReceivedEvent extends FeedbackEvent
 {
     public function __construct(

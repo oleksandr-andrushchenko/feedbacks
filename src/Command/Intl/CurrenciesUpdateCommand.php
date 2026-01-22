@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Command\Intl;
 
 use App\Service\Intl\CurrenciesProviderInterface;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use RuntimeException;
 
 class CurrenciesUpdateCommand extends Command
 {
@@ -28,9 +28,7 @@ class CurrenciesUpdateCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->setDescription('Update latest currencies')
-        ;
+        $this->setDescription('Update latest currencies');
     }
 
     /**

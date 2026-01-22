@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\View;
 
 use App\Entity\Feedback\FeedbackLookup;
+use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
+use App\Service\Feedback\FeedbackLookupService;
 use App\Service\Feedback\SearchTerm\SearchTermProvider;
 use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
 use App\Service\Intl\CountryProvider;
 use App\Service\Intl\TimeProvider;
-use App\Entity\Telegram\TelegramBot;
 use App\Service\Util\String\MbUcFirster;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -24,6 +25,7 @@ class FeedbackLookupTelegramViewProvider
         private readonly TranslatorInterface $translator,
         private readonly FeedbackTelegramReplySignViewProvider $feedbackTelegramReplySignViewProvider,
         private readonly MbUcFirster $mbUcFirster,
+        private readonly FeedbackLookupService $feedbackLookupService,
     )
     {
     }
@@ -56,7 +58,8 @@ class FeedbackLookupTelegramViewProvider
         $message2 = '';
 
         if ($addTime) {
-            $message2 .= $this->timeProvider->formatAsDate($feedbackLookup->getCreatedAt(), timezone: $feedbackLookup->getUser()->getTimezone(), locale: $localeCode);
+            $user = $this->feedbackLookupService->getUser($feedbackLookup);
+            $message2 .= $this->timeProvider->formatAsDate($feedbackLookup->getCreatedAt(), timezone: $user->getTimezone(), locale: $localeCode);
             $message2 .= ', ';
         }
 
@@ -74,8 +77,9 @@ class FeedbackLookupTelegramViewProvider
 
         $message .= $this->translator->trans('searched_for', domain: 'feedbacks.tg.feedback_lookup', locale: $localeCode);
         $message .= ' ';
+        $searchTerm = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
         $message .= $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
-            $this->searchTermProvider->getFeedbackSearchTermTransfer($feedbackLookup->getSearchTerm()),
+            $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
             addSecrets: $addSecrets,
             localeCode: $localeCode
         );

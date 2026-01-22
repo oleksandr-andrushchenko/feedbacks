@@ -5,30 +5,69 @@ declare(strict_types=1);
 namespace App\Entity\Telegram;
 
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
-class TelegramBotPaymentMethod
+#[Entity(
+    new PartitionKey('TELEGRAM_BOT_PAYMENT_METHOD', ['id']),
+    new SortKey('META'),
+    [
+        new GlobalIndex(
+            'TELEGRAM_BOT_PAYMENT_METHODS_BY_TELEGRAM_BOT',
+            new PartitionKey(null, ['telegramBotId'], 'telegram_bot_payment_method_telegram_bot_id_pk')
+        ),
+    ],
+)]
+class TelegramBotPaymentMethod implements Stringable
 {
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
-        private readonly TelegramBot $bot,
+        #[Attribute('telegram_bot_payment_method_id')]
+        private string $id,
+        private readonly ?TelegramBot $telegramBot = null,
+        #[Attribute]
         private readonly TelegramBotPaymentMethodName $name,
+        #[Attribute]
         private readonly string $token,
+        #[Attribute('currency_codes')]
         private readonly array $currencyCodes,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        private ?DateTimeInterface $deletedAt = null,
-        private ?int $id = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
     )
     {
+        $this->telegramBotId ??= $this->telegramBot?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): ?int
+    public function getId(): string
     {
         return $this->id;
     }
 
-    public function getBot(): TelegramBot
+    public function setTelegramBotId(?string $telegramBotId): self
     {
-        return $this->bot;
+        $this->telegramBotId = $telegramBotId;
+        return $this;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
+    }
+
+    public function getTelegramBot(): TelegramBot
+    {
+        return $this->telegramBot;
     }
 
     public function getName(): TelegramBotPaymentMethodName
@@ -68,5 +107,10 @@ class TelegramBotPaymentMethod
         $this->deletedAt = $deletedAt;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

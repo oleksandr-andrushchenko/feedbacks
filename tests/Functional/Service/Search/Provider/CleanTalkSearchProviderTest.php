@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\CleanTalk\CleanTalkEmail;
-use App\Entity\Search\CleanTalk\CleanTalkEmails;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\CleanTalk\CleanTalkEmail;
+use App\Model\Search\CleanTalk\CleanTalkEmails;
 use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Generator;
 use DateTimeImmutable;
+use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class CleanTalkSearchProviderTest extends KernelTestCase
 {
@@ -48,9 +48,9 @@ class CleanTalkSearchProviderTest extends KernelTestCase
                         address: 'alex.snowgirlqweqweqw1eqwe@gmail.com',
                         href: 'https://cleantalk.org/blacklists/alex.snowgirlqweqweqw1eqwe@gmail.com',
                         attackedSites: 0,
-                        blacklisted: false,
+                        blacklisted: true,
                         real: false,
-                        disposable: false,
+                        disposable: true,
                         lastUpdate: (new DateTimeImmutable())->setTime(0, 0)
                     ),
                 ]),
@@ -67,9 +67,9 @@ class CleanTalkSearchProviderTest extends KernelTestCase
                         address: 'lisiy17@ukr.net',
                         href: 'https://cleantalk.org/blacklists/lisiy17@ukr.net',
                         attackedSites: 0,
-                        blacklisted: false,
-                        real: true,
-                        disposable: false,
+                        blacklisted: true,
+                        real: false,
+                        disposable: true,
                         lastUpdate: (new DateTimeImmutable())->setTime(0, 0)
                     ),
                 ]),

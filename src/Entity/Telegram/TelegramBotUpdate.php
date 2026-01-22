@@ -4,17 +4,38 @@ declare(strict_types=1);
 
 namespace App\Entity\Telegram;
 
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
-class TelegramBotUpdate
+#[Entity(
+    new PartitionKey('TELEGRAM_BOT_UPDATE', ['id']),
+    new SortKey('META'),
+)]
+class TelegramBotUpdate implements Stringable
 {
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+    #[Attribute('expire_at')]
+    private ?DateTimeInterface $expireAt = null;
+
     public function __construct(
-        private readonly string $id,
+        #[Attribute('telegram_bot_update_id')]
+        private string $id,
+        #[Attribute]
         private readonly array $data,
-        private readonly TelegramBot $bot,
-        private ?DateTimeInterface $createdAt = null,
+        private readonly TelegramBot $telegramBot,
     )
     {
+        $this->telegramBotId = $this->telegramBot->getId();
+        $this->expireAt ??= (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): string
@@ -27,9 +48,9 @@ class TelegramBotUpdate
         return $this->data;
     }
 
-    public function getBot(): TelegramBot
+    public function getTelegramBot(): TelegramBot
     {
-        return $this->bot;
+        return $this->telegramBot;
     }
 
     public function getCreatedAt(): ?DateTimeInterface
@@ -42,5 +63,20 @@ class TelegramBotUpdate
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getTelegramBotId(): string
+    {
+        return $this->telegramBotId;
+    }
+
+    public function getExpireAt(): DateTimeInterface
+    {
+        return $this->expireAt;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

@@ -7,24 +7,63 @@ namespace App\Entity\Messenger;
 use App\Entity\User\User;
 use App\Enum\Messenger\Messenger;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
 
+#[Entity(
+    new PartitionKey('MESSENGER_USER', ['id']),
+    new SortKey('META'),
+    [
+        new GlobalIndex(
+            'MESSENGER_USERS_BY_MESSENGER_IDENTIFIER',
+            new PartitionKey(null, ['messenger', 'identifier'], 'messenger_user_messenger_identifier_pk')
+        ),
+        new GlobalIndex(
+            'MESSENGER_USERS_BY_MESSENGER_USERNAME',
+            new PartitionKey(null, ['messenger', 'username'], 'messenger_user_messenger_username_pk')
+        ),
+        new GlobalIndex(
+            'MESSENGER_USERS_BY_USER',
+            new PartitionKey(null, ['userId'], 'messenger_user_user_pk')
+        ),
+    ]
+)]
 class MessengerUser implements Stringable
 {
+    /** @var array<string>|null */
+    #[Attribute('telegram_bot_ids')]
+    private ?array $telegramBotIds = null;
+    #[Attribute('username_history')]
+    private ?array $usernameHistory = null;
+    #[Attribute('user_id')]
+    private ?string $userId = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+
     public function __construct(
+        #[Attribute('messenger_user_id')]
         private string $id,
+        #[Attribute]
         private readonly Messenger $messenger,
+        #[Attribute]
         private readonly string $identifier,
+        #[Attribute]
         private ?string $username = null,
+        #[Attribute]
         private ?string $name = null,
         private ?User $user = null,
-        private bool $showExtendedKeyboard = false,
-        private ?array $botIds = null,
-        private ?array $usernameHistory = null,
-        private ?DateTimeInterface $createdAt = null,
-        private ?DateTimeInterface $updatedAt = null,
+        #[Attribute('show_extended_keyboard')]
+        private ?bool $showExtendedKeyboard = null,
     )
     {
+        $this->userId = $this->user?->getId();
+        $this->showExtendedKeyboard = $this->showExtendedKeyboard === true ? true : null;
     }
 
     public function getId(): string
@@ -42,6 +81,17 @@ class MessengerUser implements Stringable
         return $this->messenger;
     }
 
+    public function setUserId(?string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
@@ -50,6 +100,7 @@ class MessengerUser implements Stringable
     public function setUser(?User $user): self
     {
         $this->user = $user;
+        $this->userId = $user?->getId();
 
         return $this;
     }
@@ -78,14 +129,14 @@ class MessengerUser implements Stringable
         return $this;
     }
 
-    public function showExtendedKeyboard(): bool
+    public function showExtendedKeyboard(): ?bool
     {
         return $this->showExtendedKeyboard;
     }
 
-    public function setShowExtendedKeyboard(bool $showExtendedKeyboard): self
+    public function setShowExtendedKeyboard(?bool $showExtendedKeyboard): self
     {
-        $this->showExtendedKeyboard = $showExtendedKeyboard;
+        $this->showExtendedKeyboard = $showExtendedKeyboard === true ? true : null;
 
         return $this;
     }
@@ -93,30 +144,33 @@ class MessengerUser implements Stringable
     /**
      * @return int[]|null
      */
-    public function getBotIds(): ?array
+    public function getTelegramBotIds(): ?array
     {
-        return $this->botIds === null ? null : array_map('intval', $this->botIds);
+        return $this->telegramBotIds === null ? null : array_map('intval', $this->telegramBotIds);
     }
 
-    public function addBotId(int $botId): self
+    public function addTelegramBotId(string $botId): self
     {
-        if ($this->botIds === null) {
-            $this->botIds = [];
+        if ($this->telegramBotIds === null) {
+            $this->telegramBotIds = [];
         }
 
-        $this->botIds[] = $botId;
-        $this->botIds = array_filter(array_unique($this->botIds));
+        $this->telegramBotIds[] = $botId;
+        $this->telegramBotIds = array_filter(array_unique($this->telegramBotIds));
 
         return $this;
     }
 
-    public function removeBotId(int $botId): self
+    public function removeTelegramBotId(int|string $botId): self
     {
-        if ($this->botIds === null) {
+        if ($this->telegramBotIds === null) {
             return $this;
         }
 
-        $this->botIds = array_unique(array_diff($this->botIds, [$botId]));
+        $this->telegramBotIds = array_unique(array_diff($this->telegramBotIds, [$botId]));
+        if (count($this->telegramBotIds) === 0) {
+            $this->telegramBotIds = null;
+        }
 
         return $this;
     }

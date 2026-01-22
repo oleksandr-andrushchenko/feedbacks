@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Controller;
 
-use App\Entity\Telegram\TelegramBot;
 use App\Enum\Site\SitePage;
 use App\Tests\DatabaseTestCase;
 use App\Tests\Fixtures;
@@ -30,10 +29,10 @@ class TelegramControllerTest extends DatabaseTestCase
     public function testPage(SitePage $page): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
-        $bot = $this->getTelegramBotRepository()->findOneByUsername(Fixtures::BOT_USERNAME_1);
+        $bot = $this->getTelegramBotRepository()->findOneNonDeletedByUsername(Fixtures::BOT_USERNAME_1);
 
         $client = $this->getWebClient();
 
@@ -67,7 +66,7 @@ class TelegramControllerTest extends DatabaseTestCase
     public function testWebhook(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $client = $this->getWebClient();
@@ -89,7 +88,7 @@ class TelegramControllerTest extends DatabaseTestCase
     public function testWebhookFailure(): void
     {
         $this->bootFixtures([
-            TelegramBot::class,
+            Fixtures::TG_BOT_1,
         ]);
 
         $client = $this->getWebClient();

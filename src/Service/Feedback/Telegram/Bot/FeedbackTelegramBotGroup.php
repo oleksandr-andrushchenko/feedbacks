@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot;
 
-use App\Entity\Feedback\Command\FeedbackCommandOptions;
-use App\Entity\Telegram\TelegramBotErrorHandler;
-use App\Entity\Telegram\TelegramBotFallbackHandler;
-use App\Entity\Telegram\TelegramBotCommandHandler;
-use App\Entity\Telegram\TelegramBotMyChatMemberHandler;
 use App\Entity\Telegram\TelegramBotPayment;
 use App\Message\Event\ActivityEvent;
+use App\Model\Feedback\Command\FeedbackCommandOptions;
+use App\Model\Telegram\TelegramBotCommandHandler;
+use App\Model\Telegram\TelegramBotErrorHandler;
+use App\Model\Telegram\TelegramBotFallbackHandler;
+use App\Model\Telegram\TelegramBotMyChatMemberHandler;
 use App\Service\ContactOptionsFactory;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionManager;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
@@ -146,7 +146,7 @@ class FeedbackTelegramBotGroup extends TelegramBotGroup implements TelegramBotGr
         $newChatMemberStatus = $tg->getBot()->getUpdate()->getMyChatMember()?->getNewChatMember()?->getStatus();
 
         if ($newChatMemberStatus === 'kicked') {
-            $messengerUser->removeBotId($tg->getBot()->getEntity()->getId());
+            $messengerUser->removeTelegramBotId($tg->getBot()->getEntity()->getId());
             $tg->stopCurrentConversation();
 
             $this->eventBus->dispatch(new ActivityEvent(entity: $messengerUser, action: 'left a bot'));

@@ -90,12 +90,23 @@ class TelegramBotMatchesProviderTest extends TestCase
         $repository = $this->createMock(TelegramBotRepository::class);
         $repository
             ->expects($this->once())
-            ->method('findPrimaryByGroup')
+            ->method('findPrimaryNonDeletedByGroup')
             ->willReturn($bots)
         ;
         $provider = new TelegramBotMatchesProvider($repository);
-        $actualBots = $provider->getTelegramBotMatches($user, new TelegramBot('', TelegramBotGroupName::default, '', '', 'ca', 'en'));
-        $actualBotIds = array_map(static fn (TelegramBot $bot): int => $bot->getId(), $actualBots);
+        $actualBots = $provider->getTelegramBotMatches(
+            $user,
+            new TelegramBot(
+                id: '',
+                username: '',
+                group: TelegramBotGroupName::default,
+                name: '',
+                token: '',
+                countryCode: 'ca',
+                localeCode: 'en'
+            )
+        );
+        $actualBotIds = array_map(static fn (TelegramBot $bot): int|string => $bot->getId(), $actualBots);
 
         $this->assertEquals($expectedBotIds, $actualBotIds);
     }
@@ -207,11 +218,11 @@ class TelegramBotMatchesProviderTest extends TestCase
     private function makeBot(
         string $countryCode = '',
         string $localeCode = '',
-        int $id = null
+        int|string $id = null
     ): TelegramBot
     {
         return $this->createConfiguredMock(TelegramBot::class, [
-            'getId' => $id,
+            'getId' => $id ?? 'dummy' . mt_rand(0, 9999),
             'getCountryCode' => $countryCode,
             'getLocaleCode' => $localeCode,
         ]);

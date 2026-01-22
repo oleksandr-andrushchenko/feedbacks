@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer;
 
-use App\Entity\Money;
+use App\Model\Money;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class MoneyNormalizer implements NormalizerInterface
@@ -25,7 +25,7 @@ class MoneyNormalizer implements NormalizerInterface
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof Money;
+        return $data instanceof Money && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

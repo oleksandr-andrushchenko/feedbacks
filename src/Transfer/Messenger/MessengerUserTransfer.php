@@ -17,7 +17,7 @@ readonly class MessengerUserTransfer
         private ?string $localeCode = null,
         private ?string $currencyCode = null,
         private ?string $timezone = null,
-        private ?int $botId = null,
+        private ?string $telegramBotId = null,
     )
     {
     }
@@ -62,8 +62,8 @@ readonly class MessengerUserTransfer
         return $this->timezone;
     }
 
-    public function getBotId(): ?int
+    public function getTelegramBotId(): ?string
     {
-        return $this->botId;
+        return $this->telegramBotId;
     }
 }

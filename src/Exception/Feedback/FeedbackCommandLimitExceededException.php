@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exception\Feedback;
 
-use App\Entity\Feedback\Command\FeedbackCommandLimit;
 use App\Exception\Exception;
+use App\Model\Feedback\Command\FeedbackCommandLimit;
 use Throwable;
 
 class FeedbackCommandLimitExceededException extends Exception

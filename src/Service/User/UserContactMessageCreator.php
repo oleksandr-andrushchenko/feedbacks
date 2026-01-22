@@ -8,16 +8,16 @@ use App\Entity\User\UserContactMessage;
 use App\Exception\ValidatorException;
 use App\Message\Event\ActivityEvent;
 use App\Service\IdGenerator;
+use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
 use App\Transfer\User\UserContactMessageTransfer;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class UserContactMessageCreator
 {
     public function __construct(
         private readonly Validator $validator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
     )

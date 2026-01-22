@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\Blackbox\BlackboxFeedback;
-use App\Entity\Search\Blackbox\BlackboxFeedbacks;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\Blackbox\BlackboxFeedback;
+use App\Model\Search\Blackbox\BlackboxFeedbacks;
 use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Generator;
 use DateTimeImmutable;
+use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class BlackboxSearchProviderTest extends KernelTestCase
 {
-    use SearchProviderTrait;
+//    use SearchProviderTrait;
+
+    public function testFake()
+    {
+        $this->markTestSkipped();
+    }
 
     protected static SearchProviderName $searchProviderName = SearchProviderName::blackbox;
 

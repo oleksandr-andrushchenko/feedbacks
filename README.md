@@ -44,6 +44,13 @@
 * GRANT ALL PRIVILEGES ON app_test.* TO 'app'@'%';
 
 # TODO
+* investigate telegram_updates table
+* remove payments/limits
+* simplify conversations: input everything at once (use AI)
+* simplify output: one single response message
+* use param store runtime retrieval
+
+
 * queues
 * generate badge (picture) with username/rating to post in messengers
 * "list my feedbacks" command

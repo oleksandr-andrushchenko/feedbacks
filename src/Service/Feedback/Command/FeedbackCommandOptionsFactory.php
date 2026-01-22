@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Command;
 
-use App\Entity\Feedback\Command\FeedbackCommandLimit;
-use App\Entity\Feedback\Command\FeedbackCommandOptions;
+use App\Model\Feedback\Command\FeedbackCommandLimit;
+use App\Model\Feedback\Command\FeedbackCommandOptions;
 
 class FeedbackCommandOptionsFactory
 {

@@ -4,26 +4,29 @@ declare(strict_types=1);
 
 namespace App\Message\CommandHandler\Feedback;
 
-use App\Entity\Feedback\FeedbackNotification;
 use App\Entity\Feedback\FeedbackUserSubscription;
 use App\Entity\Messenger\MessengerUser;
 use App\Enum\Feedback\FeedbackNotificationType;
 use App\Enum\Telegram\TelegramBotGroupName;
+use App\Factory\Feedback\FeedbackNotificationFactory;
 use App\Message\Command\Feedback\NotifyFeedbackUserSubscriptionOwnerCommand;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Feedback\FeedbackUserSubscriptionRepository;
 use App\Repository\Messenger\MessengerUserRepository;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionPlanProvider;
-use App\Service\IdGenerator;
 use App\Service\Intl\TimeProvider;
+use App\Service\Messenger\MessengerUserService;
 use App\Service\Modifier;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\TelegramBotProvider;
-use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
+/**
+ * @see NotifyFeedbackUserSubscriptionOwnerCommandHandler
+ */
 class NotifyFeedbackUserSubscriptionOwnerCommandHandler
 {
     public function __construct(
@@ -32,13 +35,14 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
         private readonly TelegramBotProvider $telegramBotProvider,
         private readonly TranslatorInterface $translator,
         private readonly TelegramBotMessageSenderInterface $telegramBotMessageSender,
-        private readonly IdGenerator $idGenerator,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly FeedbackNotificationFactory $feedbackNotificationFactory,
+        private readonly EntityManager $entityManager,
         private readonly MessageBusInterface $eventBus,
         private readonly TimeProvider $timeProvider,
         private readonly FeedbackSubscriptionPlanProvider $feedbackSubscriptionPlanProvider,
         private readonly MessengerUserRepository $messengerUserRepository,
         private readonly Modifier $modifier,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
     }
@@ -67,7 +71,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
 
     private function notify(MessengerUser $messengerUser, FeedbackUserSubscription $subscription): void
     {
-        $botIds = $messengerUser->getBotIds();
+        $botIds = $messengerUser->getTelegramBotIds();
 
         if ($botIds === null) {
             return;
@@ -83,8 +87,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
                 keepKeyboard: true
             );
 
-            $notification = new FeedbackNotification(
-                $this->idGenerator->generateId(),
+            $notification = $this->feedbackNotificationFactory->createFeedbackNotification(
                 FeedbackNotificationType::feedback_user_subscription_owner,
                 $messengerUser,
                 feedbackUserSubscription: $subscription,
@@ -98,7 +101,7 @@ class NotifyFeedbackUserSubscriptionOwnerCommandHandler
 
     private function getNotifyMessage(MessengerUser $messengerUser, FeedbackUserSubscription $subscription): string
     {
-        $user = $messengerUser->getUser();
+        $user = $this->messengerUserService->getUser($messengerUser);
         $locale = $user->getLocaleCode();
 
         $plan = $this->feedbackSubscriptionPlanProvider->getSubscriptionPlanName(

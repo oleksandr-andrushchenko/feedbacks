@@ -23,13 +23,13 @@ class TelegramBotMatchesProvider
      */
     public function getTelegramBotMatches(User $user, TelegramBot $bot): array
     {
-        $bots = $this->telegramBotRepository->findPrimaryByGroup($bot->getGroup());
+        $bots = $this->telegramBotRepository->findPrimaryNonDeletedByGroup($bot->getGroup());
 
         if (count($bots) === 0) {
             return [];
         }
 
-        $bots = array_combine(array_map(static fn (TelegramBot $bot): int => $bot->getId(), $bots), $bots);
+        $bots = array_combine(array_map(static fn (TelegramBot $bot): int|string => $bot->getId(), $bots), $bots);
 
         $points = [];
 

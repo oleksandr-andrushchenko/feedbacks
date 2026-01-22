@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot;
 
-use App\Entity\Telegram\TelegramBotHandlerInterface;
-use App\Entity\Telegram\TelegramBotErrorHandler;
-use App\Entity\Telegram\TelegramBotFallbackHandler;
+use App\Model\Telegram\TelegramBotErrorHandler;
+use App\Model\Telegram\TelegramBotFallbackHandler;
+use App\Model\Telegram\TelegramBotHandlerInterface;
 use Longman\TelegramBot\Entities\Update;
 
 class TelegramBotHandlerFinder

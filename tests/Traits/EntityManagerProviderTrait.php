@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Traits;
 
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ORM\EntityManager;
 
 trait EntityManagerProviderTrait
 {
-    public function getEntityManager(): EntityManagerInterface
+    public function getEntityManager(): EntityManager
     {
-        return static::getContainer()->get('doctrine.orm.entity_manager');
+        return static::getContainer()->get('app.orm.entity_manager');
     }
 }

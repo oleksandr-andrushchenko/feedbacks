@@ -6,34 +6,84 @@ namespace App\Entity\Telegram;
 
 use App\Enum\Telegram\TelegramBotGroupName;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
-class TelegramBot
+#[Entity(
+    new PartitionKey('TELEGRAM_BOT', ['id']),
+    new SortKey('META'),
+    [
+        new GlobalIndex(
+            'TELEGRAM_BOTS_BY_USERNAME',
+            new PartitionKey(null, ['username'], 'telegram_bot_username_pk')
+        ),
+        new GlobalIndex(
+            'TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE',
+            new PartitionKey('TELEGRAM_BOT', [], 'telegram_bot_pk'),
+            new SortKey(null, ['group', 'countryCode', 'localeCode'], 'telegram_bot_group_country_locale_sk'),
+        ),
+    ]
+)]
+class TelegramBot implements Stringable
 {
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
+        #[Attribute('telegram_bot_id')]
+        private string $id,
+        #[Attribute]
         private readonly string $username,
+        #[Attribute]
         private TelegramBotGroupName $group,
+        #[Attribute]
         private string $name,
+        #[Attribute]
         private string $token,
+        #[Attribute('country_code')]
         private string $countryCode,
+        #[Attribute('locale_code')]
         private string $localeCode,
-        private bool $checkUpdates = false,
-        private bool $checkRequests = false,
-        private bool $acceptPayments = false,
-        private array $adminIds = [],
-        private bool $adminOnly = true,
-        private bool $descriptionsSynced = false,
-        private bool $webhookSynced = false,
-        private bool $commandsSynced = false,
-        private bool $primary = true,
+        #[Attribute('check_updates')]
+        private ?bool $checkUpdates = null,
+        #[Attribute('check_requests')]
+        private ?bool $checkRequests = null,
+        #[Attribute('accept_payments')]
+        private ?bool $acceptPayments = null,
+        #[Attribute('admin_ids')]
+        private ?array $adminIds = null,
+        #[Attribute('admin_only')]
+        private ?bool $adminOnly = null,
+        #[Attribute]
+        private ?bool $primary = null,
+        #[Attribute('descriptions_synced')]
+        private ?bool $descriptionsSynced = null,
+        #[Attribute('webhook_synced')]
+        private ?bool $webhookSynced = null,
+        #[Attribute('commands_synced')]
+        private ?bool $commandsSynced = null,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        private ?DateTimeInterface $updatedAt = null,
-        private ?DateTimeInterface $deletedAt = null,
-        private ?int $id = null,
     )
     {
+        $this->checkUpdates = $this->checkUpdates === true ? true : null;
+        $this->checkRequests = $this->checkRequests === true ? true : null;
+        $this->acceptPayments = $this->acceptPayments === true ? true : null;
+        $this->adminIds = empty($this->adminIds) ? null : $this->adminIds;
+        $this->adminOnly = $this->adminOnly === true ? true : null;
+        $this->primary = $this->primary === true ? true : null;
+        $this->descriptionsSynced = $this->descriptionsSynced === true ? true : null;
+        $this->webhookSynced = $this->webhookSynced === true ? true : null;
+        $this->commandsSynced = $this->commandsSynced === true ? true : null;
     }
 
-    public function getId(): ?int
+    public function getId(): int|string
     {
         return $this->id;
     }
@@ -103,36 +153,36 @@ class TelegramBot
         return $this;
     }
 
-    public function checkUpdates(): bool
+    public function checkUpdates(): ?bool
     {
         return $this->checkUpdates;
     }
 
-    public function setCheckUpdates(bool $checkUpdates): self
+    public function setCheckUpdates(?bool $checkUpdates): self
     {
         $this->checkUpdates = $checkUpdates;
 
         return $this;
     }
 
-    public function checkRequests(): bool
+    public function checkRequests(): ?bool
     {
         return $this->checkRequests;
     }
 
-    public function setCheckRequests(bool $checkRequests): self
+    public function setCheckRequests(?bool $checkRequests): self
     {
         $this->checkRequests = $checkRequests;
 
         return $this;
     }
 
-    public function acceptPayments(): bool
+    public function acceptPayments(): ?bool
     {
         return $this->acceptPayments;
     }
 
-    public function setAcceptPayments(bool $acceptPayments): self
+    public function setAcceptPayments(?bool $acceptPayments): self
     {
         $this->acceptPayments = $acceptPayments;
 
@@ -141,68 +191,64 @@ class TelegramBot
 
     public function getAdminIds(): array
     {
-        return array_map(static fn ($adminId): int => (int) $adminId, $this->adminIds);
+        return array_map(static fn ($adminId): int => (int) $adminId, $this->adminIds ?? []);
     }
 
     public function setAdminIds(array $adminIds): self
     {
+        $this->adminIds = [];
         foreach ($adminIds as $adminId) {
-            $this->addAdminId($adminId);
+            $this->adminIds[] = (int) $adminId;
         }
 
-        return $this;
-    }
-
-    public function addAdminId(string|int $adminId): self
-    {
-        $this->adminIds[] = (int) $adminId;
         $this->adminIds = array_filter(array_unique($this->adminIds));
+        $this->adminIds = empty($this->adminIds) ? null : $this->adminIds;
 
         return $this;
     }
 
-    public function adminOnly(): bool
+    public function adminOnly(): ?bool
     {
         return $this->adminOnly;
     }
 
-    public function setAdminOnly(bool $adminOnly): self
+    public function setAdminOnly(?bool $adminOnly): self
     {
         $this->adminOnly = $adminOnly;
 
         return $this;
     }
 
-    public function descriptionsSynced(): bool
+    public function descriptionsSynced(): ?bool
     {
         return $this->descriptionsSynced;
     }
 
-    public function setDescriptionsSynced(bool $descriptionsSynced): self
+    public function setDescriptionsSynced(?bool $descriptionsSynced): self
     {
         $this->descriptionsSynced = $descriptionsSynced;
 
         return $this;
     }
 
-    public function webhookSynced(): bool
+    public function webhookSynced(): ?bool
     {
         return $this->webhookSynced;
     }
 
-    public function setWebhookSynced(bool $webhookSynced): self
+    public function setWebhookSynced(?bool $webhookSynced): self
     {
         $this->webhookSynced = $webhookSynced;
 
         return $this;
     }
 
-    public function commandsSynced(): bool
+    public function commandsSynced(): ?bool
     {
         return $this->commandsSynced;
     }
 
-    public function setCommandsSynced(bool $commandsSynced): self
+    public function setCommandsSynced(?bool $commandsSynced): self
     {
         $this->commandsSynced = $commandsSynced;
 
@@ -211,13 +257,12 @@ class TelegramBot
 
     public function primary(): bool
     {
-        return $this->primary;
+        return $this->primary === true;
     }
 
-    public function setPrimary(bool $primary): self
+    public function setPrimary(?bool $primary): self
     {
-        $this->primary = $primary;
-
+        $this->primary = $primary === true ? true : null;
         return $this;
     }
 
@@ -255,5 +300,10 @@ class TelegramBot
         $this->deletedAt = $deletedAt;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

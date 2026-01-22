@@ -5,21 +5,17 @@ declare(strict_types=1);
 namespace App\Repository\User;
 
 use App\Entity\User\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Repository\EntityRepository;
 
 /**
- * @extends ServiceEntityRepository<User>
- *
- * @method User|null find($id, $lockMode = null, $lockVersion = null)
- * @method User|null findOneBy(array $criteria, array $orderBy = null)
- * @method User[]    findAll()
- * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @extends EntityRepository<User>
+ * @method UserDoctrineRepository getDoctrine()
+ * @property UserDoctrineRepository $doctrine
+ * @method UserDynamodbRepository getDynamodb()
+ * @property UserDynamodbRepository $dynamodb
+ * @method User|null find(string $id)
+ * @method array<User> findByIds(array<string> $ids)
  */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends EntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
-        parent::__construct($registry, User::class);
-    }
 }

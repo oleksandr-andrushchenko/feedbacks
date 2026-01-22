@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\Command\FeedbackCommandLimit;
-use App\Entity\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Entity\Telegram\TelegramChannel;
 use App\Enum\Feedback\Rating;
@@ -14,6 +12,8 @@ use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\Feedback\FeedbackOnOneselfException;
 use App\Exception\ValidatorException;
 use App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent;
+use App\Model\Feedback\Command\FeedbackCommandLimit;
+use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackCreator;
 use App\Service\Feedback\Rating\FeedbackRatingProvider;
@@ -33,6 +33,7 @@ use App\Transfer\Feedback\FeedbackTransfer;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use Longman\TelegramBot\Entities\KeyboardButton;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
@@ -41,13 +42,13 @@ use Symfony\Component\Messenger\MessageBusInterface;
  */
 class CreateFeedbackTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_SEARCH_TERM_QUERIED = 10;
-    public const STEP_SEARCH_TERM_TYPE_QUERIED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
-    public const STEP_RATING_QUERIED = 40;
-    public const STEP_DESCRIPTION_QUERIED = 50;
-    public const STEP_CONFIRM_QUERIED = 60;
-    public const STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED = 70;
+    public const int STEP_SEARCH_TERM_QUERIED = 10;
+    public const int STEP_SEARCH_TERM_TYPE_QUERIED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
+    public const int STEP_RATING_QUERIED = 40;
+    public const int STEP_DESCRIPTION_QUERIED = 50;
+    public const int STEP_CONFIRM_QUERIED = 60;
+    public const int STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED = 70;
 
     public function __construct(
         private readonly Validator $validator,
@@ -810,7 +811,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
     {
         $query = $this->getStep(5);
         $channels = $this->telegramChannelMatchesProvider->getTelegramChannelMatches(
-            $tg->getBot()->getMessengerUser()->getUser(),
+            $tg->getBot()->getUser(),
             $tg->getBot()->getEntity()
         );
         $channelNamesView = implode(
@@ -897,7 +898,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $tg->stopConversation($entity);
 
             if (!empty($this->state->getDescription())) {
-                $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent($this->state->getCreatedId(), addTime: true));
+                $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent(feedback: $feedback, addTime: true));
             }
 
             return $this->chooseActionTelegramChatSender->sendActions($tg);
@@ -995,7 +996,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
         $this->chooseActionTelegramChatSender->sendActions($tg, $message, appendDefault: true);
 
-        $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent($this->state->getCreatedId(), addTime: true, notifyUser: true));
+        $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent(feedbackId: $this->state->getCreatedId(), addTime: true, notifyUser: true));
 
         return null;
     }

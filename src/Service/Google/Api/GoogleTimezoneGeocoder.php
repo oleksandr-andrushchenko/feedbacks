@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Google\Api;
 
-use App\Entity\Location;
 use App\Exception\TimezoneGeocodeFailedException;
+use App\Model\Location;
 use App\Service\TimezoneGeocoderInterface;
 
 class GoogleTimezoneGeocoder implements TimezoneGeocoderInterface

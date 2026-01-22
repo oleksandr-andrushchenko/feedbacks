@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command\Telegram\Bot;
 
-use App\Entity\ImportResult;
+use App\Model\ImportResult;
 use App\Service\Doctrine\DryRunner;
+use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\TelegramBotImporter;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,16 +16,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-/**
- * @see TelegramBotImportCommand
- */
 class TelegramBotImportCommand extends Command
 {
     public function __construct(
         private readonly string $dataDir,
         private readonly TelegramBotImporter $telegramBotImporter,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -36,8 +33,11 @@ class TelegramBotImportCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+        $this->addArgument('file', InputArgument::REQUIRED, 'Base Filename name to import')
+            ->addOption('drop-existing', mode: InputOption::VALUE_NONE, description: 'Drop existing bots')
+            ->addOption('sync-descriptions', mode: InputOption::VALUE_NONE, description: 'Sync bots descriptions (with telegram)')
+            ->addOption('sync-webhooks', mode: InputOption::VALUE_NONE, description: 'Sync bots webhooks (with telegram)')
+            ->addOption('undo-remove-for-updated', mode: InputOption::VALUE_NONE, description: 'Undo remove (deleted_at) for updated bots')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Import telegram bots')
         ;
@@ -67,8 +67,13 @@ class TelegramBotImportCommand extends Command
             }
         }
 
+        $mode = 0;
+        $mode |= $input->getOption('drop-existing') ? TelegramBotImporter::MODE_DROP_EXISTING : 0;
+        $mode |= $input->getOption('sync-descriptions') ? TelegramBotImporter::MODE_SYNC_DESCRIPTIONS : 0;
+        $mode |= $input->getOption('sync-webhooks') ? TelegramBotImporter::MODE_SYNC_WEBHOOKS : 0;
+        $mode |= $input->getOption('undo-remove-for-updated') ? TelegramBotImporter::MODE_UNDO_REMOVE_FOR_UPDATED : 0;
         $logger = static fn (string $message) => $io->note($message);
-        $func = fn () => $this->telegramBotImporter->importTelegramBots($filename, $logger);
+        $func = fn () => $this->telegramBotImporter->importTelegramBots($filename, $mode, $logger);
 
         if ($dryRun) {
             $result = $this->dryRunner->dryRun($func, readUncommitted: true);
@@ -80,9 +85,10 @@ class TelegramBotImportCommand extends Command
 
         $io->success(
             sprintf(
-                'Telegram bots have been imported, created: %d, updated: %d, deleted: %d, restored: %d, unchanged: %d, skipped: %d, failed: %d',
+                'Telegram bots have been imported, created: %d, updated: %d, webhook synced: %d, deleted: %d, restored: %d, unchanged: %d, skipped: %d, failed: %d',
                 $result->getCreatedCount(),
                 $result->getUpdatedCount(),
+                $result->getWebhookSyncedCount(),
                 $result->getDeletedCount(),
                 $result->getRestoredCount(),
                 $result->getUnchangedCount(),

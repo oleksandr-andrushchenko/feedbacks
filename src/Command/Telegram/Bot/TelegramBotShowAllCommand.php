@@ -29,8 +29,7 @@ class TelegramBotShowAllCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group name')
+        $this->addOption('group', mode: InputOption::VALUE_REQUIRED, description: 'Telegram Group name')
             ->addOption('full', mode: InputOption::VALUE_NONE, description: 'Whether to show all information')
             ->setDescription('Show all telegram bots info')
         ;

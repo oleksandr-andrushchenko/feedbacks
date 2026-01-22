@@ -36,7 +36,7 @@ class FeedbackTelegramReplySignViewProvider
         $message .= sprintf('<a href="%s">%s</a>', $botLink, $text('create'));
 
         if ($channel === null) {
-            $channel = $this->telegramChannelRepository->findOnePrimaryByBot($bot);
+            $channel = $this->telegramChannelRepository->findOnePrimaryNonDeletedByBot($bot);
         }
 
         if ($channel !== null) {

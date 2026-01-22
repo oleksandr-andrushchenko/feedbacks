@@ -6,16 +6,17 @@ namespace App\Service\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotUpdate;
 use App\Repository\Telegram\Bot\TelegramBotUpdateRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
 
 class TelegramBotUpdateChecker
 {
     public function __construct(
         private readonly TelegramBotUpdateRepository $telegramBotUpdateRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly LoggerInterface $logger,
-        private readonly bool $saveOnly = false,
+        private readonly bool $checkDuplicates = false,
+        private readonly bool $saveRequests = false,
     )
     {
     }
@@ -30,11 +31,11 @@ class TelegramBotUpdateChecker
             return false;
         }
 
-        if (!$this->saveOnly) {
-            $update = $this->telegramBotUpdateRepository->find($bot->getUpdate()?->getUpdateId());
+        if ($this->checkDuplicates) {
+            $update = $this->telegramBotUpdateRepository->findOneByUpdateId($bot->getUpdate()?->getUpdateId());
 
             if ($update !== null) {
-                $this->logger->debug('Duplicate telegram update received, processing aborted', [
+                $this->logger->warning('Duplicate telegram update received, processing aborted', [
                     'name' => $bot->getEntity()->getGroup()->name,
                     'update_id' => $update->getId(),
                 ]);
@@ -43,12 +44,14 @@ class TelegramBotUpdateChecker
             }
         }
 
-        $update = new TelegramBotUpdate(
-            (string) $bot->getUpdate()->getUpdateId(),
-            $bot->getUpdate()->getRawData(),
-            $bot->getEntity()
-        );
-        $this->entityManager->persist($update);
+        if ($this->saveRequests) {
+            $update = new TelegramBotUpdate(
+                (string) $bot->getUpdate()->getUpdateId(),
+                $bot->getUpdate()->getRawData(),
+                $bot->getEntity(),
+            );
+            $this->entityManager->persist($update);
+        }
 
         return false;
     }

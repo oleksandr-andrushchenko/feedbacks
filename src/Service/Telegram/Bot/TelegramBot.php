@@ -6,7 +6,9 @@ namespace App\Service\Telegram\Bot;
 
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot as TelegramBotEntity;
+use App\Entity\User\User;
 use App\Exception\Telegram\Bot\TelegramBotException;
+use App\Service\Messenger\MessengerUserService;
 use Longman\TelegramBot\Entities\ServerResponse;
 use Longman\TelegramBot\Entities\Update;
 use Longman\TelegramBot\Exception\InvalidBotTokenException;
@@ -51,6 +53,7 @@ class TelegramBot
         private readonly TelegramBotClientRegistry $telegramBotClientRegistry,
         private readonly TelegramBotRequestChecker $telegramBotRequestChecker,
         private readonly LoggerInterface $logger,
+        private readonly MessengerUserService $messengerUserService,
     )
     {
         $this->update = null;
@@ -79,6 +82,11 @@ class TelegramBot
         return $this->messengerUser;
     }
 
+    public function getUser(): ?User
+    {
+        return $this->messengerUserService->getUser($this->messengerUser);
+    }
+
     public function setMessengerUser(?MessengerUser $messengerUser): static
     {
         $this->messengerUser = $messengerUser;
@@ -105,6 +113,10 @@ class TelegramBot
     public function __call(string $name, array $arguments): mixed
     {
         $request = $this->telegramBotRequestChecker->checkTelegramRequest($this, $name, $arguments[0] ?? null);
+        $this->logger->debug(__METHOD__, [
+            'name' => $name,
+            'arguments' => $arguments,
+        ]);
         $response = $this->request($name, $arguments);
 
         if ($response instanceof ServerResponse) {

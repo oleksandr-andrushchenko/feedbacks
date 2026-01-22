@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Serializer\Telegram\Bot;
 
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -25,7 +25,7 @@ class TelegramBotConversationStateNormalizer implements NormalizerInterface, Den
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof TelegramBotConversationState;
+        return $data instanceof TelegramBotConversationState && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): TelegramBotConversationState
@@ -42,7 +42,9 @@ class TelegramBotConversationStateNormalizer implements NormalizerInterface, Den
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && ($type === TelegramBotConversationState::class || get_parent_class($type) === TelegramBotConversationState::class);
+        return is_array($data)
+            && ($type === TelegramBotConversationState::class || get_parent_class($type) === TelegramBotConversationState::class)
+            && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

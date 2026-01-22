@@ -1,0 +1,39 @@
+{
+  "name": "edumarques/dynamophp-symfony",
+  "description": "Symfony bundle that wraps DynamoPHP and simplifies development on Symfony applications.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Eduardo Marques",
+      "email": "eduardomarqs1@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.3",
+    "edumarques/dynamophp": "^0.5",
+    "symfony/config": "^7.2",
+    "symfony/dependency-injection": "^7.2",
+    "symfony/http-kernel": "^7.2"
+  },
+  "require-dev": {
+    "slevomat/coding-standard": "^8.18",
+    "squizlabs/php_codesniffer": "^3.12",
+    "symfony/var-dumper": "^7.2",
+    "phpstan/phpstan": "^2.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "EduardoMarques\\DynamoPHPBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "EduardoMarques\\DynamoPHPBundle\\Tests\\": "tests/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}

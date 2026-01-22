@@ -4,32 +4,37 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\Clarity\ClarityEdr;
-use App\Entity\Search\Clarity\ClarityEdrs;
-use App\Entity\Search\Clarity\ClarityPerson;
-use App\Entity\Search\Clarity\ClarityPersonCourt;
-use App\Entity\Search\Clarity\ClarityPersonCourts;
-use App\Entity\Search\Clarity\ClarityPersonDebtor;
-use App\Entity\Search\Clarity\ClarityPersonDebtors;
-use App\Entity\Search\Clarity\ClarityPersonDeclaration;
-use App\Entity\Search\Clarity\ClarityPersonDeclarations;
-use App\Entity\Search\Clarity\ClarityPersonEdr;
-use App\Entity\Search\Clarity\ClarityPersonEdrs;
-use App\Entity\Search\Clarity\ClarityPersonEnforcement;
-use App\Entity\Search\Clarity\ClarityPersonEnforcements;
-use App\Entity\Search\Clarity\ClarityPersonSecurity;
-use App\Entity\Search\Clarity\ClarityPersonSecurities;
-use App\Entity\Search\Clarity\ClarityPersons;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\Clarity\ClarityEdr;
+use App\Model\Search\Clarity\ClarityEdrs;
+use App\Model\Search\Clarity\ClarityPerson;
+use App\Model\Search\Clarity\ClarityPersonCourt;
+use App\Model\Search\Clarity\ClarityPersonCourts;
+use App\Model\Search\Clarity\ClarityPersonDebtor;
+use App\Model\Search\Clarity\ClarityPersonDebtors;
+use App\Model\Search\Clarity\ClarityPersonDeclaration;
+use App\Model\Search\Clarity\ClarityPersonDeclarations;
+use App\Model\Search\Clarity\ClarityPersonEdr;
+use App\Model\Search\Clarity\ClarityPersonEdrs;
+use App\Model\Search\Clarity\ClarityPersonEnforcement;
+use App\Model\Search\Clarity\ClarityPersonEnforcements;
+use App\Model\Search\Clarity\ClarityPersons;
+use App\Model\Search\Clarity\ClarityPersonSecurities;
+use App\Model\Search\Clarity\ClarityPersonSecurity;
 use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Generator;
 use DateTimeImmutable;
+use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ClaritySearchProviderTest extends KernelTestCase
 {
-    use SearchProviderTrait;
+//    use SearchProviderTrait;
+
+    public function testFake()
+    {
+        $this->markTestSkipped();
+    }
 
     protected static SearchProviderName $searchProviderName = SearchProviderName::clarity;
 

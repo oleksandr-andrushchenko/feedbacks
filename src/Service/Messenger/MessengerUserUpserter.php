@@ -8,28 +8,33 @@ use App\Entity\Messenger\MessengerUser;
 use App\Message\Event\ActivityEvent;
 use App\Repository\Messenger\MessengerUserRepository;
 use App\Service\IdGenerator;
+use App\Service\ORM\EntityManager;
 use App\Transfer\Messenger\MessengerUserTransfer;
-use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class MessengerUserUpserter
 {
     public function __construct(
         private readonly MessengerUserRepository $messengerUserRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
         private readonly MessageBusInterface $eventBus,
+        private readonly ?LoggerInterface $logger = null,
     )
     {
     }
 
-    public function upsertMessengerUser(MessengerUserTransfer $transfer, bool $withUser = false): MessengerUser
+    public function upsertMessengerUser(MessengerUserTransfer $transfer): MessengerUser
     {
         $messengerUser = $this->messengerUserRepository->findOneByMessengerAndIdentifier(
             $transfer->getMessenger(),
             $transfer->getId(),
-            withUser: $withUser,
         );
+
+        $this->logger?->debug(__METHOD__, [
+            'messengerUser' => $messengerUser,
+        ]);
 
         $created = false;
 
@@ -40,6 +45,9 @@ class MessengerUserUpserter
                 $transfer->getMessenger(),
                 $transfer->getId()
             );
+            $this->logger?->debug(__METHOD__, [
+                'messengerUser' => $messengerUser,
+            ]);
             $this->entityManager->persist($messengerUser);
         }
 
@@ -49,9 +57,13 @@ class MessengerUserUpserter
         if (empty($messengerUser->getName()) && !empty($transfer->getName())) {
             $messengerUser->setName($transfer->getName());
         }
-        if (!empty($transfer->getBotId())) {
-            $messengerUser->addBotId($transfer->getBotId());
+        if (!empty($transfer->getTelegramBotId())) {
+            $messengerUser->addTelegramBotId($transfer->getTelegramBotId());
         }
+
+        $this->logger?->debug(__METHOD__, [
+            'messengerUser' => $messengerUser,
+        ]);
 
         if ($created) {
             $this->eventBus->dispatch(new ActivityEvent(entity: $messengerUser, action: 'created'));

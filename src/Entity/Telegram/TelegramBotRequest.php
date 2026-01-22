@@ -4,24 +4,47 @@ declare(strict_types=1);
 
 namespace App\Entity\Telegram;
 
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
-class TelegramBotRequest
+#[Entity(
+    new PartitionKey('TELEGRAM_BOT_REQUEST', ['id']),
+    new SortKey('META'),
+)]
+class TelegramBotRequest implements Stringable
 {
+    #[Attribute]
+    private ?array $response = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('telegram_bot_id')]
+    private ?string $telegramBotId = null;
+    #[Attribute('expire_at')]
+    private ?DateTimeInterface $expireAt = null;
+
     public function __construct(
+        #[Attribute('telegram_bot_request_id')]
+        private string $id,
+        #[Attribute]
         private readonly string $method,
+        #[Attribute('chat_id')]
         private readonly null|int|string $chatId,
-        private readonly ?int $inlineMessageId,
+        #[Attribute]
         private readonly array $data,
-        private readonly TelegramBot $bot,
-        private ?array $response = null,
-        private ?DateTimeInterface $createdAt = null,
-        private ?string $id = null,
+        private readonly TelegramBot $telegramBot,
     )
     {
+        $this->telegramBotId = $this->telegramBot->getId();
+        $this->expireAt ??= (new DateTimeImmutable())->setTimestamp(time() + 24 * 60 * 60);
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): ?string
+    public function getId(): string
     {
         return $this->id;
     }
@@ -36,19 +59,14 @@ class TelegramBotRequest
         return $this->chatId;
     }
 
-    public function getInlineMessageId(): int
-    {
-        return $this->inlineMessageId;
-    }
-
     public function getData(): array
     {
         return $this->data;
     }
 
-    public function getBot(): TelegramBot
+    public function getTelegramBot(): TelegramBot
     {
-        return $this->bot;
+        return $this->telegramBot;
     }
 
     public function getResponse(): array
@@ -73,5 +91,20 @@ class TelegramBotRequest
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
+    }
+
+    public function getExpireAt(): DateTimeInterface
+    {
+        return $this->expireAt;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

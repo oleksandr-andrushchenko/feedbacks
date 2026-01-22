@@ -5,7 +5,7 @@
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
     <entity name="App\Entity\Telegram\TelegramBotUpdate"
-            repository-class="App\Repository\Telegram\Bot\TelegramBotUpdateRepository" table="telegram_updates">
+            repository-class="App\Repository\Telegram\Bot\TelegramBotUpdateDoctrineRepository" table="telegram_updates">
 
         <id name="id" type="bigint">
             <options>
@@ -14,7 +14,9 @@
         </id>
         <field name="data" column="data" type="json"/>
 
-        <many-to-one field="bot" target-entity="App\Entity\Telegram\TelegramBot"/>
+        <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot">
+            <join-column name="bot_id" referenced-column-name="id" nullable="false"/>
+        </many-to-one>
 
         <field name="createdAt" column="created_at" type="datetime_immutable"/>
     </entity>

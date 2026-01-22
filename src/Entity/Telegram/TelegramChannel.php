@@ -5,28 +5,65 @@ declare(strict_types=1);
 namespace App\Entity\Telegram;
 
 use App\Enum\Telegram\TelegramBotGroupName;
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
-class TelegramChannel
+#[Entity(
+    new PartitionKey('TELEGRAM_CHANNEL', ['id']),
+    new SortKey('META'),
+    [
+        new GlobalIndex(
+            'TELEGRAM_CHANNELS_BY_USERNAME',
+            new PartitionKey(null, ['username'], 'telegram_channel_username_pk')
+        ),
+        new GlobalIndex(
+            'TELEGRAM_CHANNELS_BY_GROUP_COUNTRY_LOCALE',
+            new PartitionKey('TELEGRAM_CHANNEL', [], 'telegram_channel_pk'),
+            new SortKey(null, ['group', 'countryCode', 'localeCode'], 'telegram_channel_group_country_locale_sk'),
+        ),
+    ]
+)]
+class TelegramChannel implements Stringable
 {
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
+        #[Attribute('telegram_channel_id')]
+        private string $id,
+        #[Attribute]
         private readonly string $username,
+        #[Attribute]
         private TelegramBotGroupName $group,
+        #[Attribute]
         private string $name,
+        #[Attribute('country_code')]
         private string $countryCode,
+        #[Attribute('locale_code')]
         private string $localeCode,
+        #[Attribute('level_1_region_id')]
         private ?string $level1RegionId = null,
+        #[Attribute('chat_id')]
         private ?string $chatId = null,
-        private bool $primary = true,
+        #[Attribute]
+        private ?bool $primary = null,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        private ?DateTimeInterface $updatedAt = null,
-        private ?DateTimeInterface $deletedAt = null,
-        private ?int $id = null,
     )
     {
+        $this->primary = $this->primary === true ? true : null;
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): ?int
+    public function getId(): string|int
     {
         return $this->id;
     }
@@ -108,12 +145,12 @@ class TelegramChannel
         return $this;
     }
 
-    public function primary(): bool
+    public function primary(): ?bool
     {
         return $this->primary;
     }
 
-    public function setPrimary(bool $primary): self
+    public function setPrimary(?bool $primary): self
     {
         $this->primary = $primary;
 
@@ -154,5 +191,10 @@ class TelegramChannel
         $this->deletedAt = $deletedAt;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return $this->id;
     }
 }

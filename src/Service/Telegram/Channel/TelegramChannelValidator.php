@@ -25,7 +25,7 @@ class TelegramChannelValidator
     public function validateTelegramChannel(TelegramChannel $channel): void
     {
         if ($channel->primary()) {
-            $existing = $this->repository->findOnePrimaryByChannel($channel);
+            $existing = $this->repository->findOnePrimaryNonDeletedByChannel($channel);
 
             if ($existing !== null && $existing->getId() !== $channel->getId()) {
                 throw new LogicException(sprintf('"%s" Primary Telegram channel already has the same settings', $existing->getUsername()));

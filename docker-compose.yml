@@ -1,22 +1,35 @@
 services:
   be-function:
-    container_name: "${DOCKER_NAME}-be-function"
     build:
       context: .
       target: php
     ports:
-      - "${BE_FUNCTION_PORT}:8000"
+      - ${BE_FUNCTION_PORT}:8000
     volumes:
       - .:/var/task
+    env_file:
+      - .env
     environment:
       HANDLER: public/index.php
-      DATABASE_URL: "mysql://app:1111@${DOCKER_NAME}-rdbms:3306/app?serverVersion=8&charset=utf8mb4"
+      DOCUMENT_ROOT: public
+      APP_STAGE: local
+      APP_ENV: dev
+      APP_DEBUG: 1
+      APP_SECRET: dummy
+      AWS_PROFILE: ""
+      DB_URL: mysql://app:1111@mysql:3306/app?serverVersion=8&charset=utf8mb4
+      DYNAMODB_TABLE: app
+      TELEGRAM_ADMIN_ID: 0
+      TELEGRAM_ACTIVITIES_TOKEN: 0:dummy
+      TELEGRAM_ERRORS_TOKEN: 0:dummy
+      GOOGLE_API_KEY: dummy
+      CRYPTO: '{"btc":"btc-address","eth":"eth-address"}'
+      SITE_BASE_URL: http://localhost:${BE_FUNCTION_PORT}
+      DYNAMODB_ENDPOINT: http://dynamodb:8000
 
-  ###> doctrine/doctrine-bundle ###
-  rdbms:
-    container_name: "${DOCKER_NAME}-rdbms"
+  mysql:
     ports:
-      - "${RDBMS_PORT}:3306"
+      - ${MYSQL_PORT}:3306
     image: mysql:8
     environment:
       MYSQL_DATABASE: app
@@ -27,9 +40,16 @@ services:
       MYSQL_VERSION: 8
     volumes:
       - mysql-data:/var/lib/mysql:rw
-###< doctrine/doctrine-bundle ###
+
+  dynamodb:
+    image: amazon/dynamodb-local
+    ports:
+      - ${DYNAMODB_PORT}:8000
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
+    user: root
 
 volumes:
-  ###> doctrine/doctrine-bundle ###
   mysql-data:
-###< doctrine/doctrine-bundle ###
+  dynamodb-data:

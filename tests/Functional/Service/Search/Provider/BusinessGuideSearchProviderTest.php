@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Search\Provider;
 
-use App\Entity\Search\BusinessGuide\BusinessGuideEnterprise;
-use App\Entity\Search\BusinessGuide\BusinessGuideEnterprises;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\BusinessGuide\BusinessGuideEnterprise;
+use App\Model\Search\BusinessGuide\BusinessGuideEnterprises;
 use App\Tests\Traits\Search\SearchProviderTrait;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Generator;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class BusinessGuideSearchProviderTest extends KernelTestCase
 {

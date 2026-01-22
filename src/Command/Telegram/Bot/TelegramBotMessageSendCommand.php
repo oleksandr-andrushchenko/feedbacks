@@ -28,8 +28,7 @@ class TelegramBotMessageSendCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
+        $this->addArgument('username', InputArgument::REQUIRED, 'Telegram Username')
             ->addArgument('chat', InputArgument::REQUIRED, 'Target telegram chat id')
             ->addArgument('text', InputArgument::REQUIRED, 'Message to send')
             ->setDescription('Send message to chat from Telegram bot')
@@ -44,7 +43,7 @@ class TelegramBotMessageSendCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $username = $input->getArgument('username');
-        $bot = $this->telegramBotRepository->findOneByUsername($username);
+        $bot = $this->telegramBotRepository->findOneNonDeletedByUsername($username);
 
         if ($bot === null) {
             throw new TelegramBotNotFoundException($username);

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\FeedbackSubscriptionPlan;
-use App\Entity\Feedback\Telegram\Bot\SubscribeTelegramBotConversationState;
-use App\Entity\Intl\Currency;
-use App\Entity\Money;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Exception\Telegram\Bot\Payment\TelegramBotInvalidCurrencyBotException;
 use App\Exception\ValidatorException;
+use App\Model\Feedback\Telegram\Bot\SubscribeTelegramBotConversationState;
+use App\Model\Feedback\Telegram\FeedbackSubscriptionPlan;
+use App\Model\Intl\Currency;
+use App\Model\Money;
 use App\Repository\Telegram\Bot\TelegramBotPaymentMethodRepository;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionPlanProvider;
@@ -33,11 +33,11 @@ use Psr\Log\LoggerInterface;
  */
 class SubscribeTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CURRENCY_QUERIED = 10;
-    public const STEP_SUBSCRIPTION_PLAN_QUERIED = 20;
-    public const STEP_PAYMENT_METHOD_QUERIED = 30;
-    public const STEP_PAYMENT_QUERIED = 40;
-    public const STEP_CANCEL_PRESSED = 50;
+    public const int STEP_CURRENCY_QUERIED = 10;
+    public const int STEP_SUBSCRIPTION_PLAN_QUERIED = 20;
+    public const int STEP_PAYMENT_METHOD_QUERIED = 30;
+    public const int STEP_PAYMENT_QUERIED = 40;
+    public const int STEP_CANCEL_PRESSED = 50;
 
     public function __construct(
         private readonly Validator $validator,
@@ -145,7 +145,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation implement
 
         try {
             $this->validator->validate($this->state);
-            $tg->getBot()->getMessengerUser()?->getUser()->setCurrencyCode($currency->getCode());
+            $tg->getBot()->getUser()->setCurrencyCode($currency->getCode());
         } catch (ValidatorException $exception) {
             $tg->replyWarning($tg->queryText($exception->getFirstMessage()));
 
@@ -347,7 +347,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation implement
     {
         $commandNames = array_map(static fn ($command): string => $tg->command($command), ['create', 'search', 'lookup']);
         $bot = $tg->getBot()->getEntity();
-        $bots = $this->telegramBotRepository->findByGroupAndCountry($bot->getGroup(), $bot->getCountryCode());
+        $bots = $this->telegramBotRepository->findNonDeletedByGroupAndCountry($bot->getGroup(), $bot->getCountryCode());
         $botNames = array_map(static fn (TelegramBot $bot): string => '@' . $bot->getUsername(), $bots);
 
         return [
@@ -432,7 +432,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation implement
         $usdPrice = $subscriptionPlan->getPrice($tg->getCountryCode());
 
         if ($this->state->getCurrency() === null) {
-            $currencyCode = $tg->getBot()->getMessengerUser()?->getUser()?->getCurrencyCode() ?? 'USD';
+            $currencyCode = $tg->getBot()->getUser()?->getCurrencyCode() ?? 'USD';
             $currency = $this->currencyProvider->getCurrency($currencyCode);
         } else {
             $currency = $this->state->getCurrency();

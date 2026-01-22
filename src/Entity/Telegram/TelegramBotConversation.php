@@ -4,27 +4,51 @@ declare(strict_types=1);
 
 namespace App\Entity\Telegram;
 
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
+use Stringable;
 
-class TelegramBotConversation
+#[Entity(
+    new PartitionKey('TELEGRAM_BOT_CONVERSATION', ['hash']),
+    new SortKey('META', ['createdAt'])),
+]
+class TelegramBotConversation implements Stringable
 {
+    private ?string $id = null;
+    #[Attribute('expire_at')]
+    private ?DateTimeInterface $expireAt = null;
+    #[Attribute('created_at')]
+    private ?DateTimeInterface $createdAt = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+    #[Attribute('deleted_at')]
+    private ?DateTimeInterface $deletedAt = null;
+
     public function __construct(
+        #[Attribute]
         private readonly string $hash,
+        #[Attribute('messenger_user_id')]
         private readonly string $messengerUserId,
+        #[Attribute('chat_id')]
         private readonly string $chatId,
-        private readonly int $botId,
+        #[Attribute('telegram_bot_id')]
+        private string $telegramBotId,
+        #[Attribute]
         private readonly string $class,
-        private ?array $state = null,
-        private ?DateTimeInterface $createdAt = null,
-        private ?DateTimeInterface $updatedAt = null,
-        private ?int $id = null,
+        #[Attribute]
+        private ?array $state
     )
     {
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
-    public function getId(): ?int
+    public function getId(): string
     {
-        return $this->id;
+        return $this->getHash();
     }
 
     public function getHash(): string
@@ -42,9 +66,15 @@ class TelegramBotConversation
         return $this->chatId;
     }
 
-    public function getBotId(): int
+    public function setTelegramBotId(?string $telegramBotId): self
     {
-        return $this->botId;
+        $this->telegramBotId = $telegramBotId;
+        return $this;
+    }
+
+    public function getTelegramBotId(): string
+    {
+        return $this->telegramBotId;
     }
 
     public function getClass(): string
@@ -86,5 +116,32 @@ class TelegramBotConversation
         $this->updatedAt = $updatedAt;
 
         return $this;
+    }
+
+    public function setExpireAt(?DateTimeInterface $expireAt): self
+    {
+        $this->expireAt = $expireAt;
+        return $this;
+    }
+
+    public function getExpireAt(): ?DateTimeInterface
+    {
+        return $this->expireAt;
+    }
+
+    public function setDeletedAt(?DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
+        return $this;
+    }
+
+    public function getDeletedAt(): ?DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function __toString(): string
+    {
+        return $this->hash;
     }
 }

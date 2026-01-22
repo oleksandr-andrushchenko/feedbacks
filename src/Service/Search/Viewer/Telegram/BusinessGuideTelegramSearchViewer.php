@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\BusinessGuide\BusinessGuideEnterprise;
-use App\Entity\Search\BusinessGuide\BusinessGuideEnterprises;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
+use App\Model\Search\BusinessGuide\BusinessGuideEnterprise;
+use App\Model\Search\BusinessGuide\BusinessGuideEnterprises;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -20,7 +20,7 @@ class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchVi
         parent::__construct($searchViewerCompose->withTransDomain('business_guide'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;
@@ -35,7 +35,7 @@ class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchVi
         };
     }
 
-    public function getEnterpriseWrapMessageCallback(FeedbackSearchTerm $searchTerm, bool $full): callable
+    public function getEnterpriseWrapMessageCallback(SearchTerm $searchTerm, bool $full): callable
     {
         $m = $this->modifier;
 
@@ -97,7 +97,7 @@ class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchVi
         ];
     }
 
-    private function getEnterprisesMessage(BusinessGuideEnterprises $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getEnterprisesMessage(BusinessGuideEnterprises $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
 
@@ -111,7 +111,7 @@ class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchVi
         ;
     }
 
-    private function getEnterpriseMessage(BusinessGuideEnterprise $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getEnterpriseMessage(BusinessGuideEnterprise $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
 

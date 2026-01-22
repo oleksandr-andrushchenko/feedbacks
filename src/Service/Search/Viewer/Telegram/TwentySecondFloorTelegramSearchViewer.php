@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorBlogger;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorBloggers;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorFeedback;
-use App\Entity\Search\TwentySecondFloor\TwentySecondFloorFeedbacks;
+use App\Entity\Feedback\SearchTerm;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorBlogger;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorBloggers;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorFeedback;
+use App\Model\Search\TwentySecondFloor\TwentySecondFloorFeedbacks;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class TwentySecondFloorTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -25,7 +25,7 @@ class TwentySecondFloorTelegramSearchViewer extends SearchViewer implements Sear
         parent::__construct($searchViewerCompose->withTransDomain('22nd_floor'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;

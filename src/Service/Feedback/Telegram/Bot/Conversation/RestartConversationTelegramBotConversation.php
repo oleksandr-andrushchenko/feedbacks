@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Telegram\TelegramBotConversation as Entity;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\Bot\Chat\StartTelegramCommandHandler;
 use App\Service\Intl\CountryProvider;
@@ -16,8 +16,8 @@ use App\Service\Telegram\Bot\TelegramBotLocaleSwitcher;
 
 class RestartConversationTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_CONFIRM_QUERIED = 10;
-    public const STEP_CANCEL_PRESSED = 20;
+    public const int STEP_CONFIRM_QUERIED = 10;
+    public const int STEP_CANCEL_PRESSED = 20;
 
     public function __construct(
         private readonly ChooseActionTelegramChatSender $chooseActionTelegramChatSender,
@@ -106,7 +106,8 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
 
         $tg->getBot()->getMessengerUser()
             ?->setShowExtendedKeyboard(false)
-            ?->getUser()
+        ;
+        $tg->getBot()->getUser()
             ?->setCountryCode($country->getCode())
             ?->setLocaleCode($tg->getBot()->getEntity()->getLocaleCode())
             ?->setCurrencyCode($country->getCurrencyCode())

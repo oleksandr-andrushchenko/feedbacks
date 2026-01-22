@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\Service\Search\Viewer\Telegram;
 
 use App\Entity\Feedback\FeedbackSearch;
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
+use App\Service\Feedback\FeedbackSearchService;
 use App\Service\Feedback\SearchTerm\SearchTermProvider;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackTelegramReplySignViewProvider;
 use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -25,12 +26,13 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
         private readonly SearchTermProvider $searchTermProvider,
         private readonly SearchTermTelegramViewProvider $searchTermTelegramViewProvider,
         private readonly FeedbackTelegramReplySignViewProvider $feedbackTelegramReplySignViewProvider,
+        private readonly FeedbackSearchService $feedbackSearchService,
     )
     {
         parent::__construct($searchViewerCompose->withTransDomain('search'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         $full = $context['full'] ?? false;
         $this->showLimits = !$full;
@@ -93,29 +95,32 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
         string $locale = null
     ): callable
     {
-        $m = $this->modifier;
+        return function (FeedbackSearch $item) use ($full, $addCountry, $addTime, $locale): array {
+            $m = $this->modifier;
+            $searchTerm = $this->feedbackSearchService->getSearchTerm($item);
 
-        return fn (FeedbackSearch $item): array => [
-            $m->create()
-                ->add($m->bracketsModifier($this->trans('search_term', locale: $locale)))
-                ->apply(
-                    $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
-                        $this->searchTermProvider->getFeedbackSearchTermTransfer($item->getSearchTerm()),
-                        addSecrets: !$full,
-                        localeCode: $locale
-                    )
-                ),
-            $m->create()
-                ->add($m->conditionalModifier($addCountry))
-                ->add($m->slashesModifier())
-                ->add($m->countryModifier(locale: $locale))
-                ->add($m->bracketsModifier($this->trans('country', locale: $locale)))
-                ->apply($item->getCountryCode()),
-            $m->create()
-                ->add($m->conditionalModifier($addTime))
-                ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $item->getUser()->getTimezone(), locale: $locale))
-                ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
-                ->apply($item->getCreatedAt()),
-        ];
+            return [
+                $m->create()
+                    ->add($m->bracketsModifier($this->trans('search_term', locale: $locale)))
+                    ->apply(
+                        $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
+                            $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
+                            addSecrets: !$full,
+                            localeCode: $locale
+                        )
+                    ),
+                $m->create()
+                    ->add($m->conditionalModifier($addCountry))
+                    ->add($m->slashesModifier())
+                    ->add($m->countryModifier(locale: $locale))
+                    ->add($m->bracketsModifier($this->trans('country', locale: $locale)))
+                    ->apply($item->getCountryCode()),
+                $m->create()
+                    ->add($m->conditionalModifier($addTime))
+                    ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $item->getUser()->getTimezone(), locale: $locale))
+                    ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
+                    ->apply($item->getCreatedAt()),
+            ];
+        };
     }
 }

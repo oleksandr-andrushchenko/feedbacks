@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Traits\Search;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
 use App\Service\Search\Provider\SearchProviderInterface;
@@ -26,7 +26,7 @@ trait SearchProviderTrait
     public function testSupports(SearchTermType $type, string $term, array $context, bool $expected): void
     {
         $provider = $this->getSearchProvider(self::$searchProviderName);
-        $searchTerm = new FeedbackSearchTerm($term, $term, $type);
+        $searchTerm = new SearchTerm('fake', $term, $term, $type);
 
         $actual = $provider->supports($searchTerm, $context);
 
@@ -47,7 +47,7 @@ trait SearchProviderTrait
         $this->skipSearchTest(__CLASS__);
 
         $provider = $this->getSearchProvider(self::$searchProviderName);
-        $searchTerm = new FeedbackSearchTerm($term, $term, $type);
+        $searchTerm = new SearchTerm('fake', $term, $term, $type);
 
         $actual = $provider->search($searchTerm, $context);
 

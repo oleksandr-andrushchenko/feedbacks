@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="app.dynamodb_schema_extract_command"
+                 class="App\Command\Dynamodb\DynamodbSchemaExtractCommand" lazy="true">
+            <tag name="console.command" command="dynamodb:schema:extract"/>
+        </service>
+        <service id="app.dynamodb_odm_tests_run_command" class="App\Command\Dynamodb\DynamodbOdmTestsRunCommand"
+                 lazy="true">
+            <argument type="service" id="app.orm.entity_manager"/>
+            <argument type="service" id="app.user_repository"/>
+            <tag name="console.command" command="dynamodb:odm:run-tests"/>
+        </service>
+        <service id="app.dynamodb_from_doctrine_transfer_command"
+                 class="App\Command\Dynamodb\DynamodbFromDoctrineTransferCommand" lazy="true">
+            <argument type="service" id="app.telegram_bot_doctrine_repository"/>
+            <argument type="service" id="app.telegram_channel_doctrine_repository"/>
+            <argument type="service" id="app.level_1_region_doctrine_repository"/>
+            <argument type="service" id="app.user_doctrine_repository"/>
+            <argument type="service" id="app.messenger_user_doctrine_repository"/>
+            <argument type="service" id="app.feedback_doctrine_repository"/>
+            <argument type="service" id="app.feedback_search_doctrine_repository"/>
+            <argument type="service" id="app.feedback_lookup_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_payment_doctrine_repository"/>
+            <argument type="service" id="app.feedback_user_subscription_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_conversation_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_payment_method_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_request_doctrine_repository"/>
+            <argument type="service" id="app.telegram_bot_update_doctrine_repository"/>
+            <argument type="service" id="app.user_contact_message_doctrine_repository"/>
+            <argument type="service" id="app.feedback_notification_doctrine_repository"/>
+            <argument type="service" id="app.search_term_feedback_factory"/>
+            <argument type="service" id="app.search_term_feedback_search_factory"/>
+            <argument type="service" id="app.search_term_feedback_lookup_factory"/>
+            <argument type="service" id="app.id_generator"/>
+            <argument type="service" id="app.telegram_bot_conversation_manager"/>
+            <argument type="service" id="doctrine.orm.entity_manager"/>
+            <argument type="service" id="oa.dynamodb.entity_manager"/>
+            <tag name="console.command" command="dynamodb:from-doctrine:transfer"/>
+        </service>
+    </services>
+</container>

@@ -4,7 +4,7 @@
                   xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping
         https://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
 
-    <entity name="App\Entity\Intl\Level1Region" repository-class="App\Repository\Intl\Level1RegionRepository"
+    <entity name="App\Entity\Intl\Level1Region" repository-class="App\Repository\Intl\Level1RegionDoctrineRepository"
             table="level_1_regions">
 
         <indexes>

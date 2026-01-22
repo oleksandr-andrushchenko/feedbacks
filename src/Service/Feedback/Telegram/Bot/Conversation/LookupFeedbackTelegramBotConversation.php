@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\Command\FeedbackCommandLimit;
-use App\Entity\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
+use App\Model\Feedback\Command\FeedbackCommandLimit;
+use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
 use App\Service\Feedback\FeedbackLookupCreator;
+use App\Service\Feedback\FeedbackLookupService;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
 use App\Service\Feedback\SearchTerm\SearchTermTypeProvider;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
@@ -31,10 +32,10 @@ use Longman\TelegramBot\Entities\KeyboardButton;
  */
 class LookupFeedbackTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
-    public const STEP_SEARCH_TERM_QUERIED = 10;
-    public const STEP_SEARCH_TERM_TYPE_QUERIED = 20;
-    public const STEP_CANCEL_PRESSED = 30;
-    public const STEP_CONFIRM_QUERIED = 40;
+    public const int STEP_SEARCH_TERM_QUERIED = 10;
+    public const int STEP_SEARCH_TERM_TYPE_QUERIED = 20;
+    public const int STEP_CANCEL_PRESSED = 30;
+    public const int STEP_CONFIRM_QUERIED = 40;
 
     public function __construct(
         private readonly Validator $validator,
@@ -44,6 +45,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly SearchTermTypeProvider $searchTermTypeProvider,
         private readonly FeedbackLookupCreator $feedbackLookupCreator,
         private readonly Searcher $searcher,
+        private readonly FeedbackLookupService $feedbackLookupService,
         private readonly bool $searchTermTypeStep,
         private readonly bool $confirmStep,
     )
@@ -465,13 +467,14 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $context = [
                 'bot' => $tg->getBot()->getEntity(),
                 'countryCode' => $tg->getBot()->getEntity()->getCountryCode(),
-                'full' => $tg->getBot()->getMessengerUser()?->getUser()?->getSubscriptionExpireAt() > new DateTimeImmutable(),
+                'full' => $tg->getBot()->getUser()?->getSubscriptionExpireAt() > new DateTimeImmutable(),
             ];
             $providers = [
                 SearchProviderName::searches,
             ];
 
-            $this->searcher->search($feedbackLookup->getSearchTerm(), $render, $context, $providers);
+            $searchTerm = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
+            $this->searcher->search($searchTerm, $render, $context, $providers);
 
             $tg->stopConversation($entity);
 

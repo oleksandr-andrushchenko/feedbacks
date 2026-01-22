@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot\Api;
 
-use App\Entity\Telegram\TelegramBotInvoicePhoto;
 use App\Exception\Telegram\Bot\Payment\TelegramBotInvalidCurrencyBotException;
+use App\Model\Telegram\TelegramBotInvoicePhoto;
 use App\Service\Telegram\Bot\TelegramBot;
 use Longman\TelegramBot\Entities\ServerResponse;
 

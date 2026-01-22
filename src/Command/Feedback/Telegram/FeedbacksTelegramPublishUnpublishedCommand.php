@@ -6,8 +6,8 @@ namespace App\Command\Feedback\Telegram;
 
 use App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent;
 use App\Repository\Feedback\FeedbackRepository;
+use App\Service\ORM\EntityManager;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -21,7 +21,7 @@ class FeedbacksTelegramPublishUnpublishedCommand extends Command
     public function __construct(
         private readonly FeedbackRepository $feedbackRepository,
         private readonly MessageBusInterface $eventBus,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -32,8 +32,7 @@ class FeedbacksTelegramPublishUnpublishedCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addOption('date', mode: InputOption::VALUE_REQUIRED, description: 'Date in mm/dd/yyyy format')
+        $this->addOption('date', mode: InputOption::VALUE_REQUIRED, description: 'Date in mm/dd/yyyy format')
             ->setDescription('Publish unpublished feedbacks in telegram channels')
         ;
     }

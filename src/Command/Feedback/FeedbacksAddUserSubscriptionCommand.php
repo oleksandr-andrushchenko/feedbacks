@@ -10,7 +10,7 @@ use App\Exception\User\UserNotFoundException;
 use App\Repository\User\UserRepository;
 use App\Service\Doctrine\DryRunner;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionManager;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,7 +26,7 @@ class FeedbacksAddUserSubscriptionCommand extends Command
         private readonly UserRepository $userRepository,
         private readonly FeedbackSubscriptionManager $feedbackSubscriptionManager,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -34,8 +34,7 @@ class FeedbacksAddUserSubscriptionCommand extends Command
 
     protected function configure(): void
     {
-        $this
-            ->addArgument('user', InputArgument::REQUIRED, 'User id')
+        $this->addArgument('user', InputArgument::REQUIRED, 'User id')
             ->addArgument('plan', InputArgument::REQUIRED, 'Plan name')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Add feedback user subscription')

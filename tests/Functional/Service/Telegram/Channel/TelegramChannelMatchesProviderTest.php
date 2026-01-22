@@ -12,6 +12,7 @@ use App\Repository\Telegram\Channel\TelegramChannelRepository;
 use App\Service\Telegram\Channel\TelegramChannelMatchesProvider;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 
 class TelegramChannelMatchesProviderTest extends TestCase
 {
@@ -33,7 +34,7 @@ class TelegramChannelMatchesProviderTest extends TestCase
         $user = $this->makeUser(...$userAddressComponents);
         $bot = $this->makeBot(...$botAddressComponents);
         $channel = $this->makeChannel(...$channelAddressComponents);
-        $provider = new TelegramChannelMatchesProvider($this->createMock(TelegramChannelRepository::class));
+        $provider = new TelegramChannelMatchesProvider($this->createMock(TelegramChannelRepository::class), new NullLogger());
 
         $actualPoints = $provider->calculateTelegramChannelPoints($bot, $user, $channel);
         $this->assertEquals($expectedPoints, $actualPoints);
@@ -123,13 +124,13 @@ class TelegramChannelMatchesProviderTest extends TestCase
         $repository = $this->createMock(TelegramChannelRepository::class);
         $repository
             ->expects($this->once())
-            ->method('findPrimaryByGroupAndCountry')
+            ->method('findPrimaryNonDeletedByGroupAndCountry')
             ->willReturn($channels)
         ;
 
-        $provider = new TelegramChannelMatchesProvider($repository);
+        $provider = new TelegramChannelMatchesProvider($repository, new NullLogger());
         $actualChannels = $provider->getTelegramChannelMatches($user, $bot);
-        $actualChannelIds = array_map(static fn (TelegramChannel $channel): int => $channel->getId(), $actualChannels);
+        $actualChannelIds = array_map(static fn (TelegramChannel $channel): int|string => $channel->getId(), $actualChannels);
 
         $this->assertEquals($expectedChannelIds, $actualChannelIds);
     }
@@ -253,11 +254,11 @@ class TelegramChannelMatchesProviderTest extends TestCase
 
     private function makeBot(
         string $countryCode = '',
-        int $id = null
+        int|string $id = null
     ): TelegramBot
     {
         return $this->createConfiguredMock(TelegramBot::class, [
-            'getId' => $id,
+            'getId' => $id ?? 'dummy' . mt_rand(0, 9999),
             'getGroup' => TelegramBotGroupName::default,
             'getCountryCode' => $countryCode,
         ]);
@@ -266,11 +267,11 @@ class TelegramChannelMatchesProviderTest extends TestCase
     private function makeChannel(
         string $countryCode = '',
         int|string $level1RegionId = null,
-        int $id = null
+        int|string $id = null
     ): TelegramChannel
     {
         return $this->createConfiguredMock(TelegramChannel::class, [
-            'getId' => $id,
+            'getId' => $id ?? 'dummy' . mt_rand(0, 9999),
             'getCountryCode' => $countryCode,
             'getLevel1RegionId' => $level1RegionId === null ? null : (string) $level1RegionId,
         ]);

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\CleanTalk\CleanTalkEmail;
-use App\Entity\Search\CleanTalk\CleanTalkEmails;
+use App\Entity\Feedback\SearchTerm;
+use App\Model\Search\CleanTalk\CleanTalkEmail;
+use App\Model\Search\CleanTalk\CleanTalkEmails;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class CleanTalkTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -20,7 +20,7 @@ class CleanTalkTelegramSearchViewer extends SearchViewer implements SearchViewer
         parent::__construct($searchViewerCompose->withTransDomain('clean_talk'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;

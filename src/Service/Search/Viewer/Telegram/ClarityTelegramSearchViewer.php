@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Viewer\Telegram;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\Clarity\ClarityEdr;
-use App\Entity\Search\Clarity\ClarityEdrs;
-use App\Entity\Search\Clarity\ClarityPerson;
-use App\Entity\Search\Clarity\ClarityPersonCourt;
-use App\Entity\Search\Clarity\ClarityPersonCourts;
-use App\Entity\Search\Clarity\ClarityPersonDebtor;
-use App\Entity\Search\Clarity\ClarityPersonDebtors;
-use App\Entity\Search\Clarity\ClarityPersonDeclaration;
-use App\Entity\Search\Clarity\ClarityPersonDeclarations;
-use App\Entity\Search\Clarity\ClarityPersonEdr;
-use App\Entity\Search\Clarity\ClarityPersonEdrs;
-use App\Entity\Search\Clarity\ClarityPersonEnforcement;
-use App\Entity\Search\Clarity\ClarityPersonEnforcements;
-use App\Entity\Search\Clarity\ClarityPersons;
-use App\Entity\Search\Clarity\ClarityPersonSecurities;
-use App\Entity\Search\Clarity\ClarityPersonSecurity;
+use App\Entity\Feedback\SearchTerm;
+use App\Model\Search\Clarity\ClarityEdr;
+use App\Model\Search\Clarity\ClarityEdrs;
+use App\Model\Search\Clarity\ClarityPerson;
+use App\Model\Search\Clarity\ClarityPersonCourt;
+use App\Model\Search\Clarity\ClarityPersonCourts;
+use App\Model\Search\Clarity\ClarityPersonDebtor;
+use App\Model\Search\Clarity\ClarityPersonDebtors;
+use App\Model\Search\Clarity\ClarityPersonDeclaration;
+use App\Model\Search\Clarity\ClarityPersonDeclarations;
+use App\Model\Search\Clarity\ClarityPersonEdr;
+use App\Model\Search\Clarity\ClarityPersonEdrs;
+use App\Model\Search\Clarity\ClarityPersonEnforcement;
+use App\Model\Search\Clarity\ClarityPersonEnforcements;
+use App\Model\Search\Clarity\ClarityPersons;
+use App\Model\Search\Clarity\ClarityPersonSecurities;
+use App\Model\Search\Clarity\ClarityPersonSecurity;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 use DateTimeImmutable;
 
 class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
@@ -35,7 +35,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         parent::__construct($searchViewerCompose->withTransDomain('clarity'), $modifier);
     }
 
-    public function getResultMessage($record, FeedbackSearchTerm $searchTerm, array $context = []): string
+    public function getResultMessage($record, SearchTerm $searchTerm, array $context = []): string
     {
         if (is_string($record)) {
             return $record;
@@ -56,7 +56,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         };
     }
 
-    private function getPersonsMessage(ClarityPersons $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonsMessage(ClarityPersons $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();
@@ -89,7 +89,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         ;
     }
 
-    private function getPersonEdrsMessage(ClarityPersonEdrs $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonEdrsMessage(ClarityPersonEdrs $record, SearchTerm $searchTerm, bool $full): string
     {
         $term = $searchTerm->getNormalizedText();
         $m = $this->modifier;
@@ -138,7 +138,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         ;
     }
 
-    private function getPersonSecurityMessage(ClarityPersonSecurities $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonSecurityMessage(ClarityPersonSecurities $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();
@@ -256,7 +256,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         ;
     }
 
-    private function getPersonEnforcementsMessage(ClarityPersonEnforcements $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonEnforcementsMessage(ClarityPersonEnforcements $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();
@@ -321,7 +321,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         ;
     }
 
-    private function getPersonDebtorsMessage(ClarityPersonDebtors $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonDebtorsMessage(ClarityPersonDebtors $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();
@@ -364,7 +364,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         ;
     }
 
-    private function getPersonDeclarationsMessage(ClarityPersonDeclarations $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getPersonDeclarationsMessage(ClarityPersonDeclarations $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();
@@ -404,7 +404,7 @@ class ClarityTelegramSearchViewer extends SearchViewer implements SearchViewerIn
         ;
     }
 
-    private function getEdrsMessage(ClarityEdrs $record, FeedbackSearchTerm $searchTerm, bool $full): string
+    private function getEdrsMessage(ClarityEdrs $record, SearchTerm $searchTerm, bool $full): string
     {
         $m = $this->modifier;
         $term = $searchTerm->getNormalizedText();

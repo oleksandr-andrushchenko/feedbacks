@@ -5,14 +5,16 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Channel;
 
 use App\Entity\Telegram\TelegramChannel;
+use App\Service\IdGenerator;
+use App\Service\ORM\EntityManager;
 use App\Transfer\Telegram\TelegramChannelTransfer;
-use Doctrine\ORM\EntityManagerInterface;
 
 class TelegramChannelCreator
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
         private readonly TelegramChannelValidator $validator,
+        private readonly IdGenerator $idGenerator,
     )
     {
     }
@@ -20,14 +22,15 @@ class TelegramChannelCreator
     public function createTelegramChannel(TelegramChannelTransfer $channelTransfer): TelegramChannel
     {
         $channel = new TelegramChannel(
+            $this->idGenerator->generateId(),
             $channelTransfer->getUsername(),
             $channelTransfer->getGroup(),
             $channelTransfer->getName(),
             $channelTransfer->getCountry()->getCode(),
             $channelTransfer->getLocale()?->getCode() ?? $channelTransfer->getCountry()->getLocaleCodes()[0],
-            level1RegionId: $channelTransfer->getLevel1Region()?->getId(),
-            chatId: $channelTransfer->getChatId(),
-            primary: $channelTransfer->primary(),
+            $channelTransfer->getLevel1Region()?->getId(),
+            $channelTransfer->getChatId(),
+            $channelTransfer->primary(),
         );
 
         $this->validator->validateTelegramChannel($channel);

@@ -22,7 +22,7 @@ class SiteUrlGenerator implements UrlGeneratorInterface
         return $this->urlGenerator->getContext();
     }
 
-    public function setContext(RequestContext $context)
+    public function setContext(RequestContext $context): void
     {
         $this->urlGenerator->setContext($context);
     }

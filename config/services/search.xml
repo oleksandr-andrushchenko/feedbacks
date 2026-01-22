@@ -26,7 +26,7 @@
                  parent="app.search_provider" lazy="true">
             <argument type="service" id="app.crawler_provider"/>
             <argument type="service" id="app.intl_ukr_person_name_provider"/>
-            <tag name="app.search_provider" provider="clarity"/>
+<!--            <tag name="app.search_provider" provider="clarity"/>-->
         </service>
         <service id="app.search_provider_ukr_missed" class="App\Service\Search\Provider\UkrMissedSearchProvider"
                  parent="app.search_provider" lazy="true">
@@ -38,17 +38,17 @@
                  parent="app.search_provider" lazy="true">
             <argument type="service" id="app.http_requester"/>
             <argument type="service" id="app.intl_ukr_person_name_provider"/>
-            <tag name="app.search_provider" provider="ukr_corrupts"/>
+<!--            <tag name="app.search_provider" provider="ukr_corrupts"/>-->
         </service>
         <service id="app.search_provider_otzyvua" class="App\Service\Search\Provider\OtzyvuaSearchProvider"
                  parent="app.search_provider" lazy="true">
             <argument type="service" id="app.crawler_provider"/>
-            <tag name="app.search_provider" provider="otzyvua"/>
+<!--            <tag name="app.search_provider" provider="otzyvua"/>-->
         </service>
         <service id="app.search_provider_ukr_missed_cars" class="App\Service\Search\Provider\UkrMissedCarSearchProvider"
                  parent="app.search_provider" lazy="true">
             <argument type="service" id="app.crawler_provider"/>
-            <tag name="app.search_provider" provider="ukr_missed_cars"/>
+<!--            <tag name="app.search_provider" provider="ukr_missed_cars"/>-->
         </service>
         <service id="app.search_provider_business_guide" class="App\Service\Search\Provider\BusinessGuideSearchProvider"
                  parent="app.search_provider" lazy="true">
@@ -61,14 +61,14 @@
                  lazy="true">
             <argument type="service" id="app.crawler_provider"/>
             <argument type="service" id="app.intl_ukr_person_name_provider"/>
-            <tag name="app.search_provider" provider="ukr_wanted_persons"/>
+<!--            <tag name="app.search_provider" provider="ukr_wanted_persons"/>-->
         </service>
         <service id="app.search_provider_blackbox" class="App\Service\Search\Provider\BlackboxSearchProvider"
                  parent="app.search_provider" lazy="true">
             <argument type="service" id="app.crawler_provider"/>
             <argument type="service" id="app.http_requester"/>
             <argument type="service" id="app.intl_ukr_person_name_provider"/>
-            <tag name="app.search_provider" provider="blackbox"/>
+<!--            <tag name="app.search_provider" provider="blackbox"/>-->
         </service>
         <service id="app.search_provider_twenty_second_floor"
                  class="App\Service\Search\Provider\TwentySecondFloorSearchProvider" parent="app.search_provider"
@@ -103,6 +103,7 @@
                  parent="app.search_viewer_telegram" lazy="true">
             <argument type="service" id="app.feedback_multiple_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_telegram_reply_sign_view_provider"/>
+            <argument type="service" id="app.feedback_service"/>
             <tag name="app.search_viewer_telegram" provider="feedbacks"/>
         </service>
         <service id="app.search_viewer_telegram_searches"
@@ -111,6 +112,7 @@
             <argument type="service" id="app.feedback_search_term_provider"/>
             <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_telegram_reply_sign_view_provider"/>
+            <argument type="service" id="app.feedback_search_service"/>
             <tag name="app.search_viewer_telegram" provider="searches"/>
         </service>
         <service id="app.search_viewer_telegram_clarity"

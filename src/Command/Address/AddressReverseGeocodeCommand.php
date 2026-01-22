@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Command\Address;
 
-use App\Entity\Location;
 use App\Exception\AddressGeocodeFailedException;
 use App\Exception\TimezoneGeocodeFailedException;
+use App\Model\Location;
 use App\Service\Address\AddressInfoProvider;
 use App\Service\AddressGeocoderInterface;
 use App\Service\Doctrine\DryRunner;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,7 +24,7 @@ class AddressReverseGeocodeCommand extends Command
         private readonly AddressGeocoderInterface $addressGeocoder,
         private readonly AddressInfoProvider $addressInfoProvider,
         private readonly DryRunner $dryRunner,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly EntityManager $entityManager,
     )
     {
         parent::__construct();
@@ -35,8 +35,7 @@ class AddressReverseGeocodeCommand extends Command
      */
     protected function configure(): void
     {
-        $this
-            ->addArgument('coordinates', InputArgument::REQUIRED, 'Latitude and Longitude (separated by comma)')
+        $this->addArgument('coordinates', InputArgument::REQUIRED, 'Latitude and Longitude (separated by comma)')
             ->addOption('dry-run', mode: InputOption::VALUE_NONE, description: 'Dry run')
             ->setDescription('Address Reverse Geocode with Google Service')
         ;

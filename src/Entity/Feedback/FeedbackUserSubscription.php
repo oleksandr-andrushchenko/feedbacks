@@ -8,22 +8,58 @@ use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBotPayment;
 use App\Entity\User\User;
 use App\Enum\Feedback\FeedbackSubscriptionPlanName;
+use DateTimeImmutable;
 use DateTimeInterface;
+use OA\Dynamodb\Attribute\Attribute;
+use OA\Dynamodb\Attribute\Entity;
+use OA\Dynamodb\Attribute\GlobalIndex;
+use OA\Dynamodb\Attribute\PartitionKey;
+use OA\Dynamodb\Attribute\SortKey;
 use Stringable;
 
+#[Entity(
+    new PartitionKey('FEEDBACK_USER_SUBSCRIPTION', ['id']),
+    new SortKey('META'),
+    [
+        new GlobalIndex(
+            'FEEDBACK_USER_SUBSCRIPTIONS_BY_MESSENGER_USER',
+            new PartitionKey(null, ['messengerUserId'], 'feedback_user_subscription_messenger_user_id_pk')
+        ),
+        new GlobalIndex(
+            'FEEDBACK_USER_SUBSCRIPTIONS_BY_USER',
+            new PartitionKey(null, ['userId'], 'feedback_user_subscription_user_id_pk'),
+        ),
+    ]
+)]
 class FeedbackUserSubscription implements Stringable
 {
+    #[Attribute('user_id')]
+    private ?string $userId = null;
+    #[Attribute('messenger_user_id')]
+    private ?string $messengerUserId = null;
+    #[Attribute('telegram_payment_id')]
+    private ?string $telegramPaymentId = null;
+    #[Attribute('updated_at')]
+    private ?DateTimeInterface $updatedAt = null;
+
     public function __construct(
-        private readonly string $id,
+        #[Attribute('feedback_user_subscription_id')]
+        private string $id,
         private readonly User $user,
+        #[Attribute('feedback_subscription_plan_name')]
         private readonly FeedbackSubscriptionPlanName $subscriptionPlan,
+        #[Attribute('subscription_expire_at')]
         private readonly DateTimeInterface $expireAt,
-        private readonly ?MessengerUser $messengerUser = null,
-        private readonly ?TelegramBotPayment $telegramPayment = null,
+        private readonly ?MessengerUser $messengerUser,
+        private readonly ?TelegramBotPayment $telegramPayment,
+        #[Attribute('created_at')]
         private ?DateTimeInterface $createdAt = null,
-        private ?DateTimeInterface $updatedAt = null,
     )
     {
+        $this->userId = $this->user->getId();
+        $this->messengerUserId = $this->messengerUser?->getId();
+        $this->telegramPaymentId = $this->telegramPayment?->getId();
+        $this->createdAt ??= new DateTimeImmutable();
     }
 
     public function getId(): string
@@ -31,9 +67,31 @@ class FeedbackUserSubscription implements Stringable
         return $this->id;
     }
 
+    public function setUserId(?string $userId): self
+    {
+        $this->userId = $userId;
+        return $this;
+    }
+
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
     public function getUser(): User
     {
         return $this->user;
+    }
+
+    public function setMessengerUserId(?string $messengerUserId): self
+    {
+        $this->messengerUserId = $messengerUserId;
+        return $this;
+    }
+
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
     }
 
     public function getMessengerUser(): ?MessengerUser
@@ -44,6 +102,17 @@ class FeedbackUserSubscription implements Stringable
     public function getSubscriptionPlan(): FeedbackSubscriptionPlanName
     {
         return $this->subscriptionPlan;
+    }
+
+    public function setTelegramPaymentId(?string $telegramPaymentId): self
+    {
+        $this->telegramPaymentId = $telegramPaymentId;
+        return $this;
+    }
+
+    public function getTelegramPaymentId(): ?string
+    {
+        return $this->telegramPaymentId;
     }
 
     public function getTelegramPayment(): ?TelegramBotPayment

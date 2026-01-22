@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Search\Provider;
 
-use App\Entity\Feedback\FeedbackSearchTerm;
-use App\Entity\Search\ShouldIAnswer\ShouldIAnswerReview;
-use App\Entity\Search\ShouldIAnswer\ShouldIAnswerReviews;
+use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
+use App\Model\Search\ShouldIAnswer\ShouldIAnswerReview;
+use App\Model\Search\ShouldIAnswer\ShouldIAnswerReviews;
 use App\Service\CrawlerProvider;
 use DateTimeImmutable;
 use Symfony\Component\DomCrawler\Crawler;
@@ -33,7 +33,7 @@ class ShouldIAnswerSearchProvider extends SearchProvider implements SearchProvid
         return SearchProviderName::should_i_answer;
     }
 
-    public function supports(FeedbackSearchTerm $searchTerm, array $context = []): bool
+    public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
 
@@ -55,7 +55,7 @@ class ShouldIAnswerSearchProvider extends SearchProvider implements SearchProvid
         return false;
     }
 
-    public function search(FeedbackSearchTerm $searchTerm, array $context = []): array
+    public function search(SearchTerm $searchTerm, array $context = []): array
     {
         $term = $searchTerm->getNormalizedText();
 

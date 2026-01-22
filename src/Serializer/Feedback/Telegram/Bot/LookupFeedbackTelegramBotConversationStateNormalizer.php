@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Serializer\Feedback\Telegram\Bot;
 
-use App\Entity\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
-use App\Entity\Telegram\TelegramBotConversationState;
+use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
+use App\Model\Telegram\TelegramBotConversationState;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -33,7 +33,7 @@ class LookupFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
     {
-        return $data instanceof LookupFeedbackTelegramBotConversationState;
+        return $data instanceof LookupFeedbackTelegramBotConversationState && in_array($format, [null], true);
     }
 
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): TelegramBotConversationState
@@ -43,7 +43,7 @@ class LookupFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === LookupFeedbackTelegramBotConversationState::class;
+        return is_array($data) && $type === LookupFeedbackTelegramBotConversationState::class && in_array($format, [null], true);
     }
 
     public function getSupportedTypes(?string $format): array

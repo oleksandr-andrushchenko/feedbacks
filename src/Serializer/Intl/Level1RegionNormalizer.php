@@ -36,7 +36,7 @@ class Level1RegionNormalizer implements NormalizerInterface, DenormalizerInterfa
     public function denormalize(mixed $data, string $type, string $format = null, array $context = []): Level1Region
     {
         if ($format === 'internal') {
-            return new $type(
+            return new Level1Region(
                 $data['id'],
                 $data['cc'],
                 $data['n'],
