@@ -44,9 +44,9 @@ class TelegramBotInfoProvider
             'requests' => $bot->checkRequests() ? 'Yes' : 'No',
             'admin_ids' => count($bot->getAdminIds()) === 0 ? 'N/A' : join(', ', $bot->getAdminIds()),
             'admin_only' => $bot->adminOnly() ? 'Yes' : 'No',
-            'created_at' => $bot->getCreatedAt()->format('Y-m-d H:i'),
-            'updated_at' => $bot->getUpdatedAt() === null ? 'N/A' : $bot->getUpdatedAt()->format('Y-m-d H:i'),
-            'deleted_at' => $bot->getDeletedAt() === null ? 'N/A' : $bot->getDeletedAt()->format('Y-m-d H:i'),
+            'created_at' => $bot->getCreatedAt()?->format('Y-m-d H:i') ?? 'N/A',
+            'updated_at' => $bot->getUpdatedAt()?->format('Y-m-d H:i') ?? 'N/A',
+            'deleted_at' => $bot->getDeletedAt()?->format('Y-m-d H:i') ?? 'N/A',
         ];
 
         if (!$full) {
