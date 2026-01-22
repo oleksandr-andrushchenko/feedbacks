@@ -38,7 +38,7 @@ when@prod:
       nested:
         type: stream
         path: php://stderr
-        level: warning
+        level: error
         formatter: monolog.formatter.json
       console:
         type: console
@@ -54,4 +54,4 @@ when@prod:
         type: telegram
         token: '%app.telegram_errors_token%'
         channel: '%app.telegram_errors_channel%'
-        level: warning
+        level: error

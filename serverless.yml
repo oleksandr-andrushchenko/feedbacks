@@ -35,7 +35,8 @@ plugins:
 
 custom:
   dotenv:
-    path: .env.${sls:stage}
+    path: .env
+    include: [ ]
 
 functions:
   web:
@@ -65,7 +66,9 @@ package:
     - '!.git/**'
     - '!.env.example'
     - '!.env'
-    - '!.env.prod'
+    - '!package-lock.json'
+    - '!package.json'
+    - '!Makefile'
     - '!.phpunit.result.cache'
     - '!.editorconfig'
     - '!editconfig.xml'
@@ -388,52 +391,3 @@ resources:
             Value: ${env:AWS_OWNER}
           - Key: Region
             Value: ${aws:region}
-
-    AppSecretParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/APP_SECRET
-        Type: SecureString
-        Value: ${env:APP_SECRET}
-    SiteBaseUrlParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/SITE_BASE_URL
-        Type: String
-        Value: ${env:SITE_BASE_URL}
-    TelegramWebhookBaseUrlParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_WEBHOOK_BASE_URL
-        Type: String
-        Value: ${env:TELEGRAM_WEBHOOK_BASE_URL}
-    TelegramActivitiesTokenParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN
-        Type: SecureString
-        Value: ${env:TELEGRAM_ACTIVITIES_TOKEN}
-    TelegramErrorsTokenParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ERRORS_TOKEN
-        Type: SecureString
-        Value: ${env:TELEGRAM_ERRORS_TOKEN}
-    GoogleApiKeyParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/GOOGLE_API_KEY
-        Type: SecureString
-        Value: ${env:GOOGLE_API_KEY}
-    DbUrlParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/DB_URL
-        Type: SecureString
-        Value: ${env:DB_URL}
-    CryptoParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: /${env:AWS_PROJECT}/${sls:stage}/CRYPTO
-        Type: String
-        Value: ${env:CRYPTO}

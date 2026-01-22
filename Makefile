@@ -27,6 +27,10 @@ help: ## Show this help
 ngrok-setup: ## Setup ngrok
 	@echo "Visit: https://dashboard.ngrok.com/get-started/setup/linux"
 
+.PHONY: serverless-setup
+serverless-setup: ## Setup serverless
+	@echo "Visit: https://www.serverless.com/framework/docs/getting-started"
+
 .PHONY: ngrok-tunnel
 ngrok-tunnel: ## Establish ngrok tunnel
 	@echo "🔹 Checking for existing ngrok process..."
@@ -54,7 +58,7 @@ ngrok-tunnel: ## Establish ngrok tunnel
 	sed -i "/^TELEGRAM_WEBHOOK_BASE_URL=/c\TELEGRAM_WEBHOOK_BASE_URL=$$NGROK_URL" .env; \
 	echo "✅ Ngrok URL: $$NGROK_URL"; \
 	echo ".env updated with TELEGRAM_WEBHOOK_BASE_URL=$$NGROK_URL"
-	$(MAKE) restart-be-function
+	$(MAKE) restart
 
 .PHONY: up
 up: ## Build and start all Docker containers
@@ -148,7 +152,7 @@ create-local-dynamodb: ## Create local DynamoDB table
 	if AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb describe-table \
 		--profile dummy \
-		--region us-east-1 \
+		--region $(AWS_REGION) \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
 		echo "⚠️ Table $(DYNAMODB_TABLE) already exists, skipping creation."; \
@@ -161,7 +165,7 @@ create-local-dynamodb: ## Create local DynamoDB table
 		AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb create-table \
 			--profile dummy \
-			--region us-east-1 \
+			--region $(AWS_REGION) \
 			--cli-input-json file:///tmp/dynamodb_schema.json \
 			--table-name "$(DYNAMODB_TABLE)" \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \
@@ -179,7 +183,7 @@ fetch-local-dynamodb: ## Fetch 100 records from local DynamoDB
 		--table-name "$(DYNAMODB_TABLE)" \
 		--limit 100 \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" \
-		--region us-east-1 \
+		--region $(AWS_REGION) \
 		--no-cli-pager \
 		--output json
 
@@ -189,13 +193,13 @@ drop-local-dynamodb: ## Drop DynamoDB table in local DynamoDB
 	if AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb describe-table \
 		--profile dummy \
-		--region us-east-1 \
+		--region $(AWS_REGION) \
 		--table-name "$(DYNAMODB_TABLE)" \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
 		AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb delete-table \
 			--profile dummy \
-			--region us-east-1 \
+			--region $(AWS_REGION) \
 			--table-name "$(DYNAMODB_TABLE)" \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \
 			--no-cli-pager; \
@@ -223,53 +227,71 @@ reload-dynamodb: recreate-local-dynamodb ## Reload local Dynamodb
 	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:from-doctrine:transfer
 
 .PHONY: reload-bot
-reload-bot: ngrok-tunnel sync-bot-webhook # Reload local tg bot
+reload-bot: ngrok-tunnel sync-bot-webhook ## Reload local tg bot
 
 .PHONY: reload-cache
-reload-cache: clear-cache fix-permissions # Reload local symfony cache
+reload-cache: clear-cache fix-permissions ## Reload local symfony cache
+
+.PHONY: aws-login
+aws-login: ## Obtain AWS auth token
+	@echo "🔐 Obtaining AWS $(AWS_PROFILE) token..."
+	aws login --profile=$(AWS_PROFILE)
 
 .PHONY: deploy-params
 deploy-params: ## Deploy params
-	@echo "🔐 Deploying params in $(AWS_REGION)..."
-	aws cloudformation deploy \
-		--region "$(AWS_REGION)" \
-		--template-file cf-params.yml \
-		--stack-name "$(AWS_PROJECT)-$(APP_STAGE)-params" \
-		--capabilities CAPABILITY_NAMED_IAM \
-		--no-fail-on-empty-changeset \
-		--parameter-overrides \
-			Project="$(AWS_PROJECT)" \
-			Stage="$(APP_STAGE)" \
-			AppSecret="$(APP_SECRET)" \
-			SiteBaseUrl="$(SITE_BASE_URL)" \
-			TelegramWebhookBaseUrl="$(TELEGRAM_WEBHOOK_BASE_URL)" \
-			TelegramActivitiesToken="$(TELEGRAM_ACTIVITIES_TOKEN)" \
-			TelegramErrorsToken="$(TELEGRAM_ERRORS_TOKEN)" \
-			GoogleApiKey="$(GOOGLE_API_KEY)" \
-			DbUrl="$(DB_URL)" \
-			Crypto="$(CRYPTO)" \
-		--tags \
-			Project="$(AWS_PROJECT)" \
-			Owner="$(AWS_OWNER)" \
-			Stage="$(APP_STAGE)" \
-			Region="$(AWS_REGION)"
-	@echo "✅ Parameters deployment triggered!"
+	@echo "🔐 Deploying params for $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROFILE) profile in $(AWS_REGION)..."
+
+	@bash -c '\
+	for param_type in \
+		"SITE_BASE_URL:String" \
+		"TELEGRAM_WEBHOOK_BASE_URL:String" \
+		"CRYPTO:String" \
+		"APP_SECRET:SecureString" \
+		"TELEGRAM_ACTIVITIES_TOKEN:SecureString" \
+		"TELEGRAM_ERRORS_TOKEN:SecureString" \
+		"GOOGLE_API_KEY:SecureString" \
+		"DB_URL:SecureString"; do \
+		param_name=$${param_type%%:*}; \
+		param_kind=$${param_type##*:}; \
+		value=$$(eval echo "$$"$${param_name}); \
+		aws ssm put-parameter \
+			--profile "$(AWS_PROFILE)" \
+			--region "$(AWS_REGION)" \
+			--name "/$(AWS_PROJECT)/$(APP_STAGE)/$$param_name" \
+			--type "$$param_kind" \
+			--value "$$value" \
+			--overwrite; \
+		aws ssm add-tags-to-resource \
+			--profile "$(AWS_PROFILE)" \
+			--region "$(AWS_REGION)" \
+			--resource-type "Parameter" \
+			--resource-id "/$(AWS_PROJECT)/$(APP_STAGE)/$$param_name" \
+			--tags \
+				Key=Project,Value="$(AWS_PROJECT)" \
+				Key=Stage,Value="$(APP_STAGE)" \
+				Key=Region,Value="$(AWS_REGION)" \
+				Key=Owner,Value="$(AWS_OWNER)"; \
+	done \
+	'
+
+	@echo "✅ Params deployed!"
 
 .PHONY: deploy
-deploy: ## PROD deploy
-	@echo "Using APP_ENV=$(APP_ENV), APP_STAGE=$(APP_STAGE), AWS_PROJECT=$(AWS_PROJECT), AWS_REGION=$(AWS_REGION)"
-	@echo "Installing composer dependencies and warming prod cache..."
-	$(DC_PROD) run --rm $(BE_FUNCTION_CONTAINER) bash -c " \
+deploy: ## Deploy app
+	@echo "Installing composer dependencies and warming $(APP_ENV) cache..."
+	$(DC) run --rm $(BE_FUNCTION_CONTAINER) bash -c " \
 		composer install --prefer-dist --optimize-autoloader --no-dev && \
 		rm -rf var/cache/$(APP_ENV) && \
-		APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:clear --env=$(APP_ENV) && \
-		APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:warmup --env=$(APP_ENV) \
+		APP_STAGE=$(APP_STAGE) APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:clear --env=$(APP_ENV) && \
+		APP_STAGE=$(APP_STAGE) APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:warmup --env=$(APP_ENV) \
 	"
-	@echo "Deploying serverless..."
-	serverless deploy --region $(AWS_REGION) --stage $(APP_STAGE)
-#	@echo "Running migrations..."
-#	serverless bref:cli --args="doctrine:migrations:migrate --no-interaction --all-or-nothing" --region $(AWS_REGION) --stage $(APP_STAGE)
-	@echo "Installing composer dependencies for local dev..."
+	@echo "🔐 Deploying $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROFILE) profile in $(AWS_REGION) region..."
+	npm install --save-dev serverless-dotenv-plugin
+	serverless deploy \
+		--aws-profile $(AWS_PROFILE) \
+		--region $(AWS_REGION) \
+		--stage $(APP_STAGE)
+	@echo "Getting back local dependencies and cache..."
 	$(DC) exec -T $(BE_FUNCTION_CONTAINER) composer install
 	$(DC) exec -T $(BE_FUNCTION_CONTAINER) php bin/console cache:warmup
 	@echo "✅ Deployment completed!"

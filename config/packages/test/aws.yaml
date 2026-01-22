@@ -1,10 +1,7 @@
 aws:
-  version: latest
-  region: us-east-1
-
   credentials:
     key: dummy
     secret: dummy
 
   DynamoDb:
-    endpoint: "%env(DYNAMODB_ENDPOINT)%"
+    endpoint: "%env(resolve:DYNAMODB_ENDPOINT)%"

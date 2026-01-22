@@ -4,7 +4,6 @@
 /.env.local.php
 /.env.*.local
 /.env
-/.env.prod
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
@@ -33,3 +32,7 @@
 /.env.bak
 
 info.txt
+/node_modules/
+
+package.json
+package-lock.json

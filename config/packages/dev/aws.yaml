@@ -1,7 +1,4 @@
 aws:
-  version: latest
-  region: us-east-1
-
   credentials:
     key: dummy
     secret: dummy
