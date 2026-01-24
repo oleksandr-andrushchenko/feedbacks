@@ -148,39 +148,36 @@ run-migrations: ## Execute pending Doctrine migrations
 
 .PHONY: create-local-dynamodb
 create-local-dynamodb: ## Create local DynamoDB table
-	@echo "🚀 Creating local DynamoDB table $(DYNAMODB_TABLE)..."
-	if AWS_KEY=dummy AWS_SECRET=dummy \
-		aws dynamodb describe-table \
+	@echo "🚀 Creating local DynamoDB table app..."
+	if aws dynamodb describe-table \
 		--profile dummy \
 		--region $(AWS_REGION) \
-		--table-name "$(DYNAMODB_TABLE)" \
+		--table-name app \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
-		echo "⚠️ Table $(DYNAMODB_TABLE) already exists, skipping creation."; \
+		echo "⚠️ Table app already exists, skipping creation."; \
 	else \
 		echo "🧩 Extracting DynamoDB schema from CloudFormation..."; \
 		$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:schema:extract > /tmp/dynamodb_schema.json; \
 		if [ ! -s /tmp/dynamodb_schema.json ]; then echo '❌ Failed to generate valid DynamoDB schema JSON'; exit 1; fi; \
 		echo "📄 Generated schema:"; \
 		cat /tmp/dynamodb_schema.json; \
-		AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb create-table \
 			--profile dummy \
 			--region $(AWS_REGION) \
 			--cli-input-json file:///tmp/dynamodb_schema.json \
-			--table-name "$(DYNAMODB_TABLE)" \
+			--table-name app \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \
 			--no-cli-pager; \
 		rm -f /tmp/dynamodb_schema.json; \
-		echo "✅ DynamoDB table $(DYNAMODB_TABLE) initialized in local DynamoDB"; \
+		echo "✅ DynamoDB table app initialized in local DynamoDB"; \
 	fi
 
 .PHONY: fetch-local-dynamodb
 fetch-local-dynamodb: ## Fetch 100 records from local DynamoDB
-	@echo "📦 Fetching 100 records from $(DYNAMODB_TABLE)..."
-	AWS_KEY=dummy AWS_SECRET=dummy \
+	@echo "📦 Fetching 100 records from app..."
 	aws dynamodb scan \
 		--profile dummy \
-		--table-name "$(DYNAMODB_TABLE)" \
+		--table-name app \
 		--limit 100 \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" \
 		--region $(AWS_REGION) \
@@ -189,23 +186,21 @@ fetch-local-dynamodb: ## Fetch 100 records from local DynamoDB
 
 .PHONY: drop-local-dynamodb
 drop-local-dynamodb: ## Drop DynamoDB table in local DynamoDB
-	@echo "🗑️ Dropping local DynamoDB table $(DYNAMODB_TABLE)..."
-	if AWS_KEY=dummy AWS_SECRET=dummy \
-		aws dynamodb describe-table \
+	@echo "🗑️ Dropping local DynamoDB table app..."
+	if aws dynamodb describe-table \
 		--profile dummy \
 		--region $(AWS_REGION) \
-		--table-name "$(DYNAMODB_TABLE)" \
+		--table-name app \
 		--endpoint-url "http://localhost:$(DYNAMODB_PORT)" > /dev/null 2>&1; then \
-		AWS_KEY=dummy AWS_SECRET=dummy \
 		aws dynamodb delete-table \
 			--profile dummy \
 			--region $(AWS_REGION) \
-			--table-name "$(DYNAMODB_TABLE)" \
+			--table-name app \
 			--endpoint-url http://localhost:$(DYNAMODB_PORT) \
 			--no-cli-pager; \
-		echo "✅ Table $(DYNAMODB_TABLE) deleted from local DynamoDB"; \
+		echo "✅ Table app deleted from local DynamoDB"; \
 	else \
-		echo "⚠️ Table $(DYNAMODB_TABLE) does not exist, skipping deletion."; \
+		echo "⚠️ Table app does not exist, skipping deletion."; \
 	fi
 
 .PHONY: recreate-local-dynamodb
