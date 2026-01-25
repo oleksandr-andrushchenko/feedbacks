@@ -229,12 +229,12 @@ reload-cache: clear-cache fix-permissions ## Reload local symfony cache
 
 .PHONY: aws-login
 aws-login: ## Obtain AWS auth token
-	@echo "🔐 Obtaining AWS $(AWS_PROFILE) token..."
-	aws login --profile=$(AWS_PROFILE)
+	@echo "🔐 Obtaining AWS $(AWS_PROJECT) token..."
+	aws login --profile=$(AWS_PROJECT)
 
 .PHONY: deploy-params
 deploy-params: ## Deploy params
-	@echo "🔐 Deploying params for $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROFILE) profile in $(AWS_REGION)..."
+	@echo "🔐 Deploying params for $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROJECT) profile in $(AWS_REGION)..."
 
 	@bash -c '\
 	for param_type in \
@@ -250,14 +250,14 @@ deploy-params: ## Deploy params
 		param_kind=$${param_type##*:}; \
 		value=$$(eval echo "$$"$${param_name}); \
 		aws ssm put-parameter \
-			--profile "$(AWS_PROFILE)" \
+			--profile "$(AWS_PROJECT)" \
 			--region "$(AWS_REGION)" \
 			--name "/$(AWS_PROJECT)/$(APP_STAGE)/$$param_name" \
 			--type "$$param_kind" \
 			--value "$$value" \
 			--overwrite; \
 		aws ssm add-tags-to-resource \
-			--profile "$(AWS_PROFILE)" \
+			--profile "$(AWS_PROJECT)" \
 			--region "$(AWS_REGION)" \
 			--resource-type "Parameter" \
 			--resource-id "/$(AWS_PROJECT)/$(APP_STAGE)/$$param_name" \
@@ -280,10 +280,10 @@ deploy: ## Deploy app
 		APP_STAGE=$(APP_STAGE) APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:clear --env=$(APP_ENV) && \
 		APP_STAGE=$(APP_STAGE) APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:warmup --env=$(APP_ENV) \
 	"
-	@echo "🔐 Deploying $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROFILE) profile in $(AWS_REGION) region..."
+	@echo "🔐 Deploying $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROJECT) profile in $(AWS_REGION) region..."
 	npm install --save-dev serverless-dotenv-plugin
 	serverless deploy \
-		--aws-profile $(AWS_PROFILE) \
+		--aws-profile $(AWS_PROJECT) \
 		--region $(AWS_REGION) \
 		--stage $(APP_STAGE)
 	@echo "Getting back local dependencies and cache..."

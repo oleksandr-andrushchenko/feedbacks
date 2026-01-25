@@ -16,7 +16,6 @@ services:
       APP_ENV: dev
       APP_DEBUG: 1
       APP_SECRET: dummy
-      AWS_PROFILE: ""
       DB_URL: mysql://app:1111@mysql:3306/app?serverVersion=8&charset=utf8mb4
       DYNAMODB_TABLE: app
       TELEGRAM_ADMIN_ID: 0
