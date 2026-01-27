@@ -65,9 +65,9 @@ class ChooseActionTelegramChatSender
             $buttons[] = $this->getCountryButton($tg);
             $buttons[] = $this->getLocaleButton($tg);
 //            $buttons[] = $this->getCommandsButton($tg);
-            $buttons[] = $this->getLimitsButton($tg);
+//            $buttons[] = $this->getLimitsButton($tg);
 //            $buttons[] = $this->getRestartButton($tg);
-            $buttons[] = $this->getDonateButton($tg);
+//            $buttons[] = $this->getDonateButton($tg);
 //            $buttons[] = $this->getPurgeButton($tg);
             $buttons[] = $this->getShowLessButton($tg);
         } else {
