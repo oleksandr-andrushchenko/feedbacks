@@ -26,13 +26,12 @@ use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConv
 use App\Service\Feedback\Telegram\Bot\Conversation\SubscribeTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\View\SubscriptionTelegramViewProvider;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationFactory;
-use App\Service\Telegram\Bot\Group\TelegramBotGroup;
 use App\Service\Telegram\Bot\Group\TelegramBotGroupInterface;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
-class FeedbackTelegramBotGroup extends TelegramBotGroup implements TelegramBotGroupInterface
+class FeedbackTelegramBotGroup implements TelegramBotGroupInterface
 {
     public const START = '/start';
     public const CREATE = '/add';
@@ -66,8 +65,7 @@ class FeedbackTelegramBotGroup extends TelegramBotGroup implements TelegramBotGr
     ];
 
     public function __construct(
-        TelegramBotAwareHelper $telegramBotAwareHelper,
-        TelegramBotConversationFactory $telegramBotConversationFactory,
+        private readonly TelegramBotConversationFactory $telegramBotConversationFactory,
         private readonly FeedbackSubscriptionManager $feedbackSubscriptionManager,
         private readonly SubscriptionsTelegramChatSender $subscriptionsTelegramChatSender,
         private readonly ChooseActionTelegramChatSender $chooseActionTelegramChatSender,
@@ -81,10 +79,9 @@ class FeedbackTelegramBotGroup extends TelegramBotGroup implements TelegramBotGr
         private readonly array $crypto,
     )
     {
-        parent::__construct($telegramBotAwareHelper, $telegramBotConversationFactory);
     }
 
-    protected function getHandlers(TelegramBotAwareHelper $tg): iterable
+    public function getHandlers(TelegramBotAwareHelper $tg): iterable
     {
         yield new TelegramBotMyChatMemberHandler(fn (): null => $this->myChatMemberHandler($tg));
 
@@ -105,6 +102,11 @@ class FeedbackTelegramBotGroup extends TelegramBotGroup implements TelegramBotGr
 
         yield new TelegramBotFallbackHandler(fn (): null => $this->fallback($tg));
         yield new TelegramBotErrorHandler(fn (Throwable $exception): null => $this->exception($tg));
+    }
+
+    public function getTelegramConversationFactory(): TelegramBotConversationFactory
+    {
+        return $this->telegramBotConversationFactory;
     }
 
     public function fallback(TelegramBotAwareHelper $tg): null

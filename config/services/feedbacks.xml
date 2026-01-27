@@ -511,9 +511,7 @@
             <argument type="service" id="app.telegram_channel_repository"/>
             <argument type="service" id="app.telegram_channel_link_view_provider"/>
         </service>
-        <service id="app.telegram_group_feedbacks"
-                 class="App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup" lazy="true">
-            <argument type="service" id="app.telegram_bot_aware_helper"/>
+        <service id="app.telegram_group_feedbacks" class="App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup" lazy="true">
             <argument type="service" id="app.telegram_conversation_factory_feedbacks"/>
             <argument type="service" id="app.feedback_subscription_manager"/>
             <argument type="service" id="app.subscriptions_telegram_chat_sender"/>

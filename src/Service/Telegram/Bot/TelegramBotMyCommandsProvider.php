@@ -15,6 +15,7 @@ class TelegramBotMyCommandsProvider
 {
     public function __construct(
         private readonly TelegramBotGroupRegistry $telegramBotGroupRegistry,
+        private readonly TelegramBotAwareHelper $telegramBotAwareHelper,
     )
     {
     }
@@ -26,10 +27,11 @@ class TelegramBotMyCommandsProvider
     public function getTelegramMyCommands(TelegramBot $bot): iterable
     {
         $group = $this->telegramBotGroupRegistry->getTelegramGroup($bot->getEntity()->getGroup());
+        $handlers = iterator_to_array($group->getHandlers($this->telegramBotAwareHelper->withTelegramBot($bot)));
 
         $realCommandHandlers = array_values(
             array_filter(
-                $group->getTelegramHandlers($bot),
+                $handlers,
                 static fn (TelegramBotHandlerInterface $handler): bool => $handler instanceof TelegramBotCommandHandler
             )
         );

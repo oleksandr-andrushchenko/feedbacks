@@ -322,10 +322,9 @@
             <argument type="service" id="app.telegram_bot_chat_provider"/>
             <argument type="service" id="logger"/>
         </service>
-        <service id="app.telegram_bot_my_commands_provider"
-                 class="App\Service\Telegram\Bot\TelegramBotMyCommandsProvider"
-                 lazy="true">
+        <service id="app.telegram_bot_my_commands_provider" class="App\Service\Telegram\Bot\TelegramBotMyCommandsProvider" lazy="true">
             <argument type="service" id="app.telegram_bot_group_registry"/>
+            <argument type="service" id="app.telegram_bot_aware_helper"/>
         </service>
         <service id="app.telegram_bot_webhook_syncer" class="App\Service\Telegram\Bot\Api\TelegramBotWebhookSyncer"
                  lazy="true">
@@ -354,12 +353,6 @@
             <argument type="service" id="app.user_upserter"/>
             <argument type="service" id="app.intl_country_provider"/>
         </service>
-        <service id="app.telegram_bot_update_checker" class="App\Service\Telegram\Bot\TelegramBotUpdateChecker"
-                 lazy="true">
-            <argument type="service" id="app.telegram_bot_update_repository"/>
-            <argument type="service" id="app.orm.entity_manager"/>
-            <argument type="service" id="logger"/>
-        </service>
         <service id="app.telegram_bot_request_checker" class="App\Service\Telegram\Bot\TelegramBotRequestChecker"
                  lazy="true">
             <argument type="service" id="app.telegram_bot_chat_request_second_rate_limit_dynamodb_repository"/>
@@ -370,12 +363,6 @@
             <argument type="service" id="app.id_generator"/>
             <argument type="service" id="logger"/>
         </service>
-        <service id="app.telegram_bot_non_admin_update_checker"
-                 class="App\Service\Telegram\Bot\TelegramBotNonAdminUpdateChecker" lazy="true">
-            <argument type="service" id="app.telegram_bot_user_provider"/>
-        </service>
-        <service id="app.telegram_bot_command_finder" class="App\Service\Telegram\Bot\TelegramBotHandlerFinder"
-                 lazy="true"/>
         <service id="app.telegram_bot_update_factory" class="App\Service\Telegram\Bot\TelegramBotUpdateFactory"
                  lazy="true">
             <argument type="service" id="logger"/>
@@ -389,8 +376,8 @@
                  lazy="true">
             <argument>%kernel.environment%</argument>
             <argument type="service" id="app.telegram_bot_update_factory"/>
-            <argument type="service" id="app.telegram_bot_update_checker"/>
-            <argument type="service" id="app.telegram_bot_non_admin_update_checker"/>
+            <argument type="service" id="app.telegram_bot_update_repository"/>
+            <argument type="service" id="app.telegram_bot_user_provider"/>
             <argument type="service" id="app.telegram_bot_conversation_manager"/>
             <argument type="service" id="app.telegram_bot_messenger_user_upserter"/>
             <argument type="service" id="app.telegram_bot_group_registry"/>
@@ -401,6 +388,7 @@
             <argument type="service" id="app.telegram_bot_repository"/>
             <argument type="service" id="app.telegram_bot_aware_helper"/>
             <argument type="service" id="app.telegram_bot_link_view_provider"/>
+            <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="logger"/>
         </service>
         <service id="app.telegram_bot_keyboard_factory" class="App\Service\Telegram\Bot\TelegramBotKeyboardFactory"
