@@ -59,9 +59,9 @@ class FeedbackLookupCreator
         $user = $this->messengerUserService->getUser($messengerUser);
 
         // todo: disable by default
-        if (!$user->hasActiveSubscription()) {
-            $this->limitsChecker->checkCommandLimits($user, $this->statisticProvider);
-        }
+//        if (!$user->hasActiveSubscription()) {
+//            $this->limitsChecker->checkCommandLimits($user, $this->statisticProvider);
+//        }
 
         $searchTerm = $this->searchTermUpserter->upsertSearchTerm($transfer->getSearchTerm());
 

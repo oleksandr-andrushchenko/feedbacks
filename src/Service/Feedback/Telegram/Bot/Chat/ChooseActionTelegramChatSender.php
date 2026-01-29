@@ -56,11 +56,11 @@ class ChooseActionTelegramChatSender
         if ($messengerUser?->showExtendedKeyboard()) {
 //            $buttons[] = $this->getLookupButton($tg);
 
-            if (!$this->feedbackSubscriptionManager->hasActiveSubscription($messengerUser)) {
+//            if (!$this->feedbackSubscriptionManager->hasActiveSubscription($messengerUser)) {
 //                $buttons[] = $this->getSubscribeButton($tg);
-            } elseif ($this->feedbackSubscriptionManager->hasSubscription($messengerUser)) {
-                $buttons[] = $this->getSubscriptionsButton($tg);
-            }
+//            } elseif ($this->feedbackSubscriptionManager->hasSubscription($messengerUser)) {
+//                $buttons[] = $this->getSubscriptionsButton($tg);
+//            }
 
             $buttons[] = $this->getCountryButton($tg);
             $buttons[] = $this->getLocaleButton($tg);

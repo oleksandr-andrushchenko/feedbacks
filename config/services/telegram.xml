@@ -381,7 +381,6 @@
             <argument type="service" id="app.telegram_bot_conversation_manager"/>
             <argument type="service" id="app.telegram_bot_messenger_user_upserter"/>
             <argument type="service" id="app.telegram_bot_group_registry"/>
-            <argument type="service" id="app.telegram_bot_command_finder"/>
             <argument type="service" id="app.telegram_bot_payment_manager"/>
             <argument type="service" id="app.telegram_bot_locale_switcher"/>
             <argument type="service" id="app.telegram_bot_registry"/>

@@ -62,12 +62,12 @@ class FeedbackCreator
 
         $this->checkSearchTermUser($transfer);
 
-        $messengerUser = $transfer->getMessengerUser();
-        $user = $this->messengerUserService->getUser($messengerUser);
+//        $messengerUser = $transfer->getMessengerUser();
+//        $user = $this->messengerUserService->getUser($messengerUser);
 
-        if (!$user->hasActiveSubscription()) {
-            $this->feedbackCommandLimitsChecker->checkCommandLimits($user, $this->feedbackCommandStatisticProvider);
-        }
+//        if (!$user->hasActiveSubscription()) {
+//            $this->feedbackCommandLimitsChecker->checkCommandLimits($user, $this->feedbackCommandStatisticProvider);
+//        }
 
         $feedback = $this->constructFeedback($transfer);
         $this->entityManager->persist($feedback);

@@ -58,9 +58,9 @@ class FeedbackSearchCreator
         $messengerUser = $transfer->getMessengerUser();
         $user = $this->messengerUserService->getUser($messengerUser);
 
-        if (!$user->hasActiveSubscription()) {
-            $this->limitsChecker->checkCommandLimits($user, $this->statisticProvider);
-        }
+//        if (!$user->hasActiveSubscription()) {
+//            $this->limitsChecker->checkCommandLimits($user, $this->statisticProvider);
+//        }
 
         $searchTerm = $this->searchTermUpserter->upsertSearchTerm($transfer->getSearchTerm());
 

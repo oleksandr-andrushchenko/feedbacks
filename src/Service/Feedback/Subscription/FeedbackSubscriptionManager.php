@@ -108,19 +108,17 @@ class FeedbackSubscriptionManager
         return new DateTimeImmutable() < $subscription->getExpireAt();
     }
 
-    public function hasActiveSubscription(MessengerUser $messengerUser): bool
+    public function hasActiveSubscription(MessengerUser $messengerUser): ?bool
     {
         $user = $this->messengerUserService->getUser($messengerUser);
-        if ($user?->getSubscriptionExpireAt() === null) {
-            return false;
-        }
 
-        return new DateTimeImmutable() < $user->getSubscriptionExpireAt();
+        return $user?->hasActiveSubscription();
     }
 
     public function hasSubscription(MessengerUser $messengerUser): bool
     {
         $user = $this->messengerUserService->getUser($messengerUser);
+
         return $user?->getSubscriptionExpireAt() !== null;
     }
 }
