@@ -18,7 +18,7 @@ class AddressGeocodeFailedException extends Exception
     {
         parent::__construct(
             sprintf(
-                'Unable to reverse geocode address by "%s, %s" location',
+                'Unable to reverse geocode address by (%s, %s)',
                 $this->location->getLatitude(),
                 $this->location->getLongitude()
             ),

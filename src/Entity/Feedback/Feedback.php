@@ -25,9 +25,6 @@ class Feedback
 {
     private Collection $searchTerms;
 
-    #[Attribute('telegram_bot_id')]
-    private ?string $telegramBotId = null;
-
     public function __construct(
         #[Attribute('feedback_id')]
         private string $id,
@@ -43,6 +40,8 @@ class Feedback
         private ?MessengerUser $messengerUser = null,
         /** @var array<SearchTerm>|null $searchTerms */
         ?array $searchTerms = null,
+        #[Attribute('search_term_ids')]
+        private ?array $searchTermIds = null,
         #[Attribute]
         private ?Rating $rating = null,
         #[Attribute('text')]
@@ -50,23 +49,23 @@ class Feedback
         #[Attribute('telegram_channel_message_ids')]
         private ?array $telegramChannelMessageIds = null,
         private ?TelegramBot $telegramBot = null,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
-        #[Attribute('search_term_ids')]
-        private ?array $searchTermIds = null,
         #[Attribute('messenger_user_id')]
         private ?string $messengerUserId = null,
+        #[Attribute('telegram_bot_id')]
+        private ?string $telegramBotId = null,
+        #[Attribute('created_at')]
+        private ?DateTimeInterface $createdAt = null,
     )
     {
         $this->searchTerms = new ArrayCollection($searchTerms ?? []);
         $this->searchTermIds ??= array_map(static fn ($term) => $term->getId(), $searchTerms ?? []);
-        $this->userId = $this->user?->getId();
+        $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
-        $this->telegramBotId = $this->telegramBot?->getId();
+        $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
 
@@ -125,6 +124,16 @@ class Feedback
     {
         $this->searchTerms = new ArrayCollection($searchTerms ?? []);
         $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms);
+        return $this;
+    }
+
+    public function addSearchTerm(SearchTerm $searchTerm): self
+    {
+        $this->searchTerms ??= new ArrayCollection();
+        $this->searchTermIds ??= [];
+
+        $this->searchTerms->add($searchTerm);
+        $this->searchTermIds[] = $searchTerm->getId();
         return $this;
     }
 

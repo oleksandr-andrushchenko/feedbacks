@@ -457,7 +457,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
                 'bot' => $tg->getBot()->getEntity(),
                 'countryCode' => $tg->getBot()->getEntity()->getCountryCode(),
                 'full' => $tg->getBot()->getUser()?->getSubscriptionExpireAt() > new DateTimeImmutable(),
-                'skipFirstItem' => true,
+//                'skipFirstItem' => true,
                 'addCountry' => true,
                 'addTime' => true,
             ];

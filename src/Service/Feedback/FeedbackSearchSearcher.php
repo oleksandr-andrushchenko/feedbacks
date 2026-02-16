@@ -25,9 +25,6 @@ class FeedbackSearchSearcher
     }
 
     /**
-     * @param SearchTerm $searchTerm
-     * @param bool $withUsers
-     * @param int $maxResults
      * @return array<FeedbackSearch>
      */
     public function searchFeedbackSearches(SearchTerm $searchTerm, bool $withUsers = false, int $maxResults = 20): array
@@ -36,26 +33,31 @@ class FeedbackSearchSearcher
 
         if ($this->feedbackSearchRepository->getConfig()->isDynamodb()) {
             $searchTermFeedbackSearches = $this->searchTermFeedbackSearchDynamodbRepository->findBySearchTermNormalizedText($normalizedText);
-            $feedbackSearches = array_map(
-                static fn (SearchTermFeedbackSearch $searchTermFeedbackSearch) => new FeedbackSearch(
-                    id: $searchTermFeedbackSearch->getFeedbackSearchId(),
-                    // todo: add extra search terms
-                    searchTerm: $searchTermFeedbackSearch->getSearchTerm(),
-                    hasActiveSubscription: $searchTermFeedbackSearch->hasUserActiveSubscription(),
-                    countryCode: $searchTermFeedbackSearch->getUserCountryCode(),
-                    localeCode: $searchTermFeedbackSearch->getUserLocaleCode(),
-                    userId: $searchTermFeedbackSearch->getUserId(),
-                    messengerUserId: $searchTermFeedbackSearch->getMessengerUserId(),
-                    telegramBotId: $searchTermFeedbackSearch->getTelegramBotId(),
-                ),
-                $searchTermFeedbackSearches
-            );
+
+            $feedbackSearches = [];
+            foreach ($searchTermFeedbackSearches as $searchTermFeedbackSearch) {
+                $feedbackSearchId = $searchTermFeedbackSearch->getFeedbackSearchId();
+                if (!isset($feedbackSearches[$feedbackSearchId])) {
+                    $feedbackSearches[$feedbackSearchId] = new FeedbackSearch(
+                        id: $feedbackSearchId,
+                        hasActiveSubscription: $searchTermFeedbackSearch->hasUserActiveSubscription(),
+                        countryCode: $searchTermFeedbackSearch->getUserCountryCode(),
+                        localeCode: $searchTermFeedbackSearch->getUserLocaleCode(),
+                        userId: $searchTermFeedbackSearch->getUserId(),
+                        messengerUserId: $searchTermFeedbackSearch->getMessengerUserId(),
+                        telegramBotId: $searchTermFeedbackSearch->getTelegramBotId(),
+                        createdAt: $searchTermFeedbackSearch->getCreatedAt(),
+                    );
+                }
+                $feedbackSearches[$feedbackSearchId]->setSearchTerm($searchTermFeedbackSearch->getSearchTerm());
+            }
+
             if ($withUsers) {
-                $userIds = array_map(fn ($searchTermFeedbackSearch) => $searchTermFeedbackSearch->getUserId(), $searchTermFeedbackSearches);
+                $userIds = array_unique(array_map(static fn (FeedbackSearch $feedbackSearch) => $feedbackSearch->getUserId(), $feedbackSearches));
                 $users = $this->userRepository->findByIds($userIds);
                 $userIdMap = array_combine(array_map(static fn (User $user) => $user->getId(), $users), $users);
-                foreach ($searchTermFeedbackSearches as $idx => $searchTermFeedbackSearch) {
-                    $feedbackSearches[$idx]->setUser($userIdMap[$searchTermFeedbackSearch->getUserId()]);
+                foreach ($feedbackSearches as $feedbackSearch) {
+                    $feedbackSearch->setUser($userIdMap[$feedbackSearch->getUserId()]);
                 }
             }
         } else {

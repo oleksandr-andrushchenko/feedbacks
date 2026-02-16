@@ -37,10 +37,10 @@ class SearchTerm
         #[Attribute]
         private readonly SearchTermType $type,
         private ?MessengerUser $messengerUser = null,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
         #[Attribute('messenger_user_id')]
         private ?string $messengerUserId = null,
+        #[Attribute('created_at')]
+        private ?DateTimeInterface $createdAt = null,
     )
     {
         $this->messengerUserId ??= $this->messengerUser?->getId();

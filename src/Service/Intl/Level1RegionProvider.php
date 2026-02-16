@@ -30,8 +30,6 @@ class Level1RegionProvider
     }
 
     /**
-     * @param Location $location
-     * @return Level1Region
      * @throws AddressGeocodeFailedException
      * @throws TimezoneGeocodeFailedException
      */

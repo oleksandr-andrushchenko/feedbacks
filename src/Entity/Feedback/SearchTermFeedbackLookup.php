@@ -89,6 +89,8 @@ class SearchTermFeedbackLookup
             $this->getSearchTermText(),
             $this->getSearchTermNormalizedText(),
             $this->getSearchTermType(),
+            messengerUserId: $this->getMessengerUserId(),
+            createdAt: $this->getCreatedAt(),
         );
     }
 

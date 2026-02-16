@@ -22,8 +22,6 @@ class FeedbackLookupSearcher
     }
 
     /**
-     * @param SearchTerm $searchTerm
-     * @param int $maxResults
      * @return array<FeedbackLookup>
      */
     public function searchFeedbackLookups(SearchTerm $searchTerm, int $maxResults = 20): array
@@ -32,20 +30,24 @@ class FeedbackLookupSearcher
 
         if ($this->feedbackLookupRepository->getConfig()->isDynamodb()) {
             $searchTermFeedbackLookups = $this->searchTermFeedbackLookupDynamodbRepository->findBySearchTermNormalizedText($normalizedText);
-            $feedbackLookups = array_map(
-                static fn (SearchTermFeedbackLookup $searchTermFeedbackLookup) => new FeedbackLookup(
-                    id: $searchTermFeedbackLookup->getFeedbackLookupId(),
-                    // todo: add extra search terms
-                    searchTerm: $searchTermFeedbackLookup->getSearchTerm(),
-                    userId: $searchTermFeedbackLookup->getUserId(),
-                    hasActiveSubscription: $searchTermFeedbackLookup->hasUserActiveSubscription(),
-                    countryCode: $searchTermFeedbackLookup->getUserCountryCode(),
-                    localeCode: $searchTermFeedbackLookup->getUserLocaleCode(),
-                    messengerUserId: $searchTermFeedbackLookup->getMessengerUserId(),
-                    telegramBotId: $searchTermFeedbackLookup->getTelegramBotId(),
-                ),
-                $searchTermFeedbackLookups
-            );
+
+            $feedbackLookups = [];
+            foreach ($searchTermFeedbackLookups as $searchTermFeedbackLookup) {
+                $feedbackSearchId = $searchTermFeedbackLookup->getFeedbackLookupId();
+                if (!isset($feedbackLookups[$feedbackSearchId])) {
+                    $feedbackLookups[$feedbackSearchId] = new FeedbackLookup(
+                        id: $feedbackSearchId,
+                        userId: $searchTermFeedbackLookup->getUserId(),
+                        hasActiveSubscription: $searchTermFeedbackLookup->hasUserActiveSubscription(),
+                        countryCode: $searchTermFeedbackLookup->getUserCountryCode(),
+                        localeCode: $searchTermFeedbackLookup->getUserLocaleCode(),
+                        messengerUserId: $searchTermFeedbackLookup->getMessengerUserId(),
+                        telegramBotId: $searchTermFeedbackLookup->getTelegramBotId(),
+                        createdAt: $searchTermFeedbackLookup->getCreatedAt(),
+                    );
+                }
+                $feedbackLookups[$feedbackSearchId]->setSearchTerm($searchTermFeedbackLookup->getSearchTerm());
+            }
         } else {
             $feedbackLookups = $this->feedbackLookupRepository->findByNormalizedText($normalizedText, $maxResults);
         }

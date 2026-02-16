@@ -188,7 +188,9 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         try {
             $level1Region = $this->level1RegionProvider->getLevel1RegionByLocation($user->getLocation());
         } catch (AddressGeocodeFailedException|TimezoneGeocodeFailedException $exception) {
-            $this->logger->error($exception);
+            $this->logger->error($exception, [
+                'content' => $exception->getContent(),
+            ]);
 
             $message = $tg->trans('reply.request_location_failed', domain: 'country');
             $message = $tg->wrongText($message);

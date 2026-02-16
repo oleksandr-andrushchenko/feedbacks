@@ -27,6 +27,8 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
         private readonly SearchTermTelegramViewProvider $searchTermTelegramViewProvider,
         private readonly FeedbackTelegramReplySignViewProvider $feedbackTelegramReplySignViewProvider,
         private readonly FeedbackSearchService $feedbackSearchService,
+        // todo: replace with isEnv helper class
+        private readonly string $environment,
     )
     {
         parent::__construct($searchViewerCompose->withTransDomain('search'), $modifier);
@@ -95,32 +97,45 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
         string $locale = null
     ): callable
     {
-        return function (FeedbackSearch $item) use ($full, $addCountry, $addTime, $locale): array {
+        return function (FeedbackSearch $feedbackSearch) use ($full, $addCountry, $addTime, $locale): array {
             $m = $this->modifier;
-            $searchTerm = $this->feedbackSearchService->getSearchTerm($item);
+            $searchTerm = $this->feedbackSearchService->getSearchTerm($feedbackSearch);
 
-            return [
-                $m->create()
-                    ->add($m->bracketsModifier($this->trans('search_term', locale: $locale)))
-                    ->apply(
-                        $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
-                            $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
-                            addSecrets: !$full,
-                            localeCode: $locale
-                        )
-                    ),
-                $m->create()
-                    ->add($m->conditionalModifier($addCountry))
-                    ->add($m->slashesModifier())
-                    ->add($m->countryModifier(locale: $locale))
-                    ->add($m->bracketsModifier($this->trans('country', locale: $locale)))
-                    ->apply($item->getCountryCode()),
-                $m->create()
-                    ->add($m->conditionalModifier($addTime))
-                    ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $item->getUser()->getTimezone(), locale: $locale))
-                    ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
-                    ->apply($item->getCreatedAt()),
-            ];
+            $lines = [];
+
+            if ($this->environment !== 'prod') {
+//                $lines[] = '$searchTerm: ' . $searchTerm->getId();
+//                $lines[] = '$feedbackSearch: ' . $feedbackSearch->getId();
+//                $lines[] = 'us tz: ' . $feedbackSearch->getUser()->getTimezone();
+//                $lines[] = 'dt: ' . $feedbackSearch->getCreatedAt()->format('Y-m-d H:i:s');
+//                $lines[] = 'dt tz: ' . $feedbackSearch->getCreatedAt()->getTimezone();
+            }
+
+            $lines[] = $m->create()
+                ->add($m->bracketsModifier($this->trans('search_term', locale: $locale)))
+                ->apply(
+                    $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
+                        $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
+                        addSecrets: !$full,
+                        localeCode: $locale
+                    )
+                )
+            ;
+            $lines[] = $m->create()
+                ->add($m->conditionalModifier($addCountry))
+                ->add($m->slashesModifier())
+                ->add($m->countryModifier(locale: $locale))
+                ->add($m->bracketsModifier($this->trans('country', locale: $locale)))
+                ->apply($feedbackSearch->getCountryCode())
+            ;
+            $lines[] = $m->create()
+                ->add($m->conditionalModifier($addTime))
+                ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $feedbackSearch->getUser()->getTimezone(), locale: $locale))
+                ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
+                ->apply($feedbackSearch->getCreatedAt())
+            ;
+
+            return $lines;
         };
     }
 }

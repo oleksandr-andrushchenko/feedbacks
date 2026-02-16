@@ -113,6 +113,7 @@
             <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_telegram_reply_sign_view_provider"/>
             <argument type="service" id="app.feedback_search_service"/>
+            <argument>%kernel.environment%</argument>
             <tag name="app.search_viewer_telegram" provider="searches"/>
         </service>
         <service id="app.search_viewer_telegram_clarity"

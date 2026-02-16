@@ -20,13 +20,12 @@ use OA\Dynamodb\Attribute\SortKey;
 )]
 class FeedbackSearch
 {
-    #[Attribute('search_term_id')]
-    private ?string $searchTermId = null;
-
     public function __construct(
         #[Attribute('feedback_search_id')]
         private string $id,
         private ?SearchTerm $searchTerm = null,
+        #[Attribute('search_term_id')]
+        private ?string $searchTermId = null,
         private ?User $user = null,
         #[Attribute('has_active_subscription')]
         private ?bool $hasActiveSubscription = null,
@@ -36,18 +35,18 @@ class FeedbackSearch
         private ?string $localeCode = null,
         private ?MessengerUser $messengerUser = null,
         private ?TelegramBot $telegramBot = null,
-        #[Attribute('created_at')]
-        private ?DateTimeInterface $createdAt = null,
         #[Attribute('user_id')]
         private ?string $userId = null,
         #[Attribute('messenger_user_id')]
         private ?string $messengerUserId = null,
         #[Attribute('telegram_bot_id')]
         private ?string $telegramBotId = null,
+        #[Attribute('created_at')]
+        private ?DateTimeInterface $createdAt = null,
     )
     {
-        $this->searchTermId = $this->searchTerm?->getId();
-        $this->userId = $this->user?->getId();
+        $this->searchTermId ??= $this->searchTerm?->getId();
+        $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
         $this->localeCode = $this->user?->getLocaleCode();
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;

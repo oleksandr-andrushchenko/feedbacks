@@ -49,6 +49,7 @@
 * simplify output: one single response message
 * use param store runtime retrieval
 * fix an issue: duplicates on feedbacks results, searched & lookups (coz of multiple search terms)
+* remove "*" from results
 
 
 * queues
