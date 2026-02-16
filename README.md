@@ -44,11 +44,9 @@
 * GRANT ALL PRIVILEGES ON app_test.* TO 'app'@'%';
 
 # TODO
-* investigate telegram_updates table
 * simplify conversations: input everything at once (use AI)
 * simplify output: one single response message
 * use param store runtime retrieval
-* fix an issue: duplicates on feedbacks results, searched & lookups (coz of multiple search terms)
 
 
 * queues
