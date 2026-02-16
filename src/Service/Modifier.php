@@ -49,11 +49,15 @@ class Modifier
 
     public function secretsModifier(int $position = 2, string $char = '*', int $count = 3): callable
     {
+        return fn ($any) => $any;
+
         return fn ($any): ?string => $any === null ? null : $this->secretsAdder->addSecrets($any, position: $position, char: $char, count: $count);
     }
 
     public function wordSecretsModifier(string|array $excepts = null, string $char = '*'): callable
     {
+        return fn ($any) => $any;
+
         return fn ($any): ?string => $any === null ? null : $this->secretsAdder->addWordSecrets($any, excepts: $excepts, char: $char);
     }
 
