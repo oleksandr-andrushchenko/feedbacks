@@ -38,6 +38,8 @@ class Feedback
         #[Attribute('has_active_subscription')]
         private ?bool $hasActiveSubscription = null,
         private ?MessengerUser $messengerUser = null,
+        #[Attribute('messenger_user_id')]
+        private ?string $messengerUserId = null,
         /** @var array<SearchTerm>|null $searchTerms */
         ?array $searchTerms = null,
         #[Attribute('search_term_ids')]
@@ -49,8 +51,6 @@ class Feedback
         #[Attribute('telegram_channel_message_ids')]
         private ?array $telegramChannelMessageIds = null,
         private ?TelegramBot $telegramBot = null,
-        #[Attribute('messenger_user_id')]
-        private ?string $messengerUserId = null,
         #[Attribute('telegram_bot_id')]
         private ?string $telegramBotId = null,
         #[Attribute('created_at')]

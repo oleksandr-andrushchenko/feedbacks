@@ -27,6 +27,8 @@ class FeedbackSearch
         #[Attribute('search_term_id')]
         private ?string $searchTermId = null,
         private ?User $user = null,
+        #[Attribute('user_id')]
+        private ?string $userId = null,
         #[Attribute('has_active_subscription')]
         private ?bool $hasActiveSubscription = null,
         #[Attribute('country_code')]
@@ -34,11 +36,9 @@ class FeedbackSearch
         #[Attribute('local_code')]
         private ?string $localeCode = null,
         private ?MessengerUser $messengerUser = null,
-        private ?TelegramBot $telegramBot = null,
-        #[Attribute('user_id')]
-        private ?string $userId = null,
         #[Attribute('messenger_user_id')]
         private ?string $messengerUserId = null,
+        private ?TelegramBot $telegramBot = null,
         #[Attribute('telegram_bot_id')]
         private ?string $telegramBotId = null,
         #[Attribute('created_at')]

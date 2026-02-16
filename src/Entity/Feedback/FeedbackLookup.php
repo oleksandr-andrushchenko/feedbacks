@@ -36,9 +36,9 @@ class FeedbackLookup
         #[Attribute('local_code')]
         private ?string $localeCode = null,
         private ?MessengerUser $messengerUser = null,
-        private ?TelegramBot $telegramBot = null,
         #[Attribute('messenger_user_id')]
         private ?string $messengerUserId = null,
+        private ?TelegramBot $telegramBot = null,
         #[Attribute('telegram_bot_id')]
         private ?string $telegramBotId = null,
         #[Attribute('created_at')]
