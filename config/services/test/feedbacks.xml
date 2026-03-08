@@ -43,12 +43,6 @@
             </parameter>
         </parameter>
 
-        <parameter key="app.create.search_term_type_step">true</parameter>
-        <parameter key="app.create.extra_search_term_step">true</parameter>
-        <parameter key="app.create.description_step">true</parameter>
-        <parameter key="app.create.confirm_step">true</parameter>
-        <parameter key="app.create.send_to_channel_confirm_step">true</parameter>
-
         <parameter key="app.search.search_term_type_step">true</parameter>
         <parameter key="app.search.confirm_step">true</parameter>
         <parameter key="app.search.create_confirm_step">true</parameter>

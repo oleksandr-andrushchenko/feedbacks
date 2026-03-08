@@ -63,12 +63,6 @@
             </parameter>
         </parameter>
 
-        <parameter key="app.create.search_term_type_step">true</parameter>
-        <parameter key="app.create.extra_search_term_step">true</parameter>
-        <parameter key="app.create.description_step">true</parameter>
-        <parameter key="app.create.confirm_step">false</parameter>
-        <parameter key="app.create.send_to_channel_confirm_step">false</parameter>
-
         <parameter key="app.search.search_term_type_step">true</parameter>
         <parameter key="app.search.confirm_step">false</parameter>
         <parameter key="app.search.create_confirm_step">false</parameter>
@@ -554,15 +548,6 @@
             <argument type="service" id="app.feedback_creator"/>
             <argument type="service" id="app.feedback_rating_provider"/>
             <argument type="service" id="app.event_bus"/>
-            <argument type="service" id="app.feedback_repository"/>
-            <argument type="service" id="app.search_viewer_telegram_feedbacks"/>
-            <argument type="service" id="app.telegram_channel_matches_provider"/>
-            <argument type="service" id="app.telegram_channel_link_view_provider"/>
-            <argument>%app.create.search_term_type_step%</argument>
-            <argument>%app.create.extra_search_term_step%</argument>
-            <argument>%app.create.description_step%</argument>
-            <argument>%app.create.confirm_step%</argument>
-            <argument>%app.create.send_to_channel_confirm_step%</argument>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
         <service id="app.telegram_conversation_search_feedback" lazy="true"

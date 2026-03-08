@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Telegram\TelegramBotConversation as Entity;
-use App\Entity\Telegram\TelegramChannel;
 use App\Enum\Feedback\Rating;
 use App\Enum\Feedback\SearchTermType;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
@@ -14,7 +13,6 @@ use App\Exception\ValidatorException;
 use App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent;
 use App\Model\Feedback\Command\FeedbackCommandLimit;
 use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
-use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackCreator;
 use App\Service\Feedback\Rating\FeedbackRatingProvider;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
@@ -22,18 +20,14 @@ use App\Service\Feedback\SearchTerm\SearchTermTypeProvider;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\View\MultipleSearchTermTelegramViewProvider;
 use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
-use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationInterface;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
-use App\Service\Telegram\Channel\TelegramChannelMatchesProvider;
-use App\Service\Telegram\Channel\View\TelegramChannelLinkViewProvider;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use Longman\TelegramBot\Entities\KeyboardButton;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
@@ -47,7 +41,9 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
     public const int STEP_CANCEL_PRESSED = 30;
     public const int STEP_RATING_QUERIED = 40;
     public const int STEP_DESCRIPTION_QUERIED = 50;
+    /** @deprecated */
     public const int STEP_CONFIRM_QUERIED = 60;
+    /** @deprecated */
     public const int STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED = 70;
 
     public function __construct(
@@ -60,15 +56,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly FeedbackCreator $feedbackCreator,
         private readonly FeedbackRatingProvider $feedbackRatingProvider,
         private readonly MessageBusInterface $eventBus,
-        private readonly FeedbackRepository $feedbackRepository,
-        private readonly FeedbackTelegramSearchViewer $feedbackTelegramSearchViewer,
-        private readonly TelegramChannelMatchesProvider $telegramChannelMatchesProvider,
-        private readonly TelegramChannelLinkViewProvider $telegramChannelLinkViewProvider,
-        private readonly bool $searchTermTypeStep,
-        private readonly bool $extraSearchTermStep,
-        private readonly bool $descriptionStep,
-        private readonly bool $confirmStep,
-        private readonly bool $sendToChannelConfirmStep,
     )
     {
         parent::__construct(new CreateFeedbackTelegramBotConversationState());
@@ -82,8 +69,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             self::STEP_SEARCH_TERM_TYPE_QUERIED => $this->gotSearchTermType($tg, $entity),
             self::STEP_RATING_QUERIED => $this->gotRating($tg, $entity),
             self::STEP_DESCRIPTION_QUERIED => $this->gotDescription($tg, $entity),
-            self::STEP_CONFIRM_QUERIED => $this->gotConfirm($tg, $entity),
-            self::STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED => $this->gotSendToChannelConfirm($tg, $entity),
         };
     }
 
@@ -95,30 +80,14 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
     public function getStep(int $num, string $symbols = ''): string
     {
         $originalNum = $num;
-        $total = 5;
+        $total = 3;
 
-        if (!$this->descriptionStep) {
-            if ($originalNum > 2) {
-                $num--;
-            }
-
-            $total--;
+        if ($originalNum > 3) {
+            $num--;
         }
 
-        if (!$this->confirmStep) {
-            if ($originalNum > 3) {
-                $num--;
-            }
-
-            $total--;
-        }
-
-        if (!$this->sendToChannelConfirmStep) {
-            if ($originalNum > 4) {
-                $num--;
-            }
-
-            $total--;
+        if ($originalNum > 4) {
+            $num--;
         }
 
         return sprintf('[%d/%d%s] ', $num, $total, $symbols);
@@ -212,8 +181,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
     }
 
     /**
-     * @param SearchTermsTransfer $searchTerms
-     * @param TelegramBotAwareHelper $tg
      * @return KeyboardButton[]
      */
     public function getRemoveTermButtons(SearchTermsTransfer $searchTerms, TelegramBotAwareHelper $tg): array
@@ -330,18 +297,12 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             if (count($types) === 1) {
                 $searchTerm->setType($types[0])->setTypes(null);
                 $this->parseSearchTerm($searchTerm, $tg);
-            } elseif ($this->searchTermTypeStep) {
-                return $this->querySearchTermType($tg);
             } else {
-                $searchTerm->setType(SearchTermType::unknown)->setTypes(null);
+                return $this->querySearchTermType($tg);
             }
         }
 
-        if ($this->extraSearchTermStep) {
-            return $this->querySearchTerm($tg);
-        }
-
-        return $this->queryRating($tg, $entity);
+        return $this->querySearchTerm($tg);
     }
 
     public function getSearchTermTypeQuery(TelegramBotAwareHelper $tg, bool $help = false): string
@@ -437,16 +398,10 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->querySearchTermType($tg);
         }
 
-        if ($this->extraSearchTermStep) {
-            return $this->querySearchTerm($tg);
-        }
-
-        return $this->queryRating($tg, $entity);
+        return $this->querySearchTerm($tg);
     }
 
     /**
-     * @param SearchTermTransfer $searchTerm
-     * @param TelegramBotAwareHelper $tg
      * @return KeyboardButton[]
      */
     public function getSearchTermTypeButtons(SearchTermTransfer $searchTerm, TelegramBotAwareHelper $tg): array
@@ -462,12 +417,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         return $tg->button($this->searchTermTypeProvider->getSearchTermTypeComposeName($type));
     }
 
-    /**
-     * @param string $button
-     * @param SearchTermTransfer $searchTerm
-     * @param TelegramBotAwareHelper $tg
-     * @return SearchTermType|null
-     */
     public function getSearchTermTypeByButton(
         string $button,
         SearchTermTransfer $searchTerm,
@@ -513,7 +462,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
     }
 
     /**
-     * @param TelegramBotAwareHelper $tg
      * @return KeyboardButton[]
      */
     public function getRatingButtons(TelegramBotAwareHelper $tg): array
@@ -573,10 +521,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         }
 
         if ($tg->matchInput($tg->prevButton()->getText())) {
-            if ($this->extraSearchTermStep) {
-                return $this->querySearchTerm($tg);
-            }
-
             return $this->querySearchTerm($tg);
         }
 
@@ -612,15 +556,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->queryRating($tg, $entity);
         }
 
-        if ($this->descriptionStep) {
-            return $this->queryDescription($tg);
-        }
-
-        if ($this->confirmStep) {
-            return $this->queryConfirm($tg);
-        }
-
-        return $this->createAndReply($tg, $entity);
+        return $this->queryDescription($tg);
     }
 
     public function getDescriptionQuery(TelegramBotAwareHelper $tg, bool $help = false): string
@@ -673,14 +609,8 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $buttons[] = $tg->removeButton($this->state->getDescription());
         }
 
-        if ($this->confirmStep) {
-            $buttons[] = [$tg->prevButton(), $tg->nextButton()];
-        } else {
-            $buttons[] = $this->getCreateConfirmButton($tg);
-            $buttons[] = $tg->prevButton();
-        }
-
-
+        $buttons[] = $this->getCreateConfirmButton($tg);
+        $buttons[] = $tg->prevButton();
         $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
@@ -699,14 +629,8 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->queryRating($tg, $entity);
         }
 
-        if ($this->confirmStep) {
-            if ($tg->matchInput($tg->nextButton()->getText())) {
-                return $this->queryConfirm($tg);
-            }
-        } else {
-            if ($tg->matchInput($this->getCreateConfirmButton($tg)->getText())) {
-                return $this->createAndReply($tg, $entity);
-            }
+        if ($tg->matchInput($this->getCreateConfirmButton($tg)->getText())) {
+            return $this->createAndReply($tg, $entity);
         }
 
         if ($tg->matchInput($tg->helpButton()->getText())) {
@@ -737,64 +661,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->queryDescription($tg);
         }
 
-        if ($this->confirmStep) {
-            return $this->queryConfirm($tg);
-        }
-
         return $this->createAndReply($tg, $entity);
-    }
-
-    public function getConfirmQuery(TelegramBotAwareHelper $tg, bool $help = false): string
-    {
-        $query = $this->getStep(4);
-
-        $searchTermView = $this->multipleSearchTermTelegramViewProvider->getPrimarySearchTermTelegramView(
-            $this->state->getSearchTerms(),
-            forceType: false
-        );
-        $parameters = [
-            'search_term' => $searchTermView,
-        ];
-        $query .= $tg->trans('query.confirm_preview', parameters: $parameters, domain: 'create');
-        $query .= ":";
-        $query = $tg->queryText($query);
-        $query .= "\n\n";
-        $query .= $this->feedbackTelegramSearchViewer->getFeedbackTelegramView(
-            $tg->getBot()->getEntity(),
-            $this->feedbackCreator->constructFeedback($this->constructTransfer($tg)),
-            addCountry: true,
-            addTime: true,
-            addQuotes: true,
-            locale: $tg->getBot()->getEntity()->getLocaleCode()
-        );
-        $query .= "\n\n";
-        $query .= $tg->queryText($tg->trans('query.confirm', parameters: $parameters, domain: 'create'));
-
-        if ($help) {
-            $query = $tg->view('create_confirm_help', [
-                'query' => $query,
-                'search_term' => $searchTermView,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
-
-        return $query;
-    }
-
-    public function queryConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
-    {
-        $this->state->setStep(self::STEP_CONFIRM_QUERIED);
-
-        $message = $this->getConfirmQuery($tg, $help);
-
-        $buttons = [];
-        $buttons[] = $tg->yesButton();
-        $buttons[] = $tg->prevButton();
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
-
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     public function getLimitExceededReply(TelegramBotAwareHelper $tg, FeedbackCommandLimit $limit): string
@@ -805,64 +672,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             'count' => $limit->getCount(),
             'limits' => $this->feedbackCreator->getOptions()->getLimits(),
         ]);
-    }
-
-    public function getSendToChannelConfirmQuery(TelegramBotAwareHelper $tg, bool $help = false): string
-    {
-        $query = $this->getStep(5);
-        $channels = $this->telegramChannelMatchesProvider->getTelegramChannelMatches(
-            $tg->getBot()->getUser(),
-            $tg->getBot()->getEntity()
-        );
-        $channelNamesView = implode(
-            ', ',
-            array_map(
-                fn (TelegramChannel $channel): string => $this->telegramChannelLinkViewProvider
-                    ->getTelegramChannelLinkView($channel, html: true),
-                $channels
-            )
-        );
-
-        $parameters = [
-            'channels' => $channelNamesView,
-        ];
-        $query .= $tg->trans('query.send_to_channel_confirm', parameters: $parameters, domain: 'create');
-        $query = $tg->queryText($query);
-
-        if ($help) {
-            $feedback = $this->feedbackRepository->find($this->state->getCreatedId());
-            $feedbackView = $this->feedbackTelegramSearchViewer->getFeedbackTelegramView(
-                $tg->getBot()->getEntity(),
-                $feedback,
-                addCountry: true,
-                addTime: true,
-                locale: $tg->getBot()->getEntity()->getLocaleCode()
-            );
-
-            $query = $tg->view('create_send_to_channel_confirm_help', [
-                'query' => $query,
-                'channels' => $channelNamesView,
-                'feedback' => $feedbackView,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
-
-        return $query;
-    }
-
-    public function querySendToChannelConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
-    {
-        $this->state->setStep(self::STEP_SEND_TO_CHANNEL_CONFIRM_QUERIED);
-
-        $message = $this->getSendToChannelConfirmQuery($tg, $help);
-
-        $buttons = [];
-        $buttons[] = [$tg->yesButton(), $tg->noButton()];
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
-
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     public function constructTransfer(TelegramBotAwareHelper $tg): FeedbackTransfer
@@ -890,10 +699,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $this->state->setCreatedId($feedback->getId());
 
             $tg->reply($message);
-
-            if ($this->sendToChannelConfirmStep && !empty($this->state->getDescription())) {
-                return $this->querySendToChannelConfirm($tg);
-            }
 
             $tg->stopConversation($entity);
 
@@ -932,72 +737,5 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
             return $this->chooseActionTelegramChatSender->sendActions($tg);
         }
-    }
-
-    public function gotConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
-    {
-        if ($tg->matchInput(null)) {
-            $tg->replyWrong(false);
-
-            return $this->queryConfirm($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryConfirm($tg, true);
-        }
-
-        if ($tg->matchInput($tg->prevButton()->getText())) {
-            if ($this->descriptionStep) {
-                return $this->queryDescription($tg);
-            }
-
-            return $this->queryRating($tg, $entity);
-        }
-
-        if ($tg->matchInput($tg->cancelButton()->getText())) {
-            return $this->gotCancel($tg, $entity);
-        }
-
-        if (!$tg->matchInput($tg->yesButton()->getText())) {
-            $tg->replyWrong(false);
-
-            return $this->queryConfirm($tg);
-        }
-
-        return $this->createAndReply($tg, $entity);
-    }
-
-    public function gotSendToChannelConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
-    {
-        if ($tg->matchInput($tg->noButton()->getText())) {
-            $tg->stopConversation($entity);
-
-            return $this->chooseActionTelegramChatSender->sendActions($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->querySendToChannelConfirm($tg, true);
-        }
-
-        if ($tg->matchInput($tg->cancelButton()->getText())) {
-            return $this->gotCancel($tg, $entity);
-        }
-
-        if (!$tg->matchInput($tg->yesButton()->getText())) {
-            $tg->replyWrong(false);
-
-            return $this->querySendToChannelConfirm($tg);
-        }
-
-        $tg->stopConversation($entity);
-
-        $message = $tg->trans('reply.will_sent_to_channel', domain: 'create');
-        $message = $tg->okText($message);
-
-        $this->chooseActionTelegramChatSender->sendActions($tg, $message, appendDefault: true);
-
-        $this->eventBus->dispatch(new FeedbackSendToTelegramChannelConfirmReceivedEvent(feedbackId: $this->state->getCreatedId(), addTime: true, notifyUser: true));
-
-        return null;
     }
 }
