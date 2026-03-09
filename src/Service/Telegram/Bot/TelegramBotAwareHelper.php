@@ -7,6 +7,7 @@ namespace App\Service\Telegram\Bot;
 use App\Entity\Telegram\TelegramBotConversation;
 use App\Model\Location;
 use App\Model\Telegram\TelegramBotConversationState;
+use App\Model\Text;
 use App\Service\Telegram\Bot\Api\TelegramBotChatActionSenderInterface;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationManager;
@@ -27,7 +28,6 @@ class TelegramBotAwareHelper
         private readonly TelegramBotConversationManager $telegramBotConversationManager,
         private readonly TelegramBotChatActionSenderInterface $telegramBotChatActionSender,
         private readonly TelegramBotChatProvider $telegramBotChatProvider,
-        private readonly TelegramBotInputProvider $telegramBotInputProvider,
         private readonly Environment $twig,
     )
     {
@@ -46,19 +46,24 @@ class TelegramBotAwareHelper
         return $this->bot;
     }
 
-    public function getInput(): ?string
+    public function getText(): ?Text
     {
-        $input = $this->telegramBotInputProvider->getTelegramInputByUpdate($this->getBot()->getUpdate());
-
-        if ($input === null) {
+        $text = $this->getBot()->getUpdate()->getMessage()?->getText();
+        if ($text === null) {
             return null;
         }
 
-        // replace multi spaces with single space
-        $input = preg_replace('/ +/', ' ', $input);
+        return new Text($text);
+    }
 
-        // remove empty lines
-        return implode("\n", array_filter(explode("\n", $input), static fn (string $line): bool => !in_array($line, ['', ' '], true)));
+    /**
+     * @deprecated
+     * @see TelegramBotAwareHelper::getText
+     */
+    public function getInput(): ?string
+    {
+//        $input = $this->getText() ?? $this->getBot()->getUpdate()->getCallbackQuery()?->getData();
+        return $this->getText()?->sanitizeAsTgInput();
     }
 
     public function matchInput(?string $text): bool

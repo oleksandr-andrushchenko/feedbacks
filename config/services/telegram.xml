@@ -344,8 +344,6 @@
                  lazy="true"/>
         <service id="app.telegram_bot_chat_provider" class="App\Service\Telegram\Bot\TelegramBotChatProvider"
                  lazy="true"/>
-        <service id="app.telegram_input_provider" class="App\Service\Telegram\Bot\TelegramBotInputProvider"
-                 lazy="true"/>
         <service id="app.telegram_bot_messenger_user_upserter"
                  class="App\Service\Telegram\Bot\TelegramBotMessengerUserUpserter" lazy="true">
             <argument type="service" id="app.telegram_bot_user_provider"/>
@@ -447,7 +445,6 @@
             <argument type="service" id="app.telegram_bot_conversation_manager"/>
             <argument type="service" id="app.telegram_bot_chat_action_sender"/>
             <argument type="service" id="app.telegram_bot_chat_provider"/>
-            <argument type="service" id="app.telegram_input_provider"/>
             <argument type="service" id="twig"/>
         </service>
         <service id="app.telegram_bot_invoice_sender" class="App\Service\Telegram\Bot\Api\TelegramBotInvoiceSender"
