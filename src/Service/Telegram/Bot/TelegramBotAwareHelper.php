@@ -7,7 +7,7 @@ namespace App\Service\Telegram\Bot;
 use App\Entity\Telegram\TelegramBotConversation;
 use App\Model\Location;
 use App\Model\Telegram\TelegramBotConversationState;
-use App\Model\Text;
+use App\Model\Telegram\TelegramText;
 use App\Service\Telegram\Bot\Api\TelegramBotChatActionSenderInterface;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationManager;
@@ -46,14 +46,14 @@ class TelegramBotAwareHelper
         return $this->bot;
     }
 
-    public function getText(): ?Text
+    public function getText(): ?TelegramText
     {
         $text = $this->getBot()->getUpdate()->getMessage()?->getText();
         if ($text === null) {
             return null;
         }
 
-        return new Text($text);
+        return new TelegramText($text);
     }
 
     /**
@@ -63,7 +63,7 @@ class TelegramBotAwareHelper
     public function getInput(): ?string
     {
 //        $input = $this->getText() ?? $this->getBot()->getUpdate()->getCallbackQuery()?->getData();
-        return $this->getText()?->sanitizeAsTgInput();
+        return $this->getText()?->getSanitizedValue();
     }
 
     public function matchInput(?string $text): bool

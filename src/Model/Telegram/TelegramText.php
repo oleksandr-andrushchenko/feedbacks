@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Model;
+namespace App\Model\Telegram;
 
-readonly class Text
+readonly class TelegramText
 {
     public function __construct(
         private string $text,
@@ -12,7 +12,7 @@ readonly class Text
     {
     }
 
-    public function sanitizeAsTgInput(): string
+    public function getSanitizedValue(): string
     {
         // replace multi spaces with single space
         $input = preg_replace('/ +/', ' ', $this->text);
