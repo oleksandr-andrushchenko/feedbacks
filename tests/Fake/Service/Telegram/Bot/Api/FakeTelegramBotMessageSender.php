@@ -30,7 +30,8 @@ class FakeTelegramBotMessageSender implements TelegramBotMessageSenderInterface
         int $replyToMessageId = null,
         bool $protectContent = null,
         bool $disableWebPagePreview = true,
-        bool $keepKeyboard = false
+        bool $keepKeyboard = false,
+        ?array $media = null
     ): ServerResponse
     {
         $this->calls[] = func_get_args();

@@ -132,7 +132,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation implement
         if ($tg->matchInput(null)) {
             $currency = null;
         } else {
-            $currency = $this->getCurrencyByButton($tg->getInput(), $tg);
+            $currency = $this->getCurrencyByButton($tg->getText()->getRawValue(), $tg);
         }
 
         if ($currency === null) {
@@ -215,7 +215,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation implement
         if ($tg->matchInput(null)) {
             $subscriptionPlan = null;
         } else {
-            $subscriptionPlan = $this->getSubscriptionPlanByButton($tg->getInput(), $tg);
+            $subscriptionPlan = $this->getSubscriptionPlanByButton($tg->getText()->getRawValue(), $tg);
         }
 
         if ($subscriptionPlan === null) {
@@ -303,7 +303,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation implement
         if ($tg->matchInput(null)) {
             $paymentMethod = null;
         } else {
-            $paymentMethod = $this->getPaymentMethodByButton($tg->getInput(), $tg);
+            $paymentMethod = $this->getPaymentMethodByButton($tg->getText()->getRawValue(), $tg);
         }
 
         if ($paymentMethod === null) {

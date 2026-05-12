@@ -8,6 +8,7 @@ use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
+use App\Model\Feedback\FeedbackMedia;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -50,6 +51,8 @@ class Feedback
         private ?string $text = null,
         #[Attribute('telegram_channel_message_ids')]
         private ?array $telegramChannelMessageIds = null,
+        #[Attribute]
+        private ?array $media = null,
         private ?TelegramBot $telegramBot = null,
         #[Attribute('telegram_bot_id')]
         private ?string $telegramBotId = null,
@@ -65,6 +68,7 @@ class Feedback
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
+        $this->media = empty($this->media) ? null : $this->media;
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
@@ -203,6 +207,33 @@ class Feedback
     public function getTelegramChannelMessageIds(): array
     {
         return $this->telegramChannelMessageIds ?? [];
+    }
+
+    /**
+     * @return array<int, array>|null
+     */
+    public function getMedia(): ?array
+    {
+        return $this->media;
+    }
+
+    /**
+     * @param array<int, FeedbackMedia|array>|null $media
+     */
+    public function setMedia(?array $media): self
+    {
+        $this->media = array_map(
+            static fn (FeedbackMedia|array $item): array => $item instanceof FeedbackMedia ? $item->toArray() : $item,
+            $media ?? []
+        );
+        $this->media = empty($this->media) ? null : $this->media;
+
+        return $this;
+    }
+
+    public function hasMedia(): bool
+    {
+        return count($this->media ?? []) > 0;
     }
 
     public function setTelegramBotId(?string $telegramBotId): self

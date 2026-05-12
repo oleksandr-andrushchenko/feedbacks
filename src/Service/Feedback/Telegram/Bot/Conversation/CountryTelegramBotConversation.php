@@ -292,7 +292,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
             $country = null;
         } else {
             $countries = $guess ? $this->getGuessCountries($tg) : $this->getCountries();
-            $country = $this->getCountryByButton($tg->getInput(), $countries, $tg);
+            $country = $this->getCountryByButton($tg->getText()->getRawValue(), $countries, $tg);
         }
 
         if ($country === null) {
@@ -399,7 +399,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         if ($tg->matchInput(null)) {
             $level1Region = null;
         } else {
-            $level1Region = $this->getLevel1RegionByButton($tg->getInput(), $tg);
+            $level1Region = $this->getLevel1RegionByButton($tg->getText()->getRawValue(), $tg);
         }
 
         if ($level1Region === null) {
@@ -549,7 +549,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         if ($tg->matchInput(null)) {
             $timezone = null;
         } else {
-            $timezone = $this->getTimezoneByButton($tg->getInput(), $tg);
+            $timezone = $this->getTimezoneByButton($tg->getText()->getRawValue(), $tg);
         }
 
         if ($timezone === null) {

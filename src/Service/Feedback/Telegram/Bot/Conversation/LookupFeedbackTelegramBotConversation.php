@@ -207,7 +207,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->gotCancel($tg, $entity);
         }
 
-        $searchTerm = new SearchTermTransfer($tg->getInput());
+        $searchTerm = new SearchTermTransfer($tg->getText()->getRawValue());
 
         $this->parseSearchTerm($searchTerm, $tg);
 
@@ -305,7 +305,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->gotCancel($tg, $entity);
         }
 
-        $type = $this->getSearchTermTypeByButton($tg->getInput(), $searchTerm, $tg);
+        $type = $this->getSearchTermTypeByButton($tg->getText()->getRawValue(), $searchTerm, $tg);
 
         if ($type === null) {
             $tg->replyWrong(false);

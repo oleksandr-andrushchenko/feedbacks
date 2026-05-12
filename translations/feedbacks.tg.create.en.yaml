@@ -6,6 +6,9 @@ query:
   rating: Rate your experience with %search_term%.
   description: Describe your experience with %search_term%.
   description_tip: 'For example: tell how your meeting, conversation, any interaction went, describe the person, organization, place, etc.'
+  media: Add a photo or video with %search_term%.
+  media_tip: 'For example: upload a user profile photo, a chat screenshot, etc.'
+  media_count: '%count% media files'
   confirm_preview: Your feedback will look like this
   confirm: Create feedback?
   send_to_channel_confirm: Would you like to post your feedback anonymously on %channels% channels?

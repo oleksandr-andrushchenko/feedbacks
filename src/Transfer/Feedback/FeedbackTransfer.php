@@ -15,6 +15,7 @@ class FeedbackTransfer
         private ?SearchTermsTransfer $searchTerms = null,
         private ?Rating $rating = null,
         private ?string $description = null,
+        private ?array $media = null,
         private ?TelegramBot $telegramBot = null,
     )
     {
@@ -70,6 +71,18 @@ class FeedbackTransfer
     public function setTelegramBot(?TelegramBot $telegramBot): self
     {
         $this->telegramBot = $telegramBot;
+
+        return $this;
+    }
+
+    public function getMedia(): ?array
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?array $media): self
+    {
+        $this->media = $media;
 
         return $this;
     }

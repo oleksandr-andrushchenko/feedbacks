@@ -19,6 +19,7 @@ interface TelegramBotMessageSenderInterface
         int $replyToMessageId = null,
         bool $protectContent = null,
         bool $disableWebPagePreview = true,
-        bool $keepKeyboard = false
+        bool $keepKeyboard = false,
+        ?array $media = null
     ): ServerResponse;
 }

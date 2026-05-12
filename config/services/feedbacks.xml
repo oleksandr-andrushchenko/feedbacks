@@ -281,8 +281,6 @@
             <argument type="service" id="app.feedback_create_command_options"/>
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.validator"/>
-            <argument type="service" id="app.feedback_statistic_provider"/>
-            <argument type="service" id="app.feedback_command_limits_checker"/>
             <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.search_term_messenger_provider"/>
@@ -547,6 +545,7 @@
             <argument type="service" id="app.feedback_search_term_type_provider"/>
             <argument type="service" id="app.feedback_creator"/>
             <argument type="service" id="app.feedback_rating_provider"/>
+            <argument type="service" id="app.telegram_media_creator"/>
             <argument type="service" id="app.event_bus"/>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>

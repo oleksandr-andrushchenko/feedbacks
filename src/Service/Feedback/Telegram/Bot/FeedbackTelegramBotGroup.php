@@ -33,22 +33,22 @@ use Throwable;
 
 class FeedbackTelegramBotGroup implements TelegramBotGroupInterface
 {
-    public const START = '/start';
-    public const CREATE = '/add';
-    public const SEARCH = '/find';
-    public const LOOKUP = '/lookup';
-    public const SUBSCRIBE = '/subscribe';
-    public const SUBSCRIPTIONS = '/subscriptions';
-    public const COUNTRY = '/country';
-    public const LOCALE = '/locale';
-    public const LIMITS = '/limits';
-    public const PURGE = '/purge';
-    public const DONATE = '/donate';
-    public const CONTACT = '/contact';
-    public const COMMANDS = '/commands';
-    public const RESTART = '/restart';
+    public const string START = '/start';
+    public const string CREATE = '/add';
+    public const string SEARCH = '/find';
+    public const string LOOKUP = '/lookup';
+    public const string SUBSCRIBE = '/subscribe';
+    public const string SUBSCRIPTIONS = '/subscriptions';
+    public const string COUNTRY = '/country';
+    public const string LOCALE = '/locale';
+    public const string LIMITS = '/limits';
+    public const string PURGE = '/purge';
+    public const string DONATE = '/donate';
+    public const string CONTACT = '/contact';
+    public const string COMMANDS = '/commands';
+    public const string RESTART = '/restart';
 
-    public const SUPPORTS = [
+    public const array SUPPORTS = [
         'create' => self::CREATE,
         'search' => self::SEARCH,
         'lookup' => self::LOOKUP,
@@ -111,22 +111,24 @@ class FeedbackTelegramBotGroup implements TelegramBotGroupInterface
 
     public function fallback(TelegramBotAwareHelper $tg): null
     {
+        $t = $tg->getText()->getRawValue();
+
         return match (true) {
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getCreateButtonTexts($tg), true) => $this->create($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getSearchButtonTexts($tg), true) => $this->search($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getLookupButtonTexts($tg), true) => $this->lookup($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getSubscribeButtonTexts($tg), true) => $this->subscribe($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getSubscriptionsButtonTexts($tg), true) => $this->subscriptions($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getCountryButtonTexts($tg), true) => $this->country($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getLocaleButtonTexts($tg), true) => $this->locale($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getLimitsButtonTexts($tg), true) => $this->limits($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getPurgeButtonTexts($tg), true) => $this->purge($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getDonateButtonTexts($tg), true) => $this->donate($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getContactButtonTexts($tg), true) => $this->contact($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getCommandsButtonTexts($tg), true) => $this->commands($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getRestartButtonTexts($tg), true) => $this->restart($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getShowLessButtonTexts($tg), true) => $this->less($tg),
-            in_array($tg->getInput(), $this->chooseActionTelegramChatSender->getShowMoreButtonTexts($tg), true) => $this->more($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getCreateButtonTexts($tg), true) => $this->create($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getSearchButtonTexts($tg), true) => $this->search($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getLookupButtonTexts($tg), true) => $this->lookup($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getSubscribeButtonTexts($tg), true) => $this->subscribe($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getSubscriptionsButtonTexts($tg), true) => $this->subscriptions($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getCountryButtonTexts($tg), true) => $this->country($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getLocaleButtonTexts($tg), true) => $this->locale($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getLimitsButtonTexts($tg), true) => $this->limits($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getPurgeButtonTexts($tg), true) => $this->purge($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getDonateButtonTexts($tg), true) => $this->donate($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getContactButtonTexts($tg), true) => $this->contact($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getCommandsButtonTexts($tg), true) => $this->commands($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getRestartButtonTexts($tg), true) => $this->restart($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getShowLessButtonTexts($tg), true) => $this->less($tg),
+            in_array($t, $this->chooseActionTelegramChatSender->getShowMoreButtonTexts($tg), true) => $this->more($tg),
             default => $this->wrong($tg)
         };
     }
@@ -139,7 +141,12 @@ class FeedbackTelegramBotGroup implements TelegramBotGroupInterface
             return true;
         }
 
-        return $update->getMessage()?->getChat()->getType() === 'private';
+        $message = $update->getMessage();
+        if ($message?->getPhoto() !== null || $message?->getVideo() !== null) {
+            return true;
+        }
+
+        return $message?->getChat()->getType() === 'private';
     }
 
     public function myChatMemberHandler(TelegramBotAwareHelper $tg): null

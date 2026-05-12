@@ -33,6 +33,7 @@
         <field name="countryCode" column="country_code" length="2" nullable="true"/>
         <field name="localeCode" column="locale_code" length="2" nullable="true"/>
         <field name="telegramChannelMessageIds" column="channel_message_ids" type="simple_array" nullable="true"/>
+        <field name="media" column="media" type="json" nullable="true"/>
 
         <many-to-one field="telegramBot" target-entity="App\Entity\Telegram\TelegramBot"/>
 

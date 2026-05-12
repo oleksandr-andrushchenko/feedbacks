@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot\Payment;
@@ -41,17 +40,6 @@ class TelegramBotPaymentManager
     }
 
     /**
-     * @param TelegramBot $bot
-     * @param MessengerUser $messengerUser
-     * @param string $chatId
-     * @param TelegramBotPaymentMethod $paymentMethod
-     * @param string $title
-     * @param string $description
-     * @param string $label
-     * @param string $purpose
-     * @param array $payload
-     * @param Money $price
-     * @return TelegramBotPayment
      * @throws ExceptionInterface
      * @throws TelegramBotInvalidCurrencyBotException
      */
@@ -107,9 +95,6 @@ class TelegramBotPaymentManager
     }
 
     /**
-     * @param TelegramBot $bot
-     * @param PreCheckoutQuery $preCheckoutQuery
-     * @return TelegramBotPayment
      * @throws TelegramBotPaymentNotFoundException
      * @throws TelegramBotUnknownPaymentException
      * @throws ExceptionInterface
@@ -134,9 +119,6 @@ class TelegramBotPaymentManager
     }
 
     /**
-     * @param TelegramBot $bot
-     * @param SuccessfulPayment $successfulPayment
-     * @return TelegramBotPayment
      * @throws ExceptionInterface
      * @throws TelegramBotPaymentNotFoundException
      * @throws TelegramBotUnknownPaymentException
@@ -156,8 +138,6 @@ class TelegramBotPaymentManager
     }
 
     /**
-     * @param string $payload
-     * @return TelegramBotPayment
      * @throws TelegramBotPaymentNotFoundException
      * @throws TelegramBotUnknownPaymentException
      */

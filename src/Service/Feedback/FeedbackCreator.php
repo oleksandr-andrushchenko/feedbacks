@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Feedback;
 
 use App\Entity\Feedback\Feedback;
-use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\Feedback\FeedbackOnOneselfException;
 use App\Exception\ValidatorException;
 use App\Factory\Feedback\FeedbackFactory;
@@ -13,10 +12,8 @@ use App\Factory\Feedback\SearchTermFeedbackFactory;
 use App\Message\Event\ActivityEvent;
 use App\Message\Event\Feedback\FeedbackCreatedEvent;
 use App\Model\Feedback\Command\FeedbackCommandOptions;
-use App\Service\Feedback\Command\FeedbackCommandLimitsChecker;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
 use App\Service\Feedback\SearchTerm\SearchTermUpserter;
-use App\Service\Feedback\Statistic\FeedbackUserStatisticProviderInterface;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
@@ -30,8 +27,6 @@ class FeedbackCreator
         private readonly FeedbackCommandOptions $feedbackCommandOptions,
         private readonly EntityManager $entityManager,
         private readonly Validator $validator,
-        private readonly FeedbackUserStatisticProviderInterface $feedbackCommandStatisticProvider,
-        private readonly FeedbackCommandLimitsChecker $feedbackCommandLimitsChecker,
         private readonly SearchTermUpserter $searchTermUpserter,
         private readonly MessageBusInterface $eventBus,
         private readonly SearchTermMessengerProvider $searchTermMessengerProvider,
@@ -49,9 +44,6 @@ class FeedbackCreator
     }
 
     /**
-     * @param FeedbackTransfer $transfer
-     * @return Feedback
-     * @throws FeedbackCommandLimitExceededException
      * @throws FeedbackOnOneselfException
      * @throws ValidatorException
      * @throws ExceptionInterface
@@ -61,13 +53,6 @@ class FeedbackCreator
         $this->validator->validate($transfer);
 
         $this->checkSearchTermUser($transfer);
-
-//        $messengerUser = $transfer->getMessengerUser();
-//        $user = $this->messengerUserService->getUser($messengerUser);
-
-//        if (!$user->hasActiveSubscription()) {
-//            $this->feedbackCommandLimitsChecker->checkCommandLimits($user, $this->feedbackCommandStatisticProvider);
-//        }
 
         $feedback = $this->constructFeedback($transfer);
         $this->entityManager->persist($feedback);
@@ -105,13 +90,12 @@ class FeedbackCreator
             $searchTerms,
             $transfer->getRating(),
             $transfer->getDescription(),
+            $transfer->getMedia(),
             $transfer->getTelegramBot()
         );
     }
 
     /**
-     * @param FeedbackTransfer $transfer
-     * @return void
      * @throws FeedbackOnOneselfException
      */
     private function checkSearchTermUser(FeedbackTransfer $transfer): void

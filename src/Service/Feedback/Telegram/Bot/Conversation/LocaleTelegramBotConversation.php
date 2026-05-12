@@ -238,7 +238,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation implements T
             $locale = null;
         } else {
             $locales = $guess ? $this->getGuessLocales($tg) : $this->getLocales();
-            $locale = $this->getLocaleByButton($tg->getInput(), $locales, $tg);
+            $locale = $this->getLocaleByButton($tg->getText()->getRawValue(), $locales, $tg);
         }
 
         if ($locale === null) {

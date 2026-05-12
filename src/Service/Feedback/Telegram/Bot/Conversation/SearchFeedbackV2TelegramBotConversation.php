@@ -32,7 +32,7 @@ use Longman\TelegramBot\Entities\KeyboardButton;
 /**
  * @property SearchFeedbackTelegramBotConversationState $state
  */
-class SearchFeedbackTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
+class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
 {
     public const int STEP_SEARCH_TERM_QUERIED = 10;
     public const int STEP_SEARCH_TERM_TYPE_QUERIED = 20;
@@ -50,8 +50,6 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly FeedbackSearchCreator $feedbackSearchCreator,
         private readonly Searcher $searcher,
         private readonly FeedbackSearchService $feedbackSearchService,
-        private readonly bool $searchTermTypeStep,
-        private readonly bool $confirmStep,
         private readonly bool $createConfirmStep,
         private readonly array $searchProviders,
     )
@@ -80,13 +78,11 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
         $originalNum = $num;
         $total = 2;
 
-        if (!$this->confirmStep) {
-            if ($originalNum > 1) {
-                $num--;
-            }
-
-            $total--;
+        if ($originalNum > 1) {
+            $num--;
         }
+
+        $total--;
 
         return sprintf('[%d/%d] ', $num, $total);
     }
@@ -138,10 +134,6 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
 
         if ($searchTerm !== null) {
             $buttons[] = $this->getRemoveTermButton($searchTerm, $tg);
-
-            if ($this->confirmStep) {
-                $buttons[] = $tg->nextButton();
-            }
         }
 
         $buttons[] = $tg->helpButton();
@@ -189,10 +181,6 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
         $searchTerm = $this->state->getSearchTerm();
 
         if ($tg->matchInput($tg->nextButton()->getText()) && $searchTerm !== null) {
-            if ($this->confirmStep) {
-                return $this->queryConfirm($tg);
-            }
-
             return $this->searchAndReply($tg, $entity);
         }
 
@@ -233,15 +221,9 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
             if (count($types) === 1) {
                 $searchTerm->setType($types[0])->setTypes(null);
                 $this->parseSearchTerm($searchTerm, $tg);
-            } elseif ($this->searchTermTypeStep) {
-                return $this->querySearchTermType($tg);
             } else {
-                $searchTerm->setType(SearchTermType::unknown)->setTypes(null);
+                return $this->querySearchTermType($tg);
             }
-        }
-
-        if ($this->confirmStep) {
-            return $this->queryConfirm($tg);
         }
 
         return $this->searchAndReply($tg, $entity);
@@ -328,10 +310,6 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation impl
             $tg->replyWarning($tg->queryText($exception->getFirstMessage()));
 
             return $this->querySearchTerm($tg);
-        }
-
-        if ($this->confirmStep) {
-            return $this->queryConfirm($tg);
         }
 
         return $this->searchAndReply($tg, $entity);

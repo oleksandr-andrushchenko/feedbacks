@@ -11,6 +11,7 @@ use App\Exception\Telegram\Bot\Payment\TelegramBotUnknownPaymentException;
 use App\Exception\Telegram\Bot\TelegramBotInvalidUpdateException;
 use App\Model\Telegram\TelegramBotErrorHandler;
 use App\Model\Telegram\TelegramBotFallbackHandler;
+use App\Model\Telegram\TelegramBotHandler;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
 use App\Repository\Telegram\Bot\TelegramBotUpdateRepository;
 use App\Service\ORM\EntityManager;
@@ -48,9 +49,6 @@ class TelegramBotUpdateHandler
     }
 
     /**
-     * @param TelegramBot $botEntity
-     * @param Request $request
-     * @return void
      * @throws TelegramBotInvalidUpdateException
      * @throws TelegramBotPaymentNotFoundException
      * @throws Throwable
@@ -106,6 +104,7 @@ class TelegramBotUpdateHandler
 
         $group = $this->telegramBotGroupRegistry->getTelegramGroup($bot->getEntity()->getGroup());
         $tg = $this->telegramBotAwareHelper->withTelegramBot($bot);
+        /** @var array<TelegramBotHandler> $handlers */
         $handlers = iterator_to_array($group->getHandlers($tg));
 
         try {
@@ -114,9 +113,13 @@ class TelegramBotUpdateHandler
                     $this->telegramBotPaymentManager->acceptPreCheckoutQuery($bot, $update->getPreCheckoutQuery());
                 }
                 return;
-            } elseif ($update->getMessage()?->getSuccessfulPayment() !== null) {
+            }
+
+            $message = $update->getMessage();
+
+            if ($message?->getSuccessfulPayment() !== null) {
                 if (!$bot->deleted() && $bot->getEntity()->acceptPayments()) {
-                    $payment = $this->telegramBotPaymentManager->acceptSuccessfulPayment($bot, $update->getMessage()->getSuccessfulPayment());
+                    $payment = $this->telegramBotPaymentManager->acceptSuccessfulPayment($bot, $message->getSuccessfulPayment());
                     $group->acceptPayment($payment, $tg);
                 }
                 return;
@@ -133,57 +136,50 @@ class TelegramBotUpdateHandler
                     $this->logger->warning('Primary bot has not been found to replace deleted/non-primary one', [
                         'bot_id' => $bot->getEntity()->getId(),
                     ]);
-                } else {
-                    $tg->reply(
-                        $tg->attentionText(
-                            sprintf(
-                                "%s:\n\n%s",
-                                $tg->trans('reply.use_primary'),
-                                $this->telegramBotLinkViewProvider->getTelegramBotLinkView($newBot)
-                            )
-                        )
-                    );
+                    return;
                 }
+
+                $tg->reply(
+                    $tg->attentionText(
+                        sprintf(
+                            "%s:\n\n%s",
+                            $tg->trans('reply.use_primary'),
+                            $this->telegramBotLinkViewProvider->getTelegramBotLinkView($newBot)
+                        )
+                    )
+                );
 
                 return;
             }
-
-
-            $handled = false;
 
             // if /command typed = force it
             foreach ($handlers as $handler) {
                 if (call_user_func_array($handler->getSupports(), [$bot->getUpdate(), true]) === true) {
                     call_user_func($handler->getCallback());
-                    $handled = true;
+                    return;
                 }
             }
 
             // if conversation exists = continue it
-            if (!$handled) {
-                $conversation = $this->telegramBotConversationManager->getCurrentTelegramConversation($bot);
-                if ($conversation !== null) {
-                    $this->telegramBotConversationManager->continueTelegramConversation($bot, $conversation);
-                    $handled = true;
-                }
+            $conversation = $this->telegramBotConversationManager->getCurrentTelegramConversation($bot);
+            if ($conversation !== null) {
+                $this->telegramBotConversationManager->continueTelegramConversation($bot, $conversation);
+                return;
             }
 
             // if /command typed = start it
-            if (!$handled) {
-                foreach ($handlers as $handler) {
-                    if (call_user_func_array($handler->getSupports(), [$bot->getUpdate(), false]) === true) {
-                        call_user_func($handler->getCallback());
-                        $handled = true;
-                    }
+            foreach ($handlers as $handler) {
+                if (call_user_func_array($handler->getSupports(), [$bot->getUpdate(), false]) === true) {
+                    call_user_func($handler->getCallback());
+                    return;
                 }
             }
 
             // fallback
-            if (!$handled) {
-                foreach ($handlers as $handler) {
-                    if ($handler instanceof TelegramBotFallbackHandler) {
-                        call_user_func($handler->getCallback());
-                    }
+            foreach ($handlers as $handler) {
+                if ($handler instanceof TelegramBotFallbackHandler) {
+                    call_user_func($handler->getCallback());
+                    return;
                 }
             }
         } catch (Throwable $exception) {

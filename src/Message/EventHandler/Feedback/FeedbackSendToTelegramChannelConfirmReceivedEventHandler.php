@@ -14,6 +14,8 @@ use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
 use App\Service\Telegram\Bot\Api\TelegramBotMessageSenderInterface;
 use App\Service\Telegram\Channel\TelegramChannelMatchesProvider;
 use App\Service\Telegram\Channel\View\TelegramChannelLinkViewProvider;
+use Longman\TelegramBot\Entities\Message;
+use Longman\TelegramBot\Entities\ServerResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
@@ -78,17 +80,44 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
             $chatId = $channel->getChatId() ?? ('@' . $channel->getUsername());
 
             try {
-                $response = $this->telegramBotMessageSender->sendTelegramMessage($bot, $chatId, $message, keepKeyboard: true);
+                if ($feedback->hasMedia() && mb_strlen($message) <= 1024) {
+                    $response = $this->telegramBotMessageSender->sendTelegramMessage(
+                        $bot,
+                        $chatId,
+                        $message,
+                        keepKeyboard: true,
+                        media: $feedback->getMedia()
+                    );
+                } else {
+                    $response = $this->telegramBotMessageSender->sendTelegramMessage($bot, $chatId, $message, keepKeyboard: true);
+                }
 
                 if (!$response->isOk()) {
                     $this->logger->error($response->getDescription());
                     continue;
                 }
 
-                $messageId = $response->getResult()?->getMessageId();
-
-                if ($messageId !== null) {
+                foreach ($this->getMessageIds($response) as $messageId) {
                     $feedback->addTelegramChannelMessageId($messageId);
+                }
+
+                if ($feedback->hasMedia() && mb_strlen($message) > 1024) {
+                    $response = $this->telegramBotMessageSender->sendTelegramMessage(
+                        $bot,
+                        $chatId,
+                        '',
+                        keepKeyboard: true,
+                        media: $feedback->getMedia()
+                    );
+
+                    if (!$response->isOk()) {
+                        $this->logger->error($response->getDescription());
+                        continue;
+                    }
+
+                    foreach ($this->getMessageIds($response) as $messageId) {
+                        $feedback->addTelegramChannelMessageId($messageId);
+                    }
                 }
             } catch (Throwable $exception) {
                 $this->logger->error($exception, [
@@ -126,5 +155,26 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
 
             $this->telegramBotMessageSender->sendTelegramMessage($bot, $userChatId, $message, keepKeyboard: true);
         }
+    }
+
+    /**
+     * @return int[]
+     */
+    private function getMessageIds(ServerResponse $response): array
+    {
+        $result = $response->getResult();
+
+        if ($result instanceof Message) {
+            return array_filter([$result->getMessageId()]);
+        }
+
+        if (is_array($result)) {
+            return array_values(array_filter(array_map(
+                static fn ($item): ?int => $item instanceof Message ? $item->getMessageId() : null,
+                $result
+            )));
+        }
+
+        return [];
     }
 }

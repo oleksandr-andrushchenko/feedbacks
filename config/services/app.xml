@@ -13,6 +13,7 @@
         <parameter key="app.default_currency">USD</parameter>
 
         <parameter key="app.data_dir">%kernel.project_dir%/data</parameter>
+        <parameter key="app.feedback_media_bucket">%env(resolve:FEEDBACK_MEDIA_BUCKET)%</parameter>
 
         <parameter key="app.telegram_activities_token">%env(resolve:TELEGRAM_ACTIVITIES_TOKEN)%</parameter>
         <parameter key="app.telegram_activities_channel">%app.telegram_admin_id%</parameter>
@@ -80,6 +81,14 @@
         </service>
         <service id="app.http_requester" class="App\Service\HttpRequester" lazy="true">
             <argument type="service" id="http_client"/>
+        </service>
+        <service id="app.feedback_media_storage" class="App\Service\Feedback\Media\FeedbackMediaStorage" lazy="true">
+            <argument type="service" id="aws.s3"/>
+            <argument>%app.feedback_media_bucket%</argument>
+            <argument>%app.stage%</argument>
+        </service>
+        <service id="app.feedback_media_url_provider" class="App\Service\Feedback\Media\FeedbackMediaUrlProvider" lazy="true">
+            <argument type="service" id="aws.s3"/>
         </service>
         <service id="app.crawler_provider" class="App\Service\CrawlerProvider" lazy="true">
             <argument type="service" id="app.http_requester"/>

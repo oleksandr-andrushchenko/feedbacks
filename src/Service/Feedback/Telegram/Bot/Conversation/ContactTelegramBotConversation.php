@@ -169,7 +169,7 @@ class ContactTelegramBotConversation extends TelegramBotConversation implements 
                 new UserContactMessageTransfer(
                     $tg->getBot()->getMessengerUser(),
                     $tg->getBot()->getUser(),
-                    $tg->getInput(),
+                    $tg->getText()->getRawValue(),
                     $tg->getBot()->getEntity()
                 )
             );

@@ -21,6 +21,7 @@ provider:
     GOOGLE_API_KEY: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/GOOGLE_API_KEY}
     DB_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/DB_URL}
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
+    FEEDBACK_MEDIA_BUCKET: !Ref FeedbackMediaBucket
     DB_ENGINE: ${env:DB_ENGINE}
     CRYPTO: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/CRYPTO}
   tags:
@@ -79,6 +80,25 @@ package:
 
 resources:
   Resources:
+    FeedbackMediaBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${env:AWS_PROJECT}-${sls:stage}-feedback-media
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        Tags:
+          - Key: Stage
+            Value: ${sls:stage}
+          - Key: Project
+            Value: ${env:AWS_PROJECT}
+          - Key: Owner
+            Value: ${env:AWS_OWNER}
+          - Key: Region
+            Value: ${aws:region}
+
     DynamoDBTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -283,6 +303,16 @@ resources:
                   Resource:
                     - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}"
                     - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}/index/*"
+          - PolicyName: FeedbackMedia
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                    - s3:PutObject
+                  Resource:
+                    - !Sub "${FeedbackMediaBucket.Arn}/*"
           - PolicyName: Logs
             PolicyDocument:
               Version: "2012-10-17"
@@ -342,6 +372,16 @@ resources:
                   Resource:
                     - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}"
                     - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${env:DYNAMODB_TABLE}/index/*"
+          - PolicyName: FeedbackMedia
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:GetObject
+                    - s3:PutObject
+                  Resource:
+                    - !Sub "${FeedbackMediaBucket.Arn}/*"
           - PolicyName: Logs
             PolicyDocument:
               Version: "2012-10-17"

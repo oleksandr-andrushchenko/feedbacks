@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Model\Feedback\Telegram\Bot;
 
 use App\Enum\Feedback\Rating;
+use App\Model\Feedback\FeedbackMedia;
 use App\Model\Telegram\TelegramBotConversationState;
 use App\Transfer\Feedback\SearchTermsTransfer;
 
@@ -15,6 +16,7 @@ class CreateFeedbackTelegramBotConversationState extends TelegramBotConversation
         private ?SearchTermsTransfer $searchTerms = null,
         private ?Rating $rating = null,
         private ?string $description = null,
+        private ?array $media = null,
         private ?string $createdId = null,
     )
     {
@@ -57,6 +59,30 @@ class CreateFeedbackTelegramBotConversationState extends TelegramBotConversation
         $this->description = $description;
 
         return $this;
+    }
+
+    public function getMedia(): ?array
+    {
+        return $this->media;
+    }
+
+    public function setMedia(?array $media): self
+    {
+        $this->media = $media;
+
+        return $this;
+    }
+
+    public function addMedia(FeedbackMedia $media): self
+    {
+        $this->media[] = $media;
+
+        return $this;
+    }
+
+    public function hasMedia(): bool
+    {
+        return count($this->media ?? []) > 0;
     }
 
     public function getCreatedId(): ?string

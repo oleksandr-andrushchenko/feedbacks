@@ -27,6 +27,7 @@ class FeedbackFactory
         array $searchTerms,
         Rating $rating,
         ?string $text,
+        ?array $media,
         ?TelegramBot $telegramBot,
     ): Feedback
     {
@@ -37,6 +38,7 @@ class FeedbackFactory
             searchTerms: $searchTerms,
             rating: $rating,
             text: $text,
+            media: $media,
             telegramBot: $telegramBot,
         );
     }

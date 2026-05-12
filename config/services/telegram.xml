@@ -322,7 +322,8 @@
             <argument type="service" id="app.telegram_bot_chat_provider"/>
             <argument type="service" id="logger"/>
         </service>
-        <service id="app.telegram_bot_my_commands_provider" class="App\Service\Telegram\Bot\TelegramBotMyCommandsProvider" lazy="true">
+        <service id="app.telegram_bot_my_commands_provider"
+                 class="App\Service\Telegram\Bot\TelegramBotMyCommandsProvider" lazy="true">
             <argument type="service" id="app.telegram_bot_group_registry"/>
             <argument type="service" id="app.telegram_bot_aware_helper"/>
         </service>
@@ -411,6 +412,7 @@
                  lazy="true">
             <argument type="service" id="app.telegram_bot_registry"/>
             <argument type="service" id="app.validator_html"/>
+            <argument type="service" id="app.feedback_media_url_provider"/>
         </service>
         <service id="app.telegram_bot_chat_action_sender"
                  class="App\Service\Telegram\Bot\Api\TelegramBotChatActionSender"
@@ -546,6 +548,10 @@
         </service>
         <service id="app.telegram_bot_provider" class="App\Service\Telegram\Bot\TelegramBotProvider" lazy="true">
             <argument type="service" id="app.telegram_bot_repository"/>
+        </service>
+        <service id="app.telegram_media_creator" class="App\Service\Telegram\TelegramMediaCreator" lazy="true">
+            <argument type="service" id="app.feedback_media_storage"/>
+            <argument type="service" id="http_client"/>
         </service>
     </services>
 </container>
