@@ -19,11 +19,6 @@ class ValidatorException extends Exception
         parent::__construct(implode("\n", iterator_to_array($this->getMessages())), $code, $previous);
     }
 
-    public function getViolations(): ConstraintViolationListInterface
-    {
-        return $this->violations;
-    }
-
     public function getMessages(): Generator
     {
         foreach ($this->violations as $violation) {
@@ -31,17 +26,15 @@ class ValidatorException extends Exception
         }
     }
 
+    public function getViolations(): ConstraintViolationListInterface
+    {
+        return $this->violations;
+    }
+
     public function getFirstMessage(): string
     {
         foreach ($this->violations as $violation) {
             return $violation->getMessage();
-        }
-    }
-
-    public function getFirstProperty(): string
-    {
-        foreach ($this->violations as $violation) {
-            return $violation->getPropertyPath();
         }
     }
 
@@ -59,5 +52,12 @@ class ValidatorException extends Exception
             return true;
         }
         return $this->getFirstProperty() === $propertyToCheck;
+    }
+
+    public function getFirstProperty(): string
+    {
+        foreach ($this->violations as $violation) {
+            return $violation->getPropertyPath();
+        }
     }
 }

@@ -22,6 +22,16 @@ abstract class SearchViewer implements SearchViewerInterface
         return '🔍 ' . $this->trans('on_search');
     }
 
+    protected function trans($id, array $parameters = [], bool $generalDomain = false, string $locale = null): string
+    {
+        return $this->searchViewerCompose->trans(
+            $id,
+            parameters: $parameters,
+            generalDomain: $generalDomain,
+            locale: $locale
+        );
+    }
+
     public function showLimits(): bool
     {
         return $this->showLimits === true;
@@ -71,15 +81,5 @@ abstract class SearchViewer implements SearchViewerInterface
     public function getErrorMessage(SearchTerm $searchTerm, array $context = []): string
     {
         return $this->trans('error_result', generalDomain: true);
-    }
-
-    protected function trans($id, array $parameters = [], bool $generalDomain = false, string $locale = null): string
-    {
-        return $this->searchViewerCompose->trans(
-            $id,
-            parameters: $parameters,
-            generalDomain: $generalDomain,
-            locale: $locale
-        );
     }
 }

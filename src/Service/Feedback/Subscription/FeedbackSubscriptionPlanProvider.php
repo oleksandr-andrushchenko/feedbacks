@@ -17,6 +17,17 @@ class FeedbackSubscriptionPlanProvider
     {
     }
 
+    public function getSubscriptionPlan(FeedbackSubscriptionPlanName $subscriptionPlanName): ?FeedbackSubscriptionPlan
+    {
+        foreach ($this->getSubscriptionPlans() as $subscriptionPlan) {
+            if ($subscriptionPlan->getName() === $subscriptionPlanName) {
+                return $subscriptionPlan;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * @param string|null $country
      * @return FeedbackSubscriptionPlan[]
@@ -47,17 +58,6 @@ class FeedbackSubscriptionPlanProvider
         }
 
         return $subscriptionPlans;
-    }
-
-    public function getSubscriptionPlan(FeedbackSubscriptionPlanName $subscriptionPlanName): ?FeedbackSubscriptionPlan
-    {
-        foreach ($this->getSubscriptionPlans() as $subscriptionPlan) {
-            if ($subscriptionPlan->getName() === $subscriptionPlanName) {
-                return $subscriptionPlan;
-            }
-        }
-
-        return null;
     }
 
     public function getSubscriptionPlanName(FeedbackSubscriptionPlanName $plan, string $localeCode = null): string

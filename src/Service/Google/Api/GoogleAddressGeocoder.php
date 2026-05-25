@@ -100,6 +100,56 @@ class GoogleAddressGeocoder implements AddressGeocoderInterface
         return null;
     }
 
+    private function findAddressComponent(string $type, $addressComponents): ?AddressComponent
+    {
+        foreach ($addressComponents as $addressComponent) {
+            if (in_array($type, $addressComponent['types'], true)) {
+                return new AddressComponent($addressComponent['short_name'], $addressComponent['long_name']);
+            }
+        }
+
+        return null;
+    }
+
+    private function validateCountryComponent(?AddressComponent $country, bool $alphaOnly = false): bool
+    {
+        if ($country === null) {
+            return false;
+        }
+
+        if ($alphaOnly && $this->hasNonAlpha($country->getShortName())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function hasNonAlpha(string $text): bool
+    {
+        return preg_match('/[^a-zA-Z-\s\–]/i', $text) > 0;
+    }
+
+    private function validateAdministrativeAreaLevel1Component(?AddressComponent $administrativeAreaLevel1, bool $alphaOnly = false): bool
+    {
+        if ($administrativeAreaLevel1 === null) {
+            return false;
+        }
+
+        if ($alphaOnly && $this->hasNonAlpha($administrativeAreaLevel1->getShortName())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private function constructAddressFromComponents(AddressComponent $country, AddressComponent $administrativeAreaLevel1): Address
+    {
+        return new Address(
+            $country->getShortName(),
+            $administrativeAreaLevel1->getShortName()
+        );
+    }
+
     private function findByCombinedAddressComponents(array $results, bool $alphaOnly = false): ?Address
     {
         $components = [
@@ -149,56 +199,5 @@ class GoogleAddressGeocoder implements AddressGeocoderInterface
         }
 
         return null;
-    }
-
-    private function findAddressComponent(string $type, $addressComponents): ?AddressComponent
-    {
-        foreach ($addressComponents as $addressComponent) {
-            if (in_array($type, $addressComponent['types'], true)) {
-                return new AddressComponent($addressComponent['short_name'], $addressComponent['long_name']);
-            }
-        }
-
-        return null;
-    }
-
-    private function validateCountryComponent(?AddressComponent $country, bool $alphaOnly = false): bool
-    {
-        if ($country === null) {
-            return false;
-        }
-
-        if ($alphaOnly && $this->hasNonAlpha($country->getShortName())) {
-            return false;
-        }
-
-        return true;
-    }
-
-
-    private function validateAdministrativeAreaLevel1Component(?AddressComponent $administrativeAreaLevel1, bool $alphaOnly = false): bool
-    {
-        if ($administrativeAreaLevel1 === null) {
-            return false;
-        }
-
-        if ($alphaOnly && $this->hasNonAlpha($administrativeAreaLevel1->getShortName())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private function constructAddressFromComponents(AddressComponent $country, AddressComponent $administrativeAreaLevel1): Address
-    {
-        return new Address(
-            $country->getShortName(),
-            $administrativeAreaLevel1->getShortName()
-        );
-    }
-
-    private function hasNonAlpha(string $text): bool
-    {
-        return preg_match('/[^a-zA-Z-\s\–]/i', $text) > 0;
     }
 }

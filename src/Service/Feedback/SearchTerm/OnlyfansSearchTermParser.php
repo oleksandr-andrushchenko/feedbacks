@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\SearchTerm;
 
-use App\Transfer\Feedback\SearchTermTransfer;
 use App\Enum\Feedback\SearchTermType;
+use App\Transfer\Feedback\SearchTermTransfer;
 
 class OnlyfansSearchTermParser implements SearchTermParserInterface
 {
@@ -16,6 +16,33 @@ class OnlyfansSearchTermParser implements SearchTermParserInterface
         }
 
         if ($searchTerm->getType() === SearchTermType::onlyfans_username) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function supportsUsername(string $username): bool
+    {
+        if (is_numeric($username)) {
+            return false;
+        }
+
+        return preg_match('/^' . $this->getUsernamePattern(false) . '$/im', $username) === 1;
+    }
+
+    private function getUsernamePattern(bool $url): string
+    {
+        return ($url ? '' : '@?') . '\w(?!.*?\.{2})[\w.-]{1,28}\w';
+    }
+
+    private function supportsUrl(string $url, string &$username = null): bool
+    {
+        $result = preg_match('/^(?:(?:http|https):\/\/)?(?:www\.)?onlyfans\.com\/(' . $this->getUsernamePattern(true) . ')[?\/]?/im', $url, $matches);
+
+        if ($result === 1 && $this->supportsUsername($matches[1])) {
+            $username = $matches[1];
+
             return true;
         }
 
@@ -36,6 +63,11 @@ class OnlyfansSearchTermParser implements SearchTermParserInterface
         }
     }
 
+    private function normalizeUsername(string $username): string
+    {
+        return ltrim($username, '@');
+    }
+
     public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
     {
         if ($searchTerm->getType() === SearchTermType::onlyfans_username) {
@@ -47,37 +79,5 @@ class OnlyfansSearchTermParser implements SearchTermParserInterface
                 ;
             }
         }
-    }
-
-    private function supportsUsername(string $username): bool
-    {
-        if (is_numeric($username)) {
-            return false;
-        }
-
-        return preg_match('/^' . $this->getUsernamePattern(false) . '$/im', $username) === 1;
-    }
-
-    private function getUsernamePattern(bool $url): string
-    {
-        return ($url ? '' : '@?') . '\w(?!.*?\.{2})[\w.-]{1,28}\w';
-    }
-
-    private function normalizeUsername(string $username): string
-    {
-        return ltrim($username, '@');
-    }
-
-    private function supportsUrl(string $url, string &$username = null): bool
-    {
-        $result = preg_match('/^(?:(?:http|https):\/\/)?(?:www\.)?onlyfans\.com\/(' . $this->getUsernamePattern(true) . ')[?\/]?/im', $url, $matches);
-
-        if ($result === 1 && $this->supportsUsername($matches[1])) {
-            $username = $matches[1];
-
-            return true;
-        }
-
-        return false;
     }
 }

@@ -32,11 +32,6 @@ class BlackboxSearchProvider extends SearchProvider implements SearchProviderInt
         parent::__construct($searchProviderCompose);
     }
 
-    public function getName(): SearchProviderName
-    {
-        return SearchProviderName::blackbox;
-    }
-
     public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
@@ -87,35 +82,6 @@ class BlackboxSearchProvider extends SearchProvider implements SearchProviderInt
         return [
             $feedbacks,
         ];
-    }
-
-    public function goodOnEmptyResult(): ?bool
-    {
-        return true;
-    }
-
-    private function getToken(): ?string
-    {
-        static $token = null;
-
-        if ($token !== null) {
-            return $token;
-        }
-
-        $crawler = $this->crawlerProvider->getCrawler('GET', self::URL, user: true);
-        $tokenEl = $crawler->filter('#check-man-form [name="csrfmiddlewaretoken"]');
-
-        if ($tokenEl->count() === 0) {
-            return null;
-        }
-
-        $token = trim($tokenEl->attr('value') ?? '');
-
-        if (empty($token)) {
-            return null;
-        }
-
-        return $token;
     }
 
     private function searchFeedbacks(SearchTermType $type, string $term): ?BlackboxFeedbacks
@@ -221,5 +187,39 @@ class BlackboxSearchProvider extends SearchProvider implements SearchProviderInt
         }
 
         return null;
+    }
+
+    private function getToken(): ?string
+    {
+        static $token = null;
+
+        if ($token !== null) {
+            return $token;
+        }
+
+        $crawler = $this->crawlerProvider->getCrawler('GET', self::URL, user: true);
+        $tokenEl = $crawler->filter('#check-man-form [name="csrfmiddlewaretoken"]');
+
+        if ($tokenEl->count() === 0) {
+            return null;
+        }
+
+        $token = trim($tokenEl->attr('value') ?? '');
+
+        if (empty($token)) {
+            return null;
+        }
+
+        return $token;
+    }
+
+    public function getName(): SearchProviderName
+    {
+        return SearchProviderName::blackbox;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return true;
     }
 }

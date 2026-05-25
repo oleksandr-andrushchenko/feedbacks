@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\SearchTerm;
 
-use App\Transfer\Feedback\SearchTermTransfer;
 use App\Enum\Feedback\SearchTermType;
+use App\Transfer\Feedback\SearchTermTransfer;
 
 class UnknownMessengerSearchTermParser implements SearchTermParserInterface
 {
@@ -20,6 +20,16 @@ class UnknownMessengerSearchTermParser implements SearchTermParserInterface
         }
 
         return false;
+    }
+
+    private function supportsUsername(SearchTermTransfer $searchTerm): bool
+    {
+        return preg_match('/^' . $this->getUsernamePattern() . '$/im', $searchTerm->getText()) === 1;
+    }
+
+    private function getUsernamePattern(): string
+    {
+        return '@?[A-Za-z0-9-_\.]+';
     }
 
     public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
@@ -40,16 +50,6 @@ class UnknownMessengerSearchTermParser implements SearchTermParserInterface
                 ;
             }
         }
-    }
-
-    private function supportsUsername(SearchTermTransfer $searchTerm): bool
-    {
-        return preg_match('/^' . $this->getUsernamePattern() . '$/im', $searchTerm->getText()) === 1;
-    }
-
-    private function getUsernamePattern(): string
-    {
-        return '@?[A-Za-z0-9-_\.]+';
     }
 
     private function normalizeUsername(string $username): string

@@ -49,14 +49,6 @@ class TelegramBotCommandsSyncer
         $bot->getEntity()->setCommandsSynced(true);
     }
 
-    /**
-     * @return array|null|TelegramBotMyCommands[]
-     */
-    public function getMyCommands(): ?array
-    {
-        return $this->myCommands;
-    }
-
     private function getDescription(
         TelegramBot $bot,
         TelegramBotCommandHandler $commandHandler,
@@ -70,5 +62,13 @@ class TelegramBotCommandsSyncer
         $name = $this->translator->trans($commandHandler->getKey(), domain: $domain, locale: $locale);
 
         return sprintf('%s %s', $icon, $name);
+    }
+
+    /**
+     * @return array|null|TelegramBotMyCommands[]
+     */
+    public function getMyCommands(): ?array
+    {
+        return $this->myCommands;
     }
 }

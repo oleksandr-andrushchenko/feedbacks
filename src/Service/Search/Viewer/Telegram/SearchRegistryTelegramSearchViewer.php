@@ -54,42 +54,6 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
         ;
     }
 
-    public function getFeedbackSearchTelegramView(
-        TelegramBot $bot,
-        FeedbackSearch $feedbackSearch,
-        bool $addSecrets = false,
-        bool $addSign = false,
-        bool $addCountry = false,
-        bool $addTime = false,
-        bool $addQuotes = false,
-        string $locale = null,
-        TelegramChannel $channel = null,
-    ): string
-    {
-        $m = $this->modifier;
-
-        return $m->create()
-            ->add($m->newLineModifier(2))
-            ->add(
-                $m->appendModifier(
-                    $m->linesModifier()(call_user_func(
-                        $this->getFeedbackSearchWrapMessageCallback(
-                            full: !$addSecrets,
-                            addCountry: $addCountry,
-                            addTime: $addTime,
-                            locale: $locale
-                        ),
-                        $feedbackSearch
-                    ))
-                )
-            )
-            ->add($addQuotes ? $m->italicModifier() : $m->nullModifier())
-            ->add($addSign ? $m->newLineModifier(2) : $m->nullModifier())
-            ->add($addSign ? $m->appendModifier($this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView($bot, channel: $channel, localeCode: $locale)) : $m->nullModifier())
-            ->apply($this->trans('search_title', locale: $locale))
-        ;
-    }
-
     private function getFeedbackSearchWrapMessageCallback(
         bool $full = false,
         bool $addCountry = false,
@@ -137,5 +101,41 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
 
             return $lines;
         };
+    }
+
+    public function getFeedbackSearchTelegramView(
+        TelegramBot $bot,
+        FeedbackSearch $feedbackSearch,
+        bool $addSecrets = false,
+        bool $addSign = false,
+        bool $addCountry = false,
+        bool $addTime = false,
+        bool $addQuotes = false,
+        string $locale = null,
+        TelegramChannel $channel = null,
+    ): string
+    {
+        $m = $this->modifier;
+
+        return $m->create()
+            ->add($m->newLineModifier(2))
+            ->add(
+                $m->appendModifier(
+                    $m->linesModifier()(call_user_func(
+                        $this->getFeedbackSearchWrapMessageCallback(
+                            full: !$addSecrets,
+                            addCountry: $addCountry,
+                            addTime: $addTime,
+                            locale: $locale
+                        ),
+                        $feedbackSearch
+                    ))
+                )
+            )
+            ->add($addQuotes ? $m->italicModifier() : $m->nullModifier())
+            ->add($addSign ? $m->newLineModifier(2) : $m->nullModifier())
+            ->add($addSign ? $m->appendModifier($this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView($bot, channel: $channel, localeCode: $locale)) : $m->nullModifier())
+            ->apply($this->trans('search_title', locale: $locale))
+        ;
     }
 }

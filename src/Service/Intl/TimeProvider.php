@@ -23,57 +23,6 @@ class TimeProvider
     {
     }
 
-    public function format(int $format, DateTimeInterface $datetime, string $timezone = null, string $locale = null): ?string
-    {
-        return match ($format) {
-            self::DATE => $this->formatAsDate($datetime, $timezone, $locale),
-            self::DATETIME => $this->formatAsDatetime($datetime, $timezone, $locale),
-            self::SHORT_DATE => $this->formatAsShortDate($datetime, $timezone, $locale),
-            self::SHORT_DATETIME => $this->formatAsShortDatetime($datetime, $timezone, $locale),
-            self::MONTH_YEAR => $this->formatTimeAsMonthYear($datetime, $timezone, $locale),
-            default => null,
-        };
-    }
-
-    public function formatAsDate(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
-    {
-        $datetime = $this->applyTimezone($datetime, $timezone);
-        $locale = $locale ?? $this->translator->getLocale();
-        $parameters = [
-            'day' => $datetime->format('d'),
-            'month' => $this->getMonth($datetime->format('m'), locale: $locale),
-            'year' => $datetime->format('Y'),
-        ];
-
-        return $this->trans('date', $parameters, $locale);
-    }
-
-    public function formatAsDatetime(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
-    {
-        $datetime = $this->applyTimezone($datetime, $timezone);
-        $locale = $locale ?? $this->translator->getLocale();
-        $parameters = [
-            'date' => $this->formatAsDate($datetime, locale: $locale),
-            'hour' => $datetime->format('H'),
-            'minute' => $datetime->format('i'),
-        ];
-
-        return $this->trans('datetime', $parameters, $locale);
-    }
-
-    public function formatAsShortDate(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
-    {
-        $datetime = $this->applyTimezone($datetime, $timezone);
-        $locale = $locale ?? $this->translator->getLocale();
-        $parameters = [
-            'day' => $datetime->format('d'),
-            'short_month' => $this->getShortMonth($datetime->format('m'), locale: $locale),
-            'year' => $datetime->format('Y'),
-        ];
-
-        return $this->trans('short_date', $parameters, $locale);
-    }
-
     public function formatIntervalAsShortDate(DateTimeInterface $datetime1, DateTimeInterface $datetime2, string $timezone = null, string $locale = null): string
     {
         $year1 = $datetime1->format('Y');
@@ -115,6 +64,81 @@ class TimeProvider
         return $date1 . ' - ' . $date2;
     }
 
+    public function format(int $format, DateTimeInterface $datetime, string $timezone = null, string $locale = null): ?string
+    {
+        return match ($format) {
+            self::DATE => $this->formatAsDate($datetime, $timezone, $locale),
+            self::DATETIME => $this->formatAsDatetime($datetime, $timezone, $locale),
+            self::SHORT_DATE => $this->formatAsShortDate($datetime, $timezone, $locale),
+            self::SHORT_DATETIME => $this->formatAsShortDatetime($datetime, $timezone, $locale),
+            self::MONTH_YEAR => $this->formatTimeAsMonthYear($datetime, $timezone, $locale),
+            default => null,
+        };
+    }
+
+    public function formatAsDate(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
+    {
+        $datetime = $this->applyTimezone($datetime, $timezone);
+        $locale = $locale ?? $this->translator->getLocale();
+        $parameters = [
+            'day' => $datetime->format('d'),
+            'month' => $this->getMonth($datetime->format('m'), locale: $locale),
+            'year' => $datetime->format('Y'),
+        ];
+
+        return $this->trans('date', $parameters, $locale);
+    }
+
+    private function applyTimezone(DateTimeInterface $datetime, string $timezone = null): DateTimeInterface
+    {
+        if ($timezone === null) {
+            return $datetime;
+        }
+
+        return $datetime->setTimezone(new DateTimeZone($timezone));
+    }
+
+    private function getMonth(int|string $num, string $locale = null): string
+    {
+        return $this->trans(sprintf('month.%d', $num), locale: $locale);
+    }
+
+    private function trans(string $id, array $parameters = [], string $locale = null): string
+    {
+        return $this->translator->trans($id, $parameters, 'time', $locale);
+    }
+
+    public function formatAsDatetime(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
+    {
+        $datetime = $this->applyTimezone($datetime, $timezone);
+        $locale = $locale ?? $this->translator->getLocale();
+        $parameters = [
+            'date' => $this->formatAsDate($datetime, locale: $locale),
+            'hour' => $datetime->format('H'),
+            'minute' => $datetime->format('i'),
+        ];
+
+        return $this->trans('datetime', $parameters, $locale);
+    }
+
+    public function formatAsShortDate(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
+    {
+        $datetime = $this->applyTimezone($datetime, $timezone);
+        $locale = $locale ?? $this->translator->getLocale();
+        $parameters = [
+            'day' => $datetime->format('d'),
+            'short_month' => $this->getShortMonth($datetime->format('m'), locale: $locale),
+            'year' => $datetime->format('Y'),
+        ];
+
+        return $this->trans('short_date', $parameters, $locale);
+    }
+
+    private function getShortMonth(int|string $num, string $locale = null): string
+    {
+        return $this->trans(sprintf('short_month.%d', $num), locale: $locale);
+    }
+
     public function formatAsShortDatetime(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
     {
         $datetime = $this->applyTimezone($datetime, $timezone);
@@ -126,6 +150,17 @@ class TimeProvider
         ];
 
         return $this->trans('short_datetime', $parameters, $locale);
+    }
+
+    public function formatTimeAsMonthYear(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
+    {
+        $datetime = $this->applyTimezone($datetime, $timezone);
+        $locale = $locale ?? $this->translator->getLocale();
+
+        $month = $this->getMonth($datetime->format('m'), locale: $locale);
+        $year = $datetime->format('Y');
+
+        return $month . ' ' . $year;
     }
 
     /**
@@ -150,40 +185,5 @@ class TimeProvider
         }
 
         return null;
-    }
-
-    public function formatTimeAsMonthYear(DateTimeInterface $datetime, string $timezone = null, string $locale = null): string
-    {
-        $datetime = $this->applyTimezone($datetime, $timezone);
-        $locale = $locale ?? $this->translator->getLocale();
-
-        $month = $this->getMonth($datetime->format('m'), locale: $locale);
-        $year = $datetime->format('Y');
-
-        return $month . ' ' . $year;
-    }
-
-    private function getMonth(int|string $num, string $locale = null): string
-    {
-        return $this->trans(sprintf('month.%d', $num), locale: $locale);
-    }
-
-    private function getShortMonth(int|string $num, string $locale = null): string
-    {
-        return $this->trans(sprintf('short_month.%d', $num), locale: $locale);
-    }
-
-    private function trans(string $id, array $parameters = [], string $locale = null): string
-    {
-        return $this->translator->trans($id, $parameters, 'time', $locale);
-    }
-
-    private function applyTimezone(DateTimeInterface $datetime, string $timezone = null): DateTimeInterface
-    {
-        if ($timezone === null) {
-            return $datetime;
-        }
-
-        return $datetime->setTimezone(new DateTimeZone($timezone));
     }
 }

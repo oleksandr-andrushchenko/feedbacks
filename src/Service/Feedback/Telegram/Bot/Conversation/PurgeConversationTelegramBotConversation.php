@@ -66,18 +66,6 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation i
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
-    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
-    {
-        $this->state->setStep(self::STEP_CANCEL_PRESSED);
-
-        $tg->stopConversation($entity);
-
-        $message = $tg->trans('reply.canceled', domain: 'purge');
-        $message = $tg->upsetText($message);
-
-        return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
-    }
-
     public function gotConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         if ($tg->matchInput($tg->noButton()->getText())) {
@@ -114,5 +102,17 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation i
         $tg->stopConversation($entity);
 
         return $this->chooseActionTelegramChatSender->sendActions($tg, $message);
+    }
+
+    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
+    {
+        $this->state->setStep(self::STEP_CANCEL_PRESSED);
+
+        $tg->stopConversation($entity);
+
+        $message = $tg->trans('reply.canceled', domain: 'purge');
+        $message = $tg->upsetText($message);
+
+        return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
     }
 }

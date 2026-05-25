@@ -14,17 +14,6 @@ class SearchTermParser implements SearchTermParserInterface
     {
     }
 
-    public function supportsSearchTerm(SearchTermTransfer $searchTerm, array $context = []): bool
-    {
-        foreach ($this->searchTermParserRegistry->getSearchTermParsers() as $searchTermParser) {
-            if ($searchTermParser->supportsSearchTerm($searchTerm, $context)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
     {
         if ($searchTerm->getType() !== null) {
@@ -36,6 +25,17 @@ class SearchTermParser implements SearchTermParserInterface
                 $searchTermParser->parseWithGuessType($searchTerm, $context);
             }
         }
+    }
+
+    public function supportsSearchTerm(SearchTermTransfer $searchTerm, array $context = []): bool
+    {
+        foreach ($this->searchTermParserRegistry->getSearchTermParsers() as $searchTermParser) {
+            if ($searchTermParser->supportsSearchTerm($searchTerm, $context)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void

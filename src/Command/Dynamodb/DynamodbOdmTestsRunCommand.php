@@ -25,11 +25,6 @@ class DynamodbOdmTestsRunCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->setDescription('Test dynamodb\'s EM/UoW');
-    }
-
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -115,5 +110,10 @@ class DynamodbOdmTestsRunCommand extends Command
         } else {
             $io->error('[FAIL] find many (tz 2)');
         }
+    }
+
+    protected function configure(): void
+    {
+        $this->setDescription('Test dynamodb\'s EM/UoW');
     }
 }

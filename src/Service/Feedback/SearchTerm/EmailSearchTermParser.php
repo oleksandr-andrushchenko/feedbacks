@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\SearchTerm;
 
-use App\Transfer\Feedback\SearchTermTransfer;
 use App\Enum\Feedback\SearchTermType;
+use App\Transfer\Feedback\SearchTermTransfer;
 
 class EmailSearchTermParser implements SearchTermParserInterface
 {
@@ -20,6 +20,11 @@ class EmailSearchTermParser implements SearchTermParserInterface
         }
 
         return false;
+    }
+
+    private function normalizeEmail(string $email)
+    {
+        return filter_var($email, FILTER_SANITIZE_EMAIL);
     }
 
     public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
@@ -48,10 +53,5 @@ class EmailSearchTermParser implements SearchTermParserInterface
                 ;
             }
         }
-    }
-
-    private function normalizeEmail(string $email)
-    {
-        return filter_var($email, FILTER_SANITIZE_EMAIL);
     }
 }

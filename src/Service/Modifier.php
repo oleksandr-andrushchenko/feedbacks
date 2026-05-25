@@ -111,6 +111,23 @@ class Modifier
         return static fn (?array $any): ?array => empty($any) ? null : array_map($callback, $any);
     }
 
+    public function implodeLinesModifier(callable $callback): callable
+    {
+        return function (?array $any) use ($callback): ?string {
+            if (empty($any)) {
+                return null;
+            }
+
+            $items = [];
+
+            foreach ($any as $item) {
+                $items[] = $this->linesModifier()($callback($item));
+            }
+
+            return implode("\n\n", $items);
+        };
+    }
+
     public function linesModifier(): callable
     {
         return static function (?array $any): ?string {
@@ -135,23 +152,6 @@ class Modifier
             }
 
             return '◻️ ' . implode("\n▫️ ", $items);
-        };
-    }
-
-    public function implodeLinesModifier(callable $callback): callable
-    {
-        return function (?array $any) use ($callback): ?string {
-            if (empty($any)) {
-                return null;
-            }
-
-            $items = [];
-
-            foreach ($any as $item) {
-                $items[] = $this->linesModifier()($callback($item));
-            }
-
-            return implode("\n\n", $items);
         };
     }
 

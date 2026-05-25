@@ -10,7 +10,8 @@ class GlobalIndex extends AbstractIndex
         string $name,
         public AbstractKey $partitionKey,
         public ?AbstractKey $sortKey = null,
-    ) {
+    )
+    {
         parent::__construct($name);
     }
 }

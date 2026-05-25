@@ -9,7 +9,8 @@ class LocalIndex extends AbstractIndex
     public function __construct(
         string $name,
         public AbstractKey $sortKey,
-    ) {
+    )
+    {
         parent::__construct($name);
     }
 }

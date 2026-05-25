@@ -13,6 +13,6 @@ class PartitionKey extends AbstractKey
         ?string $delimiter = '#',
     )
     {
-        parent::__construct($prefix ,$fields, $name, $delimiter);
+        parent::__construct($prefix, $fields, $name, $delimiter);
     }
 }

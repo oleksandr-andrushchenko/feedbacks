@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Repository\Feedback;
 
 use App\Entity\Feedback\SearchTerm;
-use App\Enum\Feedback\SearchTermType;
 use DateTimeInterface;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\Types\Types;

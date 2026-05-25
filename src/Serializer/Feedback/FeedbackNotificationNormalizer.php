@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Serializer\Feedback;
 
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use App\Entity\Feedback\FeedbackNotification;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class FeedbackNotificationNormalizer implements NormalizerInterface
 {

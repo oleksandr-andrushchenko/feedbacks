@@ -14,11 +14,6 @@ class SearchTermParserRegistry
     {
     }
 
-    public function getSearchTermParser(string $id): SearchTermParserInterface
-    {
-        return $this->serviceLocator->get($id);
-    }
-
     /**
      * @return SearchTermParserInterface[]
      */
@@ -27,5 +22,10 @@ class SearchTermParserRegistry
         foreach ($this->serviceLocator->getProvidedServices() as $name => $service) {
             yield $name => $this->getSearchTermParser($name);
         }
+    }
+
+    public function getSearchTermParser(string $id): SearchTermParserInterface
+    {
+        return $this->serviceLocator->get($id);
     }
 }

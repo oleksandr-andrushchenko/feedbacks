@@ -34,6 +34,13 @@ class UnitOfWork
     {
     }
 
+    public function scheduleForInsert(object $entity): void
+    {
+        $entity = $this->register($entity);
+        $idKey = $this->getIdentityKey($entity);
+        $this->inserts[$idKey] = $entity;
+    }
+
     public function register(object $entity): object
     {
         $class = $entity::class;
@@ -49,11 +56,14 @@ class UnitOfWork
         return $entity;
     }
 
-    public function scheduleForInsert(object $entity): void
+    public function getIdentityKey(object $entity): string
     {
-        $entity = $this->register($entity);
-        $idKey = $this->getIdentityKey($entity);
-        $this->inserts[$idKey] = $entity;
+        return $this->getIdentityKeyByArray($this->em->getEntitySerializer()->serializePrimaryKey($entity));
+    }
+
+    public function getIdentityKeyByArray(array $key): string
+    {
+        return json_encode($key, JSON_THROW_ON_ERROR);
     }
 
     public function scheduleForDelete(object $entity): void
@@ -262,15 +272,5 @@ class UnitOfWork
         $idKey = $this->getIdentityKeyByArray($key);
 
         return $this->identities[$class][$idKey] ?? null;
-    }
-
-    public function getIdentityKeyByArray(array $key): string
-    {
-        return json_encode($key, JSON_THROW_ON_ERROR);
-    }
-
-    public function getIdentityKey(object $entity): string
-    {
-        return $this->getIdentityKeyByArray($this->em->getEntitySerializer()->serializePrimaryKey($entity));
     }
 }

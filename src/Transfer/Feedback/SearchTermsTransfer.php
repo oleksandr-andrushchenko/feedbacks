@@ -15,11 +15,6 @@ class SearchTermsTransfer
     {
     }
 
-    public function hasItems(): bool
-    {
-        return $this->items !== null;
-    }
-
     public function countItems(): ?int
     {
         if ($this->hasItems()) {
@@ -27,6 +22,11 @@ class SearchTermsTransfer
         }
 
         return null;
+    }
+
+    public function hasItems(): bool
+    {
+        return $this->items !== null;
     }
 
     public function getItems(): ?array

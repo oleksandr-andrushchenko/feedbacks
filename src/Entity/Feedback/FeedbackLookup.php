@@ -60,6 +60,21 @@ class FeedbackLookup
         return $this->id;
     }
 
+    public function getCountryCode(): ?string
+    {
+        return $this->countryCode;
+    }
+
+    public function getLocaleCode(): ?string
+    {
+        return $this->localeCode;
+    }
+
+    public function hasActiveSubscription(): ?bool
+    {
+        return $this->hasActiveSubscription;
+    }
+
     public function setUser(?User $user): self
     {
         $this->user = $user;
@@ -127,21 +142,6 @@ class FeedbackLookup
     public function getSearchTermId(): ?string
     {
         return $this->searchTermId;
-    }
-
-    public function hasActiveSubscription(): ?bool
-    {
-        return $this->hasActiveSubscription;
-    }
-
-    public function getCountryCode(): ?string
-    {
-        return $this->countryCode;
-    }
-
-    public function getLocaleCode(): ?string
-    {
-        return $this->localeCode;
     }
 
     public function setTelegramBot(?TelegramBot $telegramBot): self

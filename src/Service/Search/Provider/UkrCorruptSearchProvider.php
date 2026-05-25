@@ -73,11 +73,6 @@ class UkrCorruptSearchProvider extends SearchProvider implements SearchProviderI
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return true;
-    }
-
     private function searchPersons(string $name): ?UkrCorruptPersons
     {
         foreach ($this->ukrPersonNameProvider->getPersonNames($name) as $personName) {
@@ -129,5 +124,10 @@ class UkrCorruptSearchProvider extends SearchProvider implements SearchProviderI
         }
 
         return null;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return true;
     }
 }

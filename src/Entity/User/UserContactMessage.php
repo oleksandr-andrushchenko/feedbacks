@@ -50,15 +50,15 @@ class UserContactMessage implements Stringable
         return $this->id;
     }
 
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
+    }
+
     public function setMessengerUserId(?string $messengerUserId): self
     {
         $this->messengerUserId = $messengerUserId;
         return $this;
-    }
-
-    public function getMessengerUserId(): ?string
-    {
-        return $this->messengerUserId;
     }
 
     public function setMessengerUser(?MessengerUser $messengerUser): self
@@ -73,15 +73,15 @@ class UserContactMessage implements Stringable
         return $this->messengerUser;
     }
 
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
     public function setUserId(?string $userId): self
     {
         $this->userId = $userId;
         return $this;
-    }
-
-    public function getUserId(): ?string
-    {
-        return $this->userId;
     }
 
     public function setUser(?User $user): self
@@ -101,15 +101,15 @@ class UserContactMessage implements Stringable
         return $this->text;
     }
 
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
+    }
+
     public function setTelegramBotId(?string $telegramBotId): self
     {
         $this->telegramBotId = $telegramBotId;
         return $this;
-    }
-
-    public function getTelegramBotId(): ?string
-    {
-        return $this->telegramBotId;
     }
 
     public function setTelegramBot(?TelegramBot $telegramBot): self

@@ -69,6 +69,18 @@ class SearchTermFeedback
         $this->createdAt ??= new DateTimeImmutable();
     }
 
+    public function getSearchTerm(): SearchTerm
+    {
+        return new SearchTerm(
+            $this->getSearchTermId(),
+            $this->getSearchTermText(),
+            $this->getSearchTermNormalizedText(),
+            $this->getSearchTermType(),
+            messengerUserId: $this->getMessengerUserId(),
+            createdAt: $this->getCreatedAt(),
+        );
+    }
+
     public function getSearchTermId(): string
     {
         return $this->searchTermId;
@@ -89,16 +101,14 @@ class SearchTermFeedback
         return $this->searchTermType;
     }
 
-    public function getSearchTerm(): SearchTerm
+    public function getMessengerUserId(): ?string
     {
-        return new SearchTerm(
-            $this->getSearchTermId(),
-            $this->getSearchTermText(),
-            $this->getSearchTermNormalizedText(),
-            $this->getSearchTermType(),
-            messengerUserId: $this->getMessengerUserId(),
-            createdAt: $this->getCreatedAt(),
-        );
+        return $this->messengerUserId;
+    }
+
+    public function getCreatedAt(): DateTimeInterface
+    {
+        return $this->createdAt;
     }
 
     public function getFeedbackId(): string
@@ -114,11 +124,6 @@ class SearchTermFeedback
     public function getUserId(): string
     {
         return $this->userId;
-    }
-
-    public function getMessengerUserId(): ?string
-    {
-        return $this->messengerUserId;
     }
 
     public function getFeedbackText(): ?string
@@ -152,7 +157,7 @@ class SearchTermFeedback
         return $this;
     }
 
-    public function setTelegramBotId(?string $telegramBotId):self
+    public function setTelegramBotId(?string $telegramBotId): self
     {
         $this->telegramBotId = $telegramBotId;
         return $this;
@@ -178,10 +183,5 @@ class SearchTermFeedback
             ),
             $this->extraSearchTerms
         );
-    }
-
-    public function getCreatedAt(): DateTimeInterface
-    {
-        return $this->createdAt;
     }
 }

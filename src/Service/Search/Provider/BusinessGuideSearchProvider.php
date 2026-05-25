@@ -108,11 +108,6 @@ class BusinessGuideSearchProvider extends SearchProvider implements SearchProvid
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return null;
-    }
-
     private function searchEnterprises(string $term): ?BusinessGuideEnterprises
     {
         $parameters = ['q' => $term, 'Submit' => 'Пошук'];
@@ -240,5 +235,10 @@ class BusinessGuideSearchProvider extends SearchProvider implements SearchProvid
             address: empty($address) ? null : $address,
             number: empty($number) ? null : $number,
         );
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return null;
     }
 }

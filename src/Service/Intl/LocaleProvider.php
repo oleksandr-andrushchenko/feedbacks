@@ -17,11 +17,6 @@ class LocaleProvider
     {
     }
 
-    public function hasLocale(string $code): bool
-    {
-        return array_key_exists($code, $this->supportedLocales);
-    }
-
     public function getLocale(string $code): ?Locale
     {
         if (!$this->hasLocale($code)) {
@@ -31,24 +26,17 @@ class LocaleProvider
         return $this->denormalize($this->supportedLocales[$code]);
     }
 
-    public function getLocaleIcon(Locale $locale): string
+    public function hasLocale(string $code): bool
     {
-        return $this->countryProvider->getCountryIconByCode($locale->getFlag());
+        return array_key_exists($code, $this->supportedLocales);
     }
 
-    public function getUnknownLocaleIcon(): string
+    private function denormalize(array $record): Locale
     {
-        return $this->countryProvider->getUnknownCountryIcon();
-    }
-
-    public function getLocaleName(Locale $localeObj, string $localeCode = null): string
-    {
-        return $this->translator->trans($localeObj->getCode(), domain: 'locale', locale: $localeCode);
-    }
-
-    public function getUnknownLocaleName(string $locale = null): string
-    {
-        return $this->translator->trans('zz', domain: 'locale', locale: $locale);
+        return new Locale(
+            $code = $record['code'],
+            $record['flag'] ?? $code
+        );
     }
 
     public function getLocaleComposeName(Locale $localeObj = null, string $localeCode = null): string
@@ -66,6 +54,26 @@ class LocaleProvider
         ]);
     }
 
+    public function getUnknownLocaleIcon(): string
+    {
+        return $this->countryProvider->getUnknownCountryIcon();
+    }
+
+    public function getUnknownLocaleName(string $locale = null): string
+    {
+        return $this->translator->trans('zz', domain: 'locale', locale: $locale);
+    }
+
+    public function getLocaleIcon(Locale $locale): string
+    {
+        return $this->countryProvider->getCountryIconByCode($locale->getFlag());
+    }
+
+    public function getLocaleName(Locale $localeObj, string $localeCode = null): string
+    {
+        return $this->translator->trans($localeObj->getCode(), domain: 'locale', locale: $localeCode);
+    }
+
     /**
      * @param string|null $countryCode
      * @return Locale[]
@@ -80,13 +88,5 @@ class LocaleProvider
         }
 
         return array_map(fn ($record): Locale => $this->denormalize($record), array_values($data));
-    }
-
-    private function denormalize(array $record): Locale
-    {
-        return new Locale(
-            $code = $record['code'],
-            $record['flag'] ?? $code
-        );
     }
 }

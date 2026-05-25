@@ -22,33 +22,6 @@ class InstagramSearchTermParser implements SearchTermParserInterface
         return false;
     }
 
-    public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
-    {
-        if ($this->supportsUrl($searchTerm->getText(), $username)) {
-            $searchTerm
-                ->setNormalizedText($this->normalizeUsername($username))
-                ->setType(SearchTermType::instagram_username)
-            ;
-        } elseif ($this->supportsUsername($searchTerm->getText())) {
-            $searchTerm
-                ->addType(SearchTermType::instagram_username)
-            ;
-        }
-    }
-
-    public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
-    {
-        if ($searchTerm->getType() === SearchTermType::instagram_username) {
-            $normalizedUsername = $this->normalizeUsername($searchTerm->getText());
-
-            if ($normalizedUsername !== $searchTerm->getText()) {
-                $searchTerm
-                    ->setNormalizedText($normalizedUsername)
-                ;
-            }
-        }
-    }
-
     private function supportsUsername(string $username): bool
     {
         if (is_numeric($username)) {
@@ -63,11 +36,6 @@ class InstagramSearchTermParser implements SearchTermParserInterface
         return ($url ? '' : '@?') . '(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,29}';
     }
 
-    private function normalizeUsername(string $username): string
-    {
-        return ltrim($username, '@');
-    }
-
     private function supportsUrl(string $url, string &$username = null): bool
     {
         $result = preg_match('/^(?:(?:http|https):\/\/)?(?:www\.)?(?:instagram\.com|instagr\.am)\/(' . $this->getUsernamePattern(true) . ')[?\/]?/im', $url, $matches);
@@ -79,5 +47,37 @@ class InstagramSearchTermParser implements SearchTermParserInterface
         }
 
         return false;
+    }
+
+    public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
+    {
+        if ($this->supportsUrl($searchTerm->getText(), $username)) {
+            $searchTerm
+                ->setNormalizedText($this->normalizeUsername($username))
+                ->setType(SearchTermType::instagram_username)
+            ;
+        } elseif ($this->supportsUsername($searchTerm->getText())) {
+            $searchTerm
+                ->addType(SearchTermType::instagram_username)
+            ;
+        }
+    }
+
+    private function normalizeUsername(string $username): string
+    {
+        return ltrim($username, '@');
+    }
+
+    public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
+    {
+        if ($searchTerm->getType() === SearchTermType::instagram_username) {
+            $normalizedUsername = $this->normalizeUsername($searchTerm->getText());
+
+            if ($normalizedUsername !== $searchTerm->getText()) {
+                $searchTerm
+                    ->setNormalizedText($normalizedUsername)
+                ;
+            }
+        }
     }
 }

@@ -24,45 +24,6 @@ class FacebookSearchTermParser implements SearchTermParserInterface
         return false;
     }
 
-    public function setupSearchTerm(SearchTermTransfer $searchTerm, string $username): void
-    {
-        $searchTerm
-            ->setType(SearchTermType::facebook_username)
-        ;
-
-        $normalizedUsername = $this->normalizeUsername($username);
-
-        if ($searchTerm->getText() !== $normalizedUsername) {
-            $searchTerm
-                ->setNormalizedText($normalizedUsername)
-            ;
-        }
-
-        if (is_numeric($username)) {
-            $searchTerm
-                ->setMessengerUser(new MessengerUserTransfer(Messenger::facebook, $username))
-            ;
-        }
-    }
-
-    public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
-    {
-        if ($this->supportsUrl($searchTerm->getText(), $username)) {
-            $this->setupSearchTerm($searchTerm, $username);
-        } elseif ($this->supportsUsername($searchTerm->getText())) {
-            $searchTerm
-                ->addType(SearchTermType::facebook_username)
-            ;
-        }
-    }
-
-    public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
-    {
-        if ($searchTerm->getType() === SearchTermType::facebook_username) {
-            $this->setupSearchTerm($searchTerm, $searchTerm->getText());
-        }
-    }
-
     private function supportsUsername(string $username): bool
     {
         return preg_match('/^' . $this->getUsernamePattern(false) . '$/im', $username) === 1;
@@ -71,11 +32,6 @@ class FacebookSearchTermParser implements SearchTermParserInterface
     private function getUsernamePattern(bool $url): string
     {
         return ($url ? '' : '@?') . '[a-zA-Z0-9-_\.]+';
-    }
-
-    private function normalizeUsername(string $username): string
-    {
-        return ltrim($username, '@');
     }
 
     private function supportsUrl(string $url, string &$username = null): bool
@@ -97,5 +53,49 @@ class FacebookSearchTermParser implements SearchTermParserInterface
         }
 
         return false;
+    }
+
+    public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
+    {
+        if ($this->supportsUrl($searchTerm->getText(), $username)) {
+            $this->setupSearchTerm($searchTerm, $username);
+        } elseif ($this->supportsUsername($searchTerm->getText())) {
+            $searchTerm
+                ->addType(SearchTermType::facebook_username)
+            ;
+        }
+    }
+
+    public function setupSearchTerm(SearchTermTransfer $searchTerm, string $username): void
+    {
+        $searchTerm
+            ->setType(SearchTermType::facebook_username)
+        ;
+
+        $normalizedUsername = $this->normalizeUsername($username);
+
+        if ($searchTerm->getText() !== $normalizedUsername) {
+            $searchTerm
+                ->setNormalizedText($normalizedUsername)
+            ;
+        }
+
+        if (is_numeric($username)) {
+            $searchTerm
+                ->setMessengerUser(new MessengerUserTransfer(Messenger::facebook, $username))
+            ;
+        }
+    }
+
+    private function normalizeUsername(string $username): string
+    {
+        return ltrim($username, '@');
+    }
+
+    public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
+    {
+        if ($searchTerm->getType() === SearchTermType::facebook_username) {
+            $this->setupSearchTerm($searchTerm, $searchTerm->getText());
+        }
     }
 }

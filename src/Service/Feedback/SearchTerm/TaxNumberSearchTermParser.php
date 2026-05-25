@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\SearchTerm;
 
-use App\Transfer\Feedback\SearchTermTransfer;
 use App\Enum\Feedback\SearchTermType;
+use App\Transfer\Feedback\SearchTermTransfer;
 
 class TaxNumberSearchTermParser implements SearchTermParserInterface
 {
@@ -20,6 +20,11 @@ class TaxNumberSearchTermParser implements SearchTermParserInterface
         }
 
         return false;
+    }
+
+    private function supports(string $number): bool
+    {
+        return preg_match("/^[0-9][0-9\-]{7,}$/", $number) === 1;
     }
 
     public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
@@ -42,11 +47,6 @@ class TaxNumberSearchTermParser implements SearchTermParserInterface
                 ;
             }
         }
-    }
-
-    private function supports(string $number): bool
-    {
-        return preg_match("/^[0-9][0-9\-]{7,}$/", $number) === 1;
     }
 
     private function normalize(string $number): ?string

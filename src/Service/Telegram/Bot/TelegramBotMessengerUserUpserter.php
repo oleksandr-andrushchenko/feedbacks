@@ -6,10 +6,10 @@ namespace App\Service\Telegram\Bot;
 
 use App\Entity\Messenger\MessengerUser;
 use App\Enum\Messenger\Messenger;
-use App\Transfer\Messenger\MessengerUserTransfer;
 use App\Service\Intl\CountryProvider;
 use App\Service\Messenger\MessengerUserUpserter;
 use App\Service\User\UserUpserter;
+use App\Transfer\Messenger\MessengerUserTransfer;
 
 class TelegramBotMessengerUserUpserter
 {

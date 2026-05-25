@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\SearchTerm;
 
-use App\Transfer\Feedback\SearchTermTransfer;
 use App\Enum\Feedback\SearchTermType;
+use App\Transfer\Feedback\SearchTermTransfer;
 
 class PhoneNumberSearchTermParser implements SearchTermParserInterface
 {
@@ -28,6 +28,11 @@ class PhoneNumberSearchTermParser implements SearchTermParserInterface
         return false;
     }
 
+    private function supports(string $number): bool
+    {
+        return preg_match("/^\+?[0-9.\-() ]+$/", $number) === 1;
+    }
+
     public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
     {
         if ($this->supports($searchTerm->getText())) {
@@ -46,10 +51,5 @@ class PhoneNumberSearchTermParser implements SearchTermParserInterface
                 $searchTerm->setNormalizedText($normalizedText);
             }
         }
-    }
-
-    private function supports(string $number): bool
-    {
-        return preg_match("/^\+?[0-9.\-() ]+$/", $number) === 1;
     }
 }

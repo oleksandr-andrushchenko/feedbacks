@@ -284,11 +284,6 @@ class EntityManager
         $this->unitOfWork->scheduleForDelete($entity);
     }
 
-    public function flush(): void
-    {
-        $this->unitOfWork->flush();
-    }
-
     public function clear(): void
     {
         $this->unitOfWork->clear();
@@ -299,5 +294,10 @@ class EntityManager
         $result = $func();
         $this->flush();
         return $result;
+    }
+
+    public function flush(): void
+    {
+        $this->unitOfWork->flush();
     }
 }

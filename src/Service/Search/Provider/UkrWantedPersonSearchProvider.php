@@ -92,11 +92,6 @@ class UkrWantedPersonSearchProvider extends SearchProvider implements SearchProv
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return true;
-    }
-
     private function searchPersons(string $name): ?UkrWantedPersons
     {
         // todo: add RU names search support
@@ -260,5 +255,10 @@ class UkrWantedPersonSearchProvider extends SearchProvider implements SearchProv
             codexArticle: empty($values['codexArticle']) ? null : $values['codexArticle'],
             callTo: empty($values['callTo']) ? null : $values['callTo'],
         );
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return true;
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use Closure;
 use Symfony\Component\DependencyInjection\EnvVarProcessorInterface;
 
 class TrimQuotesEnvVarProcessor implements EnvVarProcessorInterface
@@ -15,7 +16,7 @@ class TrimQuotesEnvVarProcessor implements EnvVarProcessorInterface
         ];
     }
 
-    public function getEnv(string $prefix, string $name, \Closure $getEnv): mixed
+    public function getEnv(string $prefix, string $name, Closure $getEnv): mixed
     {
         $env = $getEnv($name);
 

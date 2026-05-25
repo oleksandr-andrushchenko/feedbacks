@@ -12,10 +12,10 @@ use App\Service\Feedback\FeedbackService;
 use App\Service\Feedback\Telegram\Bot\View\FeedbackTelegramReplySignViewProvider;
 use App\Service\Feedback\Telegram\View\MultipleSearchTermTelegramViewProvider;
 use App\Service\Intl\TimeProvider;
+use App\Service\Modifier;
 use App\Service\Search\Viewer\SearchViewer;
 use App\Service\Search\Viewer\SearchViewerCompose;
 use App\Service\Search\Viewer\SearchViewerInterface;
-use App\Service\Modifier;
 
 class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerInterface
 {
@@ -47,42 +47,6 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
             ->add($m->newLineModifier(2))
             ->add($m->appendModifier($m->implodeLinesModifier($this->getFeedbackWrapMessageCallback(full: $full, addCountry: $addCountry, addTime: $addTime, locale: $locale))($record)))
             ->apply($this->trans('feedbacks_title'))
-        ;
-    }
-
-    public function getFeedbackTelegramView(
-        TelegramBot $bot,
-        Feedback $feedback,
-        bool $addSecrets = false,
-        bool $addSign = false,
-        bool $addCountry = false,
-        bool $addTime = false,
-        bool $addQuotes = false,
-        TelegramChannel $channel = null,
-        string $locale = null,
-    ): string
-    {
-        $m = $this->modifier;
-
-        return $m->create()
-            ->add($m->newLineModifier(2))
-            ->add(
-                $m->appendModifier(
-                    $m->linesModifier()(call_user_func(
-                        $this->getFeedbackWrapMessageCallback(
-                            full: !$addSecrets,
-                            addCountry: $addCountry,
-                            addTime: $addTime,
-                            locale: $locale
-                        ),
-                        $feedback
-                    ))
-                )
-            )
-            ->add($addQuotes ? $m->italicModifier() : $m->nullModifier())
-            ->add($addSign ? $m->newLineModifier(2) : $m->nullModifier())
-            ->add($addSign ? $m->appendModifier($this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView($bot, channel: $channel, localeCode: $locale)) : $m->nullModifier())
-            ->apply($this->trans('feedback_title', locale: $locale))
         ;
     }
 
@@ -128,5 +92,41 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
                 ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
                 ->apply($item->getCreatedAt()),
         ];
+    }
+
+    public function getFeedbackTelegramView(
+        TelegramBot $bot,
+        Feedback $feedback,
+        bool $addSecrets = false,
+        bool $addSign = false,
+        bool $addCountry = false,
+        bool $addTime = false,
+        bool $addQuotes = false,
+        TelegramChannel $channel = null,
+        string $locale = null,
+    ): string
+    {
+        $m = $this->modifier;
+
+        return $m->create()
+            ->add($m->newLineModifier(2))
+            ->add(
+                $m->appendModifier(
+                    $m->linesModifier()(call_user_func(
+                        $this->getFeedbackWrapMessageCallback(
+                            full: !$addSecrets,
+                            addCountry: $addCountry,
+                            addTime: $addTime,
+                            locale: $locale
+                        ),
+                        $feedback
+                    ))
+                )
+            )
+            ->add($addQuotes ? $m->italicModifier() : $m->nullModifier())
+            ->add($addSign ? $m->newLineModifier(2) : $m->nullModifier())
+            ->add($addSign ? $m->appendModifier($this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView($bot, channel: $channel, localeCode: $locale)) : $m->nullModifier())
+            ->apply($this->trans('feedback_title', locale: $locale))
+        ;
     }
 }

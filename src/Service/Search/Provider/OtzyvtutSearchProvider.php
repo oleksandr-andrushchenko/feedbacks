@@ -29,11 +29,6 @@ class OtzyvtutSearchProvider extends SearchProvider implements SearchProviderInt
         parent::__construct($searchProviderCompose);
     }
 
-    public function getName(): SearchProviderName
-    {
-        return SearchProviderName::otzyvtut;
-    }
-
     public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
@@ -94,11 +89,6 @@ class OtzyvtutSearchProvider extends SearchProvider implements SearchProviderInt
         return [
             $searchTerms,
         ];
-    }
-
-    public function goodOnEmptyResult(): ?bool
-    {
-        return null;
     }
 
     private function searchFeedbackSearchTerms(string $name): ?OtzyvtutFeedbackSearchTerms
@@ -184,6 +174,11 @@ class OtzyvtutSearchProvider extends SearchProvider implements SearchProviderInt
         return null;
     }
 
+    public function getName(): SearchProviderName
+    {
+        return SearchProviderName::otzyvtut;
+    }
+
     private function searchFeedbacks(string $url): ?OtzyvtutFeedbacks
     {
         $crawler = $this->crawlerProvider->getCrawler('GET', $url);
@@ -231,6 +226,11 @@ class OtzyvtutSearchProvider extends SearchProvider implements SearchProviderInt
             return new OtzyvtutFeedbacks(array_values($items));
         }
 
+        return null;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
         return null;
     }
 }

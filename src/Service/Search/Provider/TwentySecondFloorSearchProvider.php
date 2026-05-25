@@ -32,11 +32,6 @@ class TwentySecondFloorSearchProvider extends SearchProvider implements SearchPr
         parent::__construct($searchProviderCompose);
     }
 
-    public function getName(): SearchProviderName
-    {
-        return SearchProviderName::twenty_second_floor;
-    }
-
     public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
@@ -97,11 +92,6 @@ class TwentySecondFloorSearchProvider extends SearchProvider implements SearchPr
         return [
             $bloggers,
         ];
-    }
-
-    public function goodOnEmptyResult(): ?bool
-    {
-        return null;
     }
 
     private function searchBloggers(string $name): ?TwentySecondFloorBloggers
@@ -186,6 +176,11 @@ class TwentySecondFloorSearchProvider extends SearchProvider implements SearchPr
         }
 
         return null;
+    }
+
+    public function getName(): SearchProviderName
+    {
+        return SearchProviderName::twenty_second_floor;
     }
 
     private function searchFeedbacks(string $url): ?TwentySecondFloorFeedbacks
@@ -280,6 +275,11 @@ class TwentySecondFloorSearchProvider extends SearchProvider implements SearchPr
             return new TwentySecondFloorFeedbacks(array_values($items));
         }
 
+        return null;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
         return null;
     }
 }

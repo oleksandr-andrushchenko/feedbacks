@@ -78,6 +78,21 @@ class Feedback
         return $this->id;
     }
 
+    public function getCountryCode(): ?string
+    {
+        return $this->countryCode;
+    }
+
+    public function getLocaleCode(): ?string
+    {
+        return $this->localeCode;
+    }
+
+    public function hasActiveSubscription(): ?bool
+    {
+        return $this->hasActiveSubscription;
+    }
+
     public function setUser(?User $user): self
     {
         $this->user = $user;
@@ -124,13 +139,6 @@ class Feedback
         return $this->messengerUserId;
     }
 
-    public function setSearchTerms(?array $searchTerms): self
-    {
-        $this->searchTerms = new ArrayCollection($searchTerms ?? []);
-        $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms);
-        return $this;
-    }
-
     public function addSearchTerm(SearchTerm $searchTerm): self
     {
         $this->searchTerms ??= new ArrayCollection();
@@ -155,6 +163,13 @@ class Feedback
         return $this->searchTerms;
     }
 
+    public function setSearchTerms(?array $searchTerms): self
+    {
+        $this->searchTerms = new ArrayCollection($searchTerms ?? []);
+        $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms);
+        return $this;
+    }
+
     public function getSearchTermIds(): ?array
     {
         return $this->searchTermIds;
@@ -174,21 +189,6 @@ class Feedback
     {
         $this->hasActiveSubscription = $hasActiveSubscription === true ? true : null;
         return $this;
-    }
-
-    public function hasActiveSubscription(): ?bool
-    {
-        return $this->hasActiveSubscription;
-    }
-
-    public function getCountryCode(): ?string
-    {
-        return $this->countryCode;
-    }
-
-    public function getLocaleCode(): ?string
-    {
-        return $this->localeCode;
     }
 
     public function addTelegramChannelMessageId(int $messageId): self

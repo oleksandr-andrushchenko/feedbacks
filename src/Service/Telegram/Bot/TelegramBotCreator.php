@@ -6,8 +6,8 @@ namespace App\Service\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBot;
 use App\Service\IdGenerator;
-use App\Transfer\Telegram\TelegramBotTransfer;
 use App\Service\ORM\EntityManager;
+use App\Transfer\Telegram\TelegramBotTransfer;
 
 class TelegramBotCreator
 {

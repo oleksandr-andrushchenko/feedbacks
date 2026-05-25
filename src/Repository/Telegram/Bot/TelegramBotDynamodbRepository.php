@@ -104,32 +104,6 @@ class TelegramBotDynamodbRepository extends EntityRepository
         );
     }
 
-    public function findPrimaryNonDeletedByGroup(TelegramBotGroupName $group): array
-    {
-        return $this->queryMany(
-            (new QueryArgs())
-                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
-                ->keyConditionExpression([
-                    '#pk = :pk',
-                    'begins_with(#sk, :sk)',
-                ])
-                ->filterExpression([
-                    'attribute_exists(#primary)',
-                    'attribute_not_exists(#deletedAt)',
-                ])
-                ->expressionAttributeNames([
-                    '#pk' => 'telegram_bot_pk',
-                    '#sk' => 'telegram_bot_group_country_locale_sk',
-                    '#primary' => 'primary',
-                    '#deletedAt' => 'deleted_at',
-                ])
-                ->expressionAttributeValues([
-                    ':pk' => 'TELEGRAM_BOT',
-                    ':sk' => $group->value . '#',
-                ])
-        );
-    }
-
     public function findNonDeletedByGroupAndCountry(TelegramBotGroupName $group, string $countryCode): array
     {
         return $this->queryMany(
@@ -185,6 +159,32 @@ class TelegramBotDynamodbRepository extends EntityRepository
         return array_filter(
             $this->findPrimaryNonDeletedByGroup($group),
             static fn (TelegramBot $bot): bool => in_array($bot->getId(), $ids, true)
+        );
+    }
+
+    public function findPrimaryNonDeletedByGroup(TelegramBotGroupName $group): array
+    {
+        return $this->queryMany(
+            (new QueryArgs())
+                ->indexName('TELEGRAM_BOTS_BY_GROUP_COUNTRY_LOCALE')
+                ->keyConditionExpression([
+                    '#pk = :pk',
+                    'begins_with(#sk, :sk)',
+                ])
+                ->filterExpression([
+                    'attribute_exists(#primary)',
+                    'attribute_not_exists(#deletedAt)',
+                ])
+                ->expressionAttributeNames([
+                    '#pk' => 'telegram_bot_pk',
+                    '#sk' => 'telegram_bot_group_country_locale_sk',
+                    '#primary' => 'primary',
+                    '#deletedAt' => 'deleted_at',
+                ])
+                ->expressionAttributeValues([
+                    ':pk' => 'TELEGRAM_BOT',
+                    ':sk' => $group->value . '#',
+                ])
         );
     }
 }

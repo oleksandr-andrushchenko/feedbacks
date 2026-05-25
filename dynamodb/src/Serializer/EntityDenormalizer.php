@@ -16,7 +16,8 @@ readonly class EntityDenormalizer
         protected MetadataLoader $metadataLoader,
         protected DenormalizerInterface $denormalizer,
         protected ?string $denormalizeFormat = 'dynamodb',
-    ) {
+    )
+    {
     }
 
     /**

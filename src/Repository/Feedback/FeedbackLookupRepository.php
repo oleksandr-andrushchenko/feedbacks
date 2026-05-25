@@ -8,8 +8,6 @@ use App\Entity\Feedback\FeedbackLookup;
 use App\Entity\User\User;
 use App\Repository\EntityRepository;
 use DateTimeInterface;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository as DoctrineEntityRepository;
-use OA\Dynamodb\ODM\EntityRepository as DynamodbEntityRepository;
 
 /**
  * @extends EntityRepository<FeedbackLookup>

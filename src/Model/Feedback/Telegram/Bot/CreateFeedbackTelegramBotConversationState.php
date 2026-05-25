@@ -25,16 +25,16 @@ class CreateFeedbackTelegramBotConversationState extends TelegramBotConversation
         $this->setSearchTerms($this->searchTerms);
     }
 
-    public function getSearchTerms(): SearchTermsTransfer
-    {
-        return $this->searchTerms;
-    }
-
     public function setSearchTerms(?SearchTermsTransfer $searchTerms): self
     {
         $this->searchTerms = $searchTerms ?? new SearchTermsTransfer();
 
         return $this;
+    }
+
+    public function getSearchTerms(): SearchTermsTransfer
+    {
+        return $this->searchTerms;
     }
 
     public function getRating(): ?Rating

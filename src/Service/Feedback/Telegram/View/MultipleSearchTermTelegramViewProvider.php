@@ -71,27 +71,6 @@ class MultipleSearchTermTelegramViewProvider
         return $message;
     }
 
-    public function getPrimarySearchTermTelegramView(
-        SearchTermsTransfer $searchTerms,
-        bool $addSecrets = false,
-        bool $forceType = true,
-        string $locale = null
-    ): string
-    {
-        if (!$searchTerms->hasItems()) {
-            return '';
-        }
-
-        $searchTerm = $this->getSortedSearchTerms($searchTerms)->getFirstItem();
-
-        return $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
-            $searchTerm,
-            addSecrets: $addSecrets,
-            forceType: $forceType,
-            localeCode: $locale
-        );
-    }
-
     private function getSortedSearchTerms(SearchTermsTransfer $searchTerms): SearchTermsTransfer
     {
         $sortSearchTermsItems = [];
@@ -118,5 +97,26 @@ class MultipleSearchTermTelegramViewProvider
         }
 
         return new SearchTermsTransfer($sortSearchTermsItems);
+    }
+
+    public function getPrimarySearchTermTelegramView(
+        SearchTermsTransfer $searchTerms,
+        bool $addSecrets = false,
+        bool $forceType = true,
+        string $locale = null
+    ): string
+    {
+        if (!$searchTerms->hasItems()) {
+            return '';
+        }
+
+        $searchTerm = $this->getSortedSearchTerms($searchTerms)->getFirstItem();
+
+        return $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
+            $searchTerm,
+            addSecrets: $addSecrets,
+            forceType: $forceType,
+            localeCode: $locale
+        );
     }
 }

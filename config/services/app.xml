@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<container xmlns="http://symfony.com/schema/dic/services"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<container xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns="http://symfony.com/schema/dic/services"
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
@@ -87,7 +87,8 @@
             <argument>%app.feedback_media_bucket%</argument>
             <argument>%app.stage%</argument>
         </service>
-        <service id="app.feedback_media_url_provider" class="App\Service\Feedback\Media\FeedbackMediaUrlProvider" lazy="true">
+        <service id="app.feedback_media_url_provider" class="App\Service\Feedback\Media\FeedbackMediaUrlProvider"
+                 lazy="true">
             <argument type="service" id="aws.s3"/>
         </service>
         <service id="app.crawler_provider" class="App\Service\CrawlerProvider" lazy="true">

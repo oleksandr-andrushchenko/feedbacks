@@ -119,25 +119,6 @@ class TelegramBotPaymentManager
     }
 
     /**
-     * @throws ExceptionInterface
-     * @throws TelegramBotPaymentNotFoundException
-     * @throws TelegramBotUnknownPaymentException
-     */
-    public function acceptSuccessfulPayment(TelegramBot $bot, SuccessfulPayment $successfulPayment): TelegramBotPayment
-    {
-        $payment = $this->getPaymentByPayload($successfulPayment->getInvoicePayload());
-        $payment->setSuccessfulPayment($successfulPayment->jsonSerialize());
-
-        $this->updateUserByOrderInfo($bot->getUser(), $successfulPayment->getOrderInfo());
-
-        $payment->setStatus(TelegramBotPaymentStatus::SUCCESSFUL_PAYMENT_RECEIVED);
-
-        $this->eventBus->dispatch(new ActivityEvent(entity: $payment, action: 'successful payment received'));
-
-        return $payment;
-    }
-
-    /**
      * @throws TelegramBotPaymentNotFoundException
      * @throws TelegramBotUnknownPaymentException
      */
@@ -174,5 +155,24 @@ class TelegramBotPaymentManager
         if ($user->getEmail() === null && $orderInfo->getEmail() !== null) {
             $user->setEmail($orderInfo->getEmail());
         }
+    }
+
+    /**
+     * @throws ExceptionInterface
+     * @throws TelegramBotPaymentNotFoundException
+     * @throws TelegramBotUnknownPaymentException
+     */
+    public function acceptSuccessfulPayment(TelegramBot $bot, SuccessfulPayment $successfulPayment): TelegramBotPayment
+    {
+        $payment = $this->getPaymentByPayload($successfulPayment->getInvoicePayload());
+        $payment->setSuccessfulPayment($successfulPayment->jsonSerialize());
+
+        $this->updateUserByOrderInfo($bot->getUser(), $successfulPayment->getOrderInfo());
+
+        $payment->setStatus(TelegramBotPaymentStatus::SUCCESSFUL_PAYMENT_RECEIVED);
+
+        $this->eventBus->dispatch(new ActivityEvent(entity: $payment, action: 'successful payment received'));
+
+        return $payment;
     }
 }

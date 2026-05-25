@@ -28,19 +28,6 @@ readonly class FeedbackSubscriptionPlan
         return $this->datetimeModifier;
     }
 
-    public function getDefaultPrice(): float
-    {
-        return $this->defaultPrice;
-    }
-
-    /**
-     * @return float[]
-     */
-    public function getPrices(): array
-    {
-        return $this->prices;
-    }
-
     public function getCountries(): array
     {
         return $this->countries;
@@ -57,6 +44,19 @@ readonly class FeedbackSubscriptionPlan
         }
 
         return $this->getDefaultPrice();
+    }
+
+    /**
+     * @return float[]
+     */
+    public function getPrices(): array
+    {
+        return $this->prices;
+    }
+
+    public function getDefaultPrice(): float
+    {
+        return $this->defaultPrice;
     }
 
     public function isGlobal(): bool

@@ -35,6 +35,20 @@ class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchVi
         };
     }
 
+    private function getEnterprisesMessage(BusinessGuideEnterprises $record, SearchTerm $searchTerm, bool $full): string
+    {
+        $m = $this->modifier;
+
+        return $m->create()
+            ->add($m->boldModifier())
+            ->add($m->underlineModifier())
+            ->add($m->prependModifier('💫 '))
+            ->add($m->newLineModifier(2))
+            ->add($m->appendModifier($m->implodeLinesModifier($this->getEnterpriseWrapMessageCallback($searchTerm, $full))($record->getItems())))
+            ->apply($this->trans('enterprises_title'))
+        ;
+    }
+
     public function getEnterpriseWrapMessageCallback(SearchTerm $searchTerm, bool $full): callable
     {
         $m = $this->modifier;
@@ -95,20 +109,6 @@ class BusinessGuideTelegramSearchViewer extends SearchViewer implements SearchVi
                 ->add($m->bracketsModifier($this->trans('sectors')))
                 ->apply($item->getSectors()),
         ];
-    }
-
-    private function getEnterprisesMessage(BusinessGuideEnterprises $record, SearchTerm $searchTerm, bool $full): string
-    {
-        $m = $this->modifier;
-
-        return $m->create()
-            ->add($m->boldModifier())
-            ->add($m->underlineModifier())
-            ->add($m->prependModifier('💫 '))
-            ->add($m->newLineModifier(2))
-            ->add($m->appendModifier($m->implodeLinesModifier($this->getEnterpriseWrapMessageCallback($searchTerm, $full))($record->getItems())))
-            ->apply($this->trans('enterprises_title'))
-        ;
     }
 
     private function getEnterpriseMessage(BusinessGuideEnterprise $record, SearchTerm $searchTerm, bool $full): string

@@ -84,20 +84,25 @@ class FeedbackNotification implements Stringable
         return $this->type;
     }
 
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
+    }
+
     public function setMessengerUserId(?string $messengerUserId): self
     {
         $this->messengerUserId = $messengerUserId;
         return $this;
     }
 
-    public function getMessengerUserId(): ?string
-    {
-        return $this->messengerUserId;
-    }
-
     public function getMessengerUser(): MessengerUser
     {
         return $this->messengerUser;
+    }
+
+    public function getSearchTermId(): ?string
+    {
+        return $this->searchTermId;
     }
 
     public function setSearchTermId(?string $searchTermId): self
@@ -106,14 +111,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getSearchTermId(): ?string
-    {
-        return $this->searchTermId;
-    }
-
     public function getSearchTerm(): ?SearchTerm
     {
         return $this->searchTerm;
+    }
+
+    public function getFeedbackId(): ?string
+    {
+        return $this->feedbackId;
     }
 
     public function setFeedbackId(?string $feedbackId): self
@@ -122,14 +127,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getFeedbackId(): ?string
-    {
-        return $this->feedbackId;
-    }
-
     public function getFeedback(): ?Feedback
     {
         return $this->feedback;
+    }
+
+    public function getTargetFeedbackId(): ?string
+    {
+        return $this->targetFeedbackId;
     }
 
     public function setTargetFeedbackId(?string $targetFeedbackId): self
@@ -138,14 +143,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getTargetFeedbackId(): ?string
-    {
-        return $this->targetFeedbackId;
-    }
-
     public function getTargetFeedback(): ?Feedback
     {
         return $this->targetFeedback;
+    }
+
+    public function getFeedbackSearchId(): ?string
+    {
+        return $this->feedbackSearchId;
     }
 
     public function setFeedbackSearchId(?string $feedbackSearchId): self
@@ -154,14 +159,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getFeedbackSearchId(): ?string
-    {
-        return $this->feedbackSearchId;
-    }
-
     public function getFeedbackSearch(): ?FeedbackSearch
     {
         return $this->feedbackSearch;
+    }
+
+    public function getTargetFeedbackSearchId(): ?string
+    {
+        return $this->targetFeedbackSearchId;
     }
 
     public function setTargetFeedbackSearchId(?string $targetFeedbackSearchId): self
@@ -170,14 +175,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getTargetFeedbackSearchId(): ?string
-    {
-        return $this->targetFeedbackSearchId;
-    }
-
     public function getTargetFeedbackSearch(): ?FeedbackSearch
     {
         return $this->targetFeedbackSearch;
+    }
+
+    public function getFeedbackLookupId(): ?string
+    {
+        return $this->feedbackLookupId;
     }
 
     public function setFeedbackLookupId(?string $feedbackLookupId): self
@@ -186,14 +191,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getFeedbackLookupId(): ?string
-    {
-        return $this->feedbackLookupId;
-    }
-
     public function getFeedbackLookup(): ?FeedbackLookup
     {
         return $this->feedbackLookup;
+    }
+
+    public function getTargetFeedbackLookupId(): ?string
+    {
+        return $this->targetFeedbackLookupId;
     }
 
     public function setTargetFeedbackLookupId(?string $targetFeedbackLookupId): self
@@ -202,14 +207,14 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getTargetFeedbackLookupId(): ?string
-    {
-        return $this->targetFeedbackLookupId;
-    }
-
     public function getTargetFeedbackLookup(): ?FeedbackLookup
     {
         return $this->targetFeedbackLookup;
+    }
+
+    public function getFeedbackUserSubscriptionId(): ?string
+    {
+        return $this->feedbackUserSubscriptionId;
     }
 
     public function setFeedbackUserSubscriptionId(?string $feedbackUserSubscriptionId): self
@@ -218,25 +223,20 @@ class FeedbackNotification implements Stringable
         return $this;
     }
 
-    public function getFeedbackUserSubscriptionId(): ?string
-    {
-        return $this->feedbackUserSubscriptionId;
-    }
-
     public function getFeedbackUserSubscription(): ?FeedbackUserSubscription
     {
         return $this->feedbackUserSubscription;
+    }
+
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
     }
 
     public function setTelegramBotId(?string $telegramBotId): self
     {
         $this->telegramBotId = $telegramBotId;
         return $this;
-    }
-
-    public function getTelegramBotId(): ?string
-    {
-        return $this->telegramBotId;
     }
 
     public function getTelegramBot(): ?TelegramBot

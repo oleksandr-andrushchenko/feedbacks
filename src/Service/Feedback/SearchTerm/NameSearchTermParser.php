@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\SearchTerm;
 
-use App\Transfer\Feedback\SearchTermTransfer;
 use App\Enum\Feedback\SearchTermType;
+use App\Transfer\Feedback\SearchTermTransfer;
 
 class NameSearchTermParser implements SearchTermParserInterface
 {
@@ -24,32 +24,6 @@ class NameSearchTermParser implements SearchTermParserInterface
         return false;
     }
 
-    public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
-    {
-        if ($this->supportsPersonName($searchTerm->getText())) {
-            $searchTerm
-                ->addType(SearchTermType::person_name)
-            ;
-        }
-
-        if ($this->supportsOrganizationName($searchTerm->getText())) {
-            $searchTerm
-                ->addType(SearchTermType::organization_name)
-            ;
-        }
-
-        if ($this->supportsPlaceName($searchTerm->getText())) {
-            $searchTerm
-                ->addType(SearchTermType::place_name)
-            ;
-        }
-    }
-
-    public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
-    {
-        // TODO: Implement parseWithKnownType() method.
-    }
-
     private function supportsPersonName(string $personName): bool
     {
         $result = preg_match($this->getPattern($first = 'A-Za-z\pL\x{00C0}-\x{00FF}', $first), $personName);
@@ -59,6 +33,11 @@ class NameSearchTermParser implements SearchTermParserInterface
         }
 
         return false;
+    }
+
+    private function getPattern(string $first, string $next): string
+    {
+        return sprintf('/^[%s][%s\'\-]+([\ %s][%s\'\-]+)*$/iu', $first, ...array_fill(0, 3, $next));
     }
 
     private function supportsOrganizationName(string $orgName): bool
@@ -91,8 +70,29 @@ class NameSearchTermParser implements SearchTermParserInterface
         return false;
     }
 
-    private function getPattern(string $first, string $next): string
+    public function parseWithGuessType(SearchTermTransfer $searchTerm, array $context = []): void
     {
-        return sprintf('/^[%s][%s\'\-]+([\ %s][%s\'\-]+)*$/iu', $first, ...array_fill(0, 3, $next));
+        if ($this->supportsPersonName($searchTerm->getText())) {
+            $searchTerm
+                ->addType(SearchTermType::person_name)
+            ;
+        }
+
+        if ($this->supportsOrganizationName($searchTerm->getText())) {
+            $searchTerm
+                ->addType(SearchTermType::organization_name)
+            ;
+        }
+
+        if ($this->supportsPlaceName($searchTerm->getText())) {
+            $searchTerm
+                ->addType(SearchTermType::place_name)
+            ;
+        }
+    }
+
+    public function parseWithKnownType(SearchTermTransfer $searchTerm, array $context = []): void
+    {
+        // TODO: Implement parseWithKnownType() method.
     }
 }

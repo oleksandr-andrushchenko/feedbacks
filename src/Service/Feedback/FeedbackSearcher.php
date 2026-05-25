@@ -6,7 +6,6 @@ namespace App\Service\Feedback;
 
 use App\Entity\Feedback\Feedback;
 use App\Entity\Feedback\SearchTerm;
-use App\Entity\Feedback\SearchTermFeedback;
 use App\Entity\User\User;
 use App\Enum\Feedback\SearchTermType;
 use App\Repository\Feedback\FeedbackRepository;

@@ -35,21 +35,21 @@ class TelegramBotLocaleSwitcher
         $request->setLocale($this->localeSwitcher->getLocale());
     }
 
-    public function switchLocale(null|string|Locale $locale): void
-    {
-        $localeCode = $locale === null ? null : (is_string($locale) ? $locale : $locale->getCode());
-
-        if ($localeCode === null) {
-            $this->localeSwitcher->reset();;
-        } else {
-            $this->setLocale($localeCode);
-        }
-    }
-
     public function setLocale(string|Locale $locale): void
     {
         $localeCode = is_string($locale) ? $locale : $locale->getCode();
 //        setlocale(LC_TIME, $localeCode);
         $this->localeSwitcher->setLocale($localeCode);
+    }
+
+    public function switchLocale(null|string|Locale $locale): void
+    {
+        $localeCode = $locale === null ? null : (is_string($locale) ? $locale : $locale->getCode());
+
+        if ($localeCode === null) {
+            $this->localeSwitcher->reset();
+        } else {
+            $this->setLocale($localeCode);
+        }
     }
 }

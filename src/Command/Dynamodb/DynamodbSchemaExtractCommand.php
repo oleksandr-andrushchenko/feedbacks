@@ -23,11 +23,6 @@ class DynamodbSchemaExtractCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->setDescription('Extract and print DynamoDB schema from ' . $this->cfFilename);
-    }
-
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -62,5 +57,10 @@ class DynamodbSchemaExtractCommand extends Command
         $io->writeln($json);
 
         return Command::SUCCESS;
+    }
+
+    protected function configure(): void
+    {
+        $this->setDescription('Extract and print DynamoDB schema from ' . $this->cfFilename);
     }
 }

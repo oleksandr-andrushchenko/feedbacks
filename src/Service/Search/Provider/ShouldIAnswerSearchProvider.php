@@ -64,11 +64,6 @@ class ShouldIAnswerSearchProvider extends SearchProvider implements SearchProvid
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return null;
-    }
-
     private function searchPhones(string $phone): ?ShouldIAnswerReviews
     {
         if (str_starts_with($phone, '1')) {
@@ -158,5 +153,10 @@ class ShouldIAnswerSearchProvider extends SearchProvider implements SearchProvid
             score: $score ?? null,
             items: array_values($items)
         );
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return null;
     }
 }

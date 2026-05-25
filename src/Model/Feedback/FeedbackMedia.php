@@ -33,6 +33,26 @@ class FeedbackMedia
         $this->createdAt ??= new DateTimeImmutable();
     }
 
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            $data['storage'] ?? null,
+            $data['bucket'] ?? null,
+            $data['key'] ?? null,
+            $data['type'],
+            $data['telegram_file_id'] ?? null,
+            $data['telegram_file_unique_id'] ?? null,
+            $data['mime_type'] ?? null,
+            $data['width'] ?? null,
+            $data['height'] ?? null,
+            $data['file_size'] ?? null,
+            $data['file_name'] ?? null,
+            $data['group_id'] ?? null,
+            $data['duration'] ?? null,
+            isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
+        );
+    }
+
     public function getStorage(): ?string
     {
         return $this->storage;
@@ -121,25 +141,5 @@ class FeedbackMedia
             'duration' => $this->duration,
             'created_at' => $this->createdAt?->format(DateTimeInterface::ATOM),
         ], static fn (mixed $value): bool => $value !== null);
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            $data['storage'] ?? null,
-            $data['bucket'] ?? null,
-            $data['key'] ?? null,
-            $data['type'],
-            $data['telegram_file_id'] ?? null,
-            $data['telegram_file_unique_id'] ?? null,
-            $data['mime_type'] ?? null,
-            $data['width'] ?? null,
-            $data['height'] ?? null,
-            $data['file_size'] ?? null,
-            $data['file_name'] ?? null,
-            $data['group_id'] ?? null,
-            $data['duration'] ?? null,
-            isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
-        );
     }
 }

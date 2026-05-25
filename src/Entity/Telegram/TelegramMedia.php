@@ -62,6 +62,25 @@ class TelegramMedia implements Stringable
         $this->createdAt ??= new DateTimeImmutable();
     }
 
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            $data['id'],
+            $data['file_id'],
+            $data['type'],
+            $data['conversation_id'] ?? null,
+            $data['width'] ?? null,
+            $data['height'] ?? null,
+            $data['file_size'] ?? null,
+            $data['file_name'] ?? null,
+            $data['mime_type'] ?? null,
+            $data['group_id'] ?? null,
+            $data['duration'] ?? null,
+            $data['thumb_id'] ?? null,
+            isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
+        );
+    }
+
     public function getId(): string
     {
         return $this->id;
@@ -224,24 +243,5 @@ class TelegramMedia implements Stringable
             'thumb_id' => $this->thumbId,
             'created_at' => $this->createdAt?->format(DateTimeInterface::ATOM),
         ];
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            $data['id'],
-            $data['file_id'],
-            $data['type'],
-            $data['conversation_id'] ?? null,
-            $data['width'] ?? null,
-            $data['height'] ?? null,
-            $data['file_size'] ?? null,
-            $data['file_name'] ?? null,
-            $data['mime_type'] ?? null,
-            $data['group_id'] ?? null,
-            $data['duration'] ?? null,
-            $data['thumb_id'] ?? null,
-            isset($data['created_at']) ? new DateTimeImmutable($data['created_at']) : null,
-        );
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EventListener\Doctrine;
 
-use Doctrine\ORM\Event\PrePersistEventArgs;
 use DateTimeImmutable;
+use Doctrine\ORM\Event\PrePersistEventArgs;
 use Doctrine\ORM\Event\PreUpdateEventArgs;
 
 class CreateAtUpdateAtEventListener

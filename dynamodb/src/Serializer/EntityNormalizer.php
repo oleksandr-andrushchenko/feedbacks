@@ -95,31 +95,6 @@ readonly class EntityNormalizer
      * @template T of object
      * @param T|class-string<T> $entity
      * @param array<string, mixed> $keyFieldValues
-     * @return array<string, string>
-     * @throws ReflectionException
-     * @throws ExceptionInterface
-     * @throws MetadataException
-     */
-    protected function normalizeSortKey(object|string $entity, array $keyFieldValues = []): array
-    {
-        $this->validateKeyArguments($entity, $keyFieldValues);
-        $isClassString = is_string($entity);
-        $class = $isClassString ? $entity : $entity::class;
-        $sortKeyName = $this->normalizeSortKeyName($class);
-
-        $sortKeyValue = $isClassString
-            ? $this->normalizeSortKeyValueFromArray($class, $keyFieldValues)
-            : $this->normalizeSortKeyValueFromEntity($entity);
-
-        return empty($sortKeyName) || empty($sortKeyValue)
-            ? []
-            : [$sortKeyName => $sortKeyValue];
-    }
-
-    /**
-     * @template T of object
-     * @param T|class-string<T> $entity
-     * @param array<string, mixed> $keyFieldValues
      */
     protected function validateKeyArguments(object|string $entity, array $keyFieldValues = []): void
     {
@@ -148,100 +123,6 @@ readonly class EntityNormalizer
     /**
      * @template T of object
      * @param class-string<T> $class
-     * @throws ReflectionException
-     * @throws MetadataException
-     */
-    protected function normalizeSortKeyName(string $class): ?string
-    {
-        return $this->metadataLoader->getEntityMetadata($class)->getSortKey()?->getName();
-    }
-
-    /**
-     * @template T of object
-     * @param T $entity
-     * @throws ReflectionException
-     * @throws ExceptionInterface
-     * @throws MetadataException
-     */
-    protected function normalizePartitionKeyValueFromEntity(object $entity): string
-    {
-        $key = $this->metadataLoader->getEntityMetadata($entity::class)->getPartitionKey();
-
-        return $this->normalizeKeyValueFromEntity($entity, $key);
-    }
-
-    /**
-     * @template T of object
-     * @param T $entity
-     * @throws ReflectionException
-     * @throws ExceptionInterface
-     * @throws MetadataException
-     */
-    protected function normalizeSortKeyValueFromEntity(object $entity): ?string
-    {
-        $key = $this->metadataLoader->getEntityMetadata($entity::class)->getSortKey();
-
-        if (null === $key) {
-            return null;
-        }
-
-        return $this->normalizeKeyValueFromEntity($entity, $key);
-    }
-
-    /**
-     * @template T of object
-     * @param T $entity
-     * @param AbstractKey $key
-     * @param bool $skipEmpty
-     * @throws ReflectionException
-     * @throws ExceptionInterface
-     */
-    protected function normalizeKeyValueFromEntity(object $entity, AbstractKey $key, bool $skipEmpty = false): ?string
-    {
-        $definedFields = $key->getFields();
-        $delimiter = $key->getDelimiter();
-        $prefix = $key->getPrefix();
-
-        $classMetadata = $this->metadataLoader->getClassMetadata($entity::class);
-        $finalValue = [];
-        if ($prefix !== null) {
-            $finalValue[] = $prefix;
-        }
-
-        foreach ($definedFields as $field) {
-            if (false === $classMetadata->has($field)) {
-                throw new InvalidFieldException(
-                    sprintf(
-                        'Field "%s" defined in %s is invalid. Are you sure it exists in the entity class?',
-                        $field,
-                        $key::class
-                    )
-                );
-            }
-
-            /** @var ReflectionProperty $reflectionProperty */
-            $reflectionProperty = $classMetadata->get($field);
-            $propertyValue = $reflectionProperty->getValue($entity);
-
-            /** @var scalar $currentFieldValue */
-            $currentFieldValue = $this->normalizer->normalize($propertyValue, $this->normalizeFormat);
-            if ($skipEmpty && empty($currentFieldValue)) {
-                continue;
-            }
-
-            $finalValue[] = $currentFieldValue;
-        }
-
-        if (empty($finalValue)) {
-            return null;
-        }
-
-        return implode($delimiter, $finalValue);
-    }
-
-    /**
-     * @template T of object
-     * @param class-string<T> $class
      * @param array<string, mixed> $valuesByField
      * @throws ReflectionException
      * @throws ExceptionInterface
@@ -250,25 +131,6 @@ readonly class EntityNormalizer
     protected function normalizePartitionKeyValueFromArray(string $class, array $valuesByField): string
     {
         $key = $this->metadataLoader->getEntityMetadata($class)->getPartitionKey();
-
-        return $this->normalizeKeyValueFromArray($class, $valuesByField, $key);
-    }
-
-    /**
-     * @template T of object
-     * @param class-string<T> $class
-     * @param array<string, mixed> $valuesByField
-     * @throws ReflectionException
-     * @throws ExceptionInterface
-     * @throws MetadataException
-     */
-    protected function normalizeSortKeyValueFromArray(string $class, array $valuesByField): ?string
-    {
-        $key = $this->metadataLoader->getEntityMetadata($class)->getSortKey();
-
-        if (null === $key) {
-            return null;
-        }
 
         return $this->normalizeKeyValueFromArray($class, $valuesByField, $key);
     }
@@ -337,28 +199,139 @@ readonly class EntityNormalizer
     /**
      * @template T of object
      * @param T $entity
-     * @return array<string, mixed>
      * @throws ReflectionException
      * @throws ExceptionInterface
      * @throws MetadataException
      */
-    protected function normalizeAttributes(object $entity): array
+    protected function normalizePartitionKeyValueFromEntity(object $entity): string
     {
+        $key = $this->metadataLoader->getEntityMetadata($entity::class)->getPartitionKey();
+
+        return $this->normalizeKeyValueFromEntity($entity, $key);
+    }
+
+    /**
+     * @template T of object
+     * @param T $entity
+     * @param AbstractKey $key
+     * @param bool $skipEmpty
+     * @throws ReflectionException
+     * @throws ExceptionInterface
+     */
+    protected function normalizeKeyValueFromEntity(object $entity, AbstractKey $key, bool $skipEmpty = false): ?string
+    {
+        $definedFields = $key->getFields();
+        $delimiter = $key->getDelimiter();
+        $prefix = $key->getPrefix();
+
         $classMetadata = $this->metadataLoader->getClassMetadata($entity::class);
-        $propertyAttributes = $this->metadataLoader->getEntityMetadata($entity::class)->getPropertyAttributes();
-
-        $attributes = [];
-
-        foreach ($propertyAttributes as $prop => $attr) {
-            $reflectionProperty = $classMetadata->get($prop);
-            $propertyValue = $reflectionProperty?->getValue($entity);
-
-            if (false === $attr->ignoreIfNull() || null !== $propertyValue) {
-                $attributes[$attr->getName() ?: $prop] = $this->normalizer->normalize($propertyValue, $this->normalizeFormat);
-            }
+        $finalValue = [];
+        if ($prefix !== null) {
+            $finalValue[] = $prefix;
         }
 
-        return $attributes;
+        foreach ($definedFields as $field) {
+            if (false === $classMetadata->has($field)) {
+                throw new InvalidFieldException(
+                    sprintf(
+                        'Field "%s" defined in %s is invalid. Are you sure it exists in the entity class?',
+                        $field,
+                        $key::class
+                    )
+                );
+            }
+
+            /** @var ReflectionProperty $reflectionProperty */
+            $reflectionProperty = $classMetadata->get($field);
+            $propertyValue = $reflectionProperty->getValue($entity);
+
+            /** @var scalar $currentFieldValue */
+            $currentFieldValue = $this->normalizer->normalize($propertyValue, $this->normalizeFormat);
+            if ($skipEmpty && empty($currentFieldValue)) {
+                continue;
+            }
+
+            $finalValue[] = $currentFieldValue;
+        }
+
+        if (empty($finalValue)) {
+            return null;
+        }
+
+        return implode($delimiter, $finalValue);
+    }
+
+    /**
+     * @template T of object
+     * @param T|class-string<T> $entity
+     * @param array<string, mixed> $keyFieldValues
+     * @return array<string, string>
+     * @throws ReflectionException
+     * @throws ExceptionInterface
+     * @throws MetadataException
+     */
+    protected function normalizeSortKey(object|string $entity, array $keyFieldValues = []): array
+    {
+        $this->validateKeyArguments($entity, $keyFieldValues);
+        $isClassString = is_string($entity);
+        $class = $isClassString ? $entity : $entity::class;
+        $sortKeyName = $this->normalizeSortKeyName($class);
+
+        $sortKeyValue = $isClassString
+            ? $this->normalizeSortKeyValueFromArray($class, $keyFieldValues)
+            : $this->normalizeSortKeyValueFromEntity($entity);
+
+        return empty($sortKeyName) || empty($sortKeyValue)
+            ? []
+            : [$sortKeyName => $sortKeyValue];
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @throws ReflectionException
+     * @throws MetadataException
+     */
+    protected function normalizeSortKeyName(string $class): ?string
+    {
+        return $this->metadataLoader->getEntityMetadata($class)->getSortKey()?->getName();
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $class
+     * @param array<string, mixed> $valuesByField
+     * @throws ReflectionException
+     * @throws ExceptionInterface
+     * @throws MetadataException
+     */
+    protected function normalizeSortKeyValueFromArray(string $class, array $valuesByField): ?string
+    {
+        $key = $this->metadataLoader->getEntityMetadata($class)->getSortKey();
+
+        if (null === $key) {
+            return null;
+        }
+
+        return $this->normalizeKeyValueFromArray($class, $valuesByField, $key);
+    }
+
+    /**
+     * @template T of object
+     * @param T $entity
+     * @throws ReflectionException
+     * @throws ExceptionInterface
+     * @throws MetadataException
+     */
+    protected function normalizeSortKeyValueFromEntity(object $entity): ?string
+    {
+        $key = $this->metadataLoader->getEntityMetadata($entity::class)->getSortKey();
+
+        if (null === $key) {
+            return null;
+        }
+
+        return $this->normalizeKeyValueFromEntity($entity, $key);
     }
 
     /**
@@ -431,5 +404,32 @@ readonly class EntityNormalizer
             ...$sortKeyNormalized,
             ...$partitionKeyNormalized,
         ];
+    }
+
+    /**
+     * @template T of object
+     * @param T $entity
+     * @return array<string, mixed>
+     * @throws ReflectionException
+     * @throws ExceptionInterface
+     * @throws MetadataException
+     */
+    protected function normalizeAttributes(object $entity): array
+    {
+        $classMetadata = $this->metadataLoader->getClassMetadata($entity::class);
+        $propertyAttributes = $this->metadataLoader->getEntityMetadata($entity::class)->getPropertyAttributes();
+
+        $attributes = [];
+
+        foreach ($propertyAttributes as $prop => $attr) {
+            $reflectionProperty = $classMetadata->get($prop);
+            $propertyValue = $reflectionProperty?->getValue($entity);
+
+            if (false === $attr->ignoreIfNull() || null !== $propertyValue) {
+                $attributes[$attr->getName() ?: $prop] = $this->normalizer->normalize($propertyValue, $this->normalizeFormat);
+            }
+        }
+
+        return $attributes;
     }
 }

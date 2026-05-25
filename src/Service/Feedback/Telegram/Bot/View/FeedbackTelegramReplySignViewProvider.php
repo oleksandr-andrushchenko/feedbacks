@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\View;
 
+use App\Entity\Telegram\TelegramBot;
 use App\Entity\Telegram\TelegramChannel;
 use App\Enum\Messenger\Messenger;
 use App\Repository\Telegram\Channel\TelegramChannelRepository;
 use App\Service\Messenger\MessengerUserProfileUrlProvider;
-use App\Entity\Telegram\TelegramBot;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class FeedbackTelegramReplySignViewProvider

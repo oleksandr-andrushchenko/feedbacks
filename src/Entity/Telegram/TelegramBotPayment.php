@@ -89,15 +89,15 @@ class TelegramBotPayment implements Stringable
         return $this->messengerUser;
     }
 
+    public function getMessengerUserId(): ?string
+    {
+        return $this->messengerUserId;
+    }
+
     public function setMessengerUserId(?string $messengerUserId): self
     {
         $this->messengerUserId = $messengerUserId;
         return $this;
-    }
-
-    public function getMessengerUserId(): ?string
-    {
-        return $this->messengerUserId;
     }
 
     public function getChatId(): string
@@ -105,15 +105,15 @@ class TelegramBotPayment implements Stringable
         return $this->chatId;
     }
 
+    public function getTelegramBotPaymentMethodId(): ?string
+    {
+        return $this->telegramBotPaymentMethodId;
+    }
+
     public function setTelegramBotPaymentMethodId(?string $telegramBotPaymentMethodId): self
     {
         $this->telegramBotPaymentMethodId = $telegramBotPaymentMethodId;
         return $this;
-    }
-
-    public function getTelegramBotPaymentMethodId(): ?string
-    {
-        return $this->telegramBotPaymentMethodId;
     }
 
     public function setTelegramBotPaymentMethod(?TelegramBotPaymentMethod $telegramBotPaymentMethod): self
@@ -148,15 +148,15 @@ class TelegramBotPayment implements Stringable
         return $this->telegramBot;
     }
 
+    public function getTelegramBotId(): ?string
+    {
+        return $this->telegramBotId;
+    }
+
     public function setTelegramBotId(?string $telegramBotId): self
     {
         $this->telegramBotId = $telegramBotId;
         return $this;
-    }
-
-    public function getTelegramBotId(): ?string
-    {
-        return $this->telegramBotId;
     }
 
     public function getPreCheckoutQuery(): ?array

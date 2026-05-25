@@ -64,11 +64,6 @@ class TelegramBot
         $this->messengerUser = null;
     }
 
-    public function getEntity(): TelegramBotEntity
-    {
-        return $this->telegramBot;
-    }
-
     public function getUpdate(): ?Update
     {
         return $this->update;
@@ -86,11 +81,6 @@ class TelegramBot
         return $this->messengerUser;
     }
 
-    public function getUser(): ?User
-    {
-        return $this->messengerUserService->getUser($this->messengerUser);
-    }
-
     public function setMessengerUser(?MessengerUser $messengerUser): static
     {
         $this->messengerUser = $messengerUser;
@@ -98,9 +88,19 @@ class TelegramBot
         return $this;
     }
 
+    public function getUser(): ?User
+    {
+        return $this->messengerUserService->getUser($this->messengerUser);
+    }
+
     public function primary(): bool
     {
         return $this->getEntity()->primary();
+    }
+
+    public function getEntity(): TelegramBotEntity
+    {
+        return $this->telegramBot;
     }
 
     public function deleted(): bool

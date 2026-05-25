@@ -44,9 +44,9 @@ class TelegramBotAwareHelper
         return $new;
     }
 
-    public function getBot(): TelegramBot
+    public function matchInput(?string $text): bool
     {
-        return $this->bot;
+        return $this->getText()?->getRawValue() === $text;
     }
 
     public function getText(): ?TelegramText
@@ -59,14 +59,9 @@ class TelegramBotAwareHelper
         return new TelegramText($text);
     }
 
-    public function matchInput(?string $text): bool
+    public function getBot(): TelegramBot
     {
-        return $this->getText()?->getRawValue() === $text;
-    }
-
-    public function getChatId(): ?int
-    {
-        return $this->telegramBotChatProvider->getTelegramChatByUpdate($this->getBot()->getUpdate())?->getId();
+        return $this->bot;
     }
 
     public function getLocation(): ?Location
@@ -78,11 +73,6 @@ class TelegramBotAwareHelper
         }
 
         return new Location($locationResponse->getLatitude(), $locationResponse->getLongitude());
-    }
-
-    public function getLocaleCode(): ?string
-    {
-        return $this->getBot()->getUser()?->getLocaleCode();
     }
 
     public function getCountryCode(): ?string
@@ -128,11 +118,79 @@ class TelegramBotAwareHelper
         return $this;
     }
 
-    public function view(string $template, array $context = []): string
+    public function okText(string $text): string
+    {
+        return '🫡 ' . $text;
+    }
+
+    public function failText(string $text): string
+    {
+        return '🤕 ' . $text;
+    }
+
+    public function attentionText(string $text): string
+    {
+        return '‼️ ' . $text;
+    }
+
+    public function upsetText(string $text): string
+    {
+        return '😐 ' . $text;
+    }
+
+    public function infoText(string $text): string
+    {
+        return 'ℹ️ ' . $text;
+    }
+
+    public function selectedText(string $text): string
+    {
+        return '*' . $text;
+    }
+
+    public function queryTipText(string $text): string
+    {
+        return "\n\n" . '<i>' . $text . '</i>';
+    }
+
+    public function alreadyAddedText(string $text): string
+    {
+        return "\n\n" . $this->queryText($this->trans('query.already_added')) . ':' . "\n" . $text;
+    }
+
+    public function queryText(string $text, bool $optional = false): string
+    {
+//        return '<u><b>' . $text . ($optional ? (' [ ' . $this->trans('query.optional') . ' ]') : '') . '</b></u>';
+        return '<b>' . $text . ($optional ? (' [ ' . $this->trans('query.optional') . ' ]') : '') . '</b>';
+    }
+
+    public function trans(string $id, array $parameters = [], ?string $domain = null, string $locale = null): string
     {
         $group = $this->getBot()->getEntity()->getGroup()->name;
+        $prefix = $group . '.tg';
+        $domain = $domain === null ? $prefix : ($prefix . '.' . $domain);
 
-        return $this->twig->render(sprintf('%s.tg.%s.html.twig', $group, $template), $context);
+        return $this->translator->trans($id, $parameters, $domain, $locale ?? $this->getLocaleCode());
+    }
+
+    public function getLocaleCode(): ?string
+    {
+        return $this->getBot()->getUser()?->getLocaleCode();
+    }
+
+    public function replyWarning(string $text): self
+    {
+        $message = $this->forbiddenText($text);
+
+        $this->reply($message);
+
+        return $this;
+    }
+
+    public function forbiddenText(string $text): string
+    {
+        return '⛔️ ' . $text;
+//        return '⚠️ ' . $text;
     }
 
     public function reply(
@@ -165,79 +223,9 @@ class TelegramBotAwareHelper
         return $this;
     }
 
-    public function trans(string $id, array $parameters = [], ?string $domain = null, string $locale = null): string
+    public function getChatId(): ?int
     {
-        $group = $this->getBot()->getEntity()->getGroup()->name;
-        $prefix = $group . '.tg';
-        $domain = $domain === null ? $prefix : ($prefix . '.' . $domain);
-
-        return $this->translator->trans($id, $parameters, $domain, $locale ?? $this->getLocaleCode());
-    }
-
-    public function okText(string $text): string
-    {
-        return '🫡 ' . $text;
-    }
-
-    public function failText(string $text): string
-    {
-        return '🤕 ' . $text;
-    }
-
-    public function attentionText(string $text): string
-    {
-        return '‼️ ' . $text;
-    }
-
-    public function wrongText(string $text): string
-    {
-        return '🤔 ' . $text;
-    }
-
-    public function upsetText(string $text): string
-    {
-        return '😐 ' . $text;
-    }
-
-    public function infoText(string $text): string
-    {
-        return 'ℹ️ ' . $text;
-    }
-
-    public function selectedText(string $text): string
-    {
-        return '*' . $text;
-    }
-
-    public function queryText(string $text, bool $optional = false): string
-    {
-//        return '<u><b>' . $text . ($optional ? (' [ ' . $this->trans('query.optional') . ' ]') : '') . '</b></u>';
-        return '<b>' . $text . ($optional ? (' [ ' . $this->trans('query.optional') . ' ]') : '') . '</b>';
-    }
-
-    public function queryTipText(string $text): string
-    {
-        return "\n\n" . '<i>' . $text . '</i>';
-    }
-
-    public function alreadyAddedText(string $text): string
-    {
-        return "\n\n" . $this->queryText($this->trans('query.already_added')) . ':' . "\n" . $text;
-    }
-
-    public function forbiddenText(string $text): string
-    {
-        return '⛔️ ' . $text;
-//        return '⚠️ ' . $text;
-    }
-
-    public function replyWarning(string $text): self
-    {
-        $message = $this->forbiddenText($text);
-
-        $this->reply($message);
-
-        return $this;
+        return $this->telegramBotChatProvider->getTelegramChatByUpdate($this->getBot()->getUpdate())?->getId();
     }
 
     public function replyWrong(bool $useInput): self
@@ -257,14 +245,14 @@ class TelegramBotAwareHelper
         return '↘️ ' . ($useInput ? $this->trans('help.use_input') : $this->trans('help.use_keyboard'));
     }
 
+    public function wrongText(string $text): string
+    {
+        return '🤔 ' . $text;
+    }
+
     public function keyboard(...$buttons): Keyboard
     {
         return $this->telegramBotKeyboardFactory->createTelegramKeyboard(...$buttons);
-    }
-
-    public function button(string $text): KeyboardButton
-    {
-        return $this->telegramBotKeyboardFactory->createTelegramButton($text);
     }
 
     public function locationButton(string $text): KeyboardButton
@@ -275,6 +263,11 @@ class TelegramBotAwareHelper
     public function yesButton(): KeyboardButton
     {
         return $this->button('✅ ' . $this->trans('keyboard.yes'));
+    }
+
+    public function button(string $text): KeyboardButton
+    {
+        return $this->telegramBotKeyboardFactory->createTelegramButton($text);
     }
 
     public function noButton(): KeyboardButton
@@ -317,9 +310,21 @@ class TelegramBotAwareHelper
         ]);
     }
 
+    public function view(string $template, array $context = []): string
+    {
+        $group = $this->getBot()->getEntity()->getGroup()->name;
+
+        return $this->twig->render(sprintf('%s.tg.%s.html.twig', $group, $template), $context);
+    }
+
     public function null(): null
     {
         return null;
+    }
+
+    public function getMedia(): null|TelegramPhoto|TelegramVideo
+    {
+        return $this->getPhoto() ?? $this->getVideo();
     }
 
     public function getPhoto(): ?TelegramPhoto
@@ -375,10 +380,5 @@ class TelegramBotAwareHelper
             mimeType: $video->getMimeType(),
             groupId: $message->getMediaGroupId()
         );
-    }
-
-    public function getMedia(): null|TelegramPhoto|TelegramVideo
-    {
-        return $this->getPhoto() ?? $this->getVideo();
     }
 }

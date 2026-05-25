@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot;
 
+use App\Entity\Telegram\TelegramBot;
 use App\Enum\Telegram\TelegramBotGroupName;
 use App\Repository\Telegram\Bot\TelegramBotRepository;
-use App\Entity\Telegram\TelegramBot;
 
 class TelegramBotProvider
 {
@@ -14,6 +14,14 @@ class TelegramBotProvider
         private readonly TelegramBotRepository $telegramBotRepository,
     )
     {
+    }
+
+    public function getCachedTelegramBotsByGroupAndIds(TelegramBotGroupName $group, array $ids): array
+    {
+        return array_filter(
+            $this->getCachedTelegramBotsByGroup($group),
+            static fn (TelegramBot $bot): bool => in_array($bot->getId(), $ids, true)
+        );
     }
 
     public function getCachedTelegramBotsByGroup(TelegramBotGroupName $group): array
@@ -29,14 +37,6 @@ class TelegramBotProvider
         }
 
         return $cache[$key];
-    }
-
-    public function getCachedTelegramBotsByGroupAndIds(TelegramBotGroupName $group, array $ids): array
-    {
-        return array_filter(
-            $this->getCachedTelegramBotsByGroup($group),
-            static fn (TelegramBot $bot): bool => in_array($bot->getId(), $ids, true)
-        );
     }
 
     /**

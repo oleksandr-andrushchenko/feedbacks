@@ -73,6 +73,23 @@ class Level1RegionProvider
         return $this->level1RegionRepository->findByCountry($country->getCode());
     }
 
+    private function denormalize(array $record): Level1Region
+    {
+        return $this->denormalizer->denormalize($record, Level1Region::class, format: 'internal');
+    }
+
+    private function getNormalizedData(string $countryCode): array
+    {
+        static $data = [];
+
+        if (!isset($data[$countryCode])) {
+            $content = file_get_contents(str_replace('{country}', $countryCode, $this->sourceFile));
+            $data[$countryCode] = json_decode($content, true);
+        }
+
+        return $data[$countryCode];
+    }
+
     public function getLevel1RegionNameById(Country $country, string $level1RegionId): ?string
     {
         if ($country->level1RegionsDumped()) {
@@ -106,22 +123,5 @@ class Level1RegionProvider
     public function getLevel1Region(string $id): Level1Region
     {
         return $this->level1RegionRepository->find($id);
-    }
-
-    private function denormalize(array $record): Level1Region
-    {
-        return $this->denormalizer->denormalize($record, Level1Region::class, format: 'internal');
-    }
-
-    private function getNormalizedData(string $countryCode): array
-    {
-        static $data = [];
-
-        if (!isset($data[$countryCode])) {
-            $content = file_get_contents(str_replace('{country}', $countryCode, $this->sourceFile));
-            $data[$countryCode] = json_decode($content, true);
-        }
-
-        return $data[$countryCode];
     }
 }

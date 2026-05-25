@@ -71,21 +71,6 @@ class FeedbackSubscriptionManager
         return $subscription;
     }
 
-    /**
-     * @param MessengerUser $messengerUser
-     * @return FeedbackUserSubscription[]
-     */
-    public function getSubscriptions(MessengerUser $messengerUser): array
-    {
-        $user = $this->messengerUserService->getUser($messengerUser);
-
-        if ($user === null) {
-            return $this->feedbackUserSubscriptionRepository->findByMessengerUser($messengerUser);
-        }
-
-        return $this->feedbackUserSubscriptionRepository->findByUser($user);
-    }
-
     public function getActiveSubscription(MessengerUser $messengerUser): ?FeedbackUserSubscription
     {
         $subscriptions = $this->getSubscriptions($messengerUser);
@@ -101,6 +86,21 @@ class FeedbackSubscriptionManager
         }
 
         return null;
+    }
+
+    /**
+     * @param MessengerUser $messengerUser
+     * @return FeedbackUserSubscription[]
+     */
+    public function getSubscriptions(MessengerUser $messengerUser): array
+    {
+        $user = $this->messengerUserService->getUser($messengerUser);
+
+        if ($user === null) {
+            return $this->feedbackUserSubscriptionRepository->findByMessengerUser($messengerUser);
+        }
+
+        return $this->feedbackUserSubscriptionRepository->findByUser($user);
     }
 
     public function isSubscriptionActive(FeedbackUserSubscription $subscription): bool

@@ -72,13 +72,6 @@ class DynamodbFromDoctrineTransferCommand extends Command
         parent::__construct();
     }
 
-    protected function configure(): void
-    {
-        $this->setDescription('Load data from doctrine to your dynamodb database')
-            ->addOption('em', null, InputOption::VALUE_REQUIRED, 'The entity manager to use for this command.')
-        ;
-    }
-
     public function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -328,6 +321,28 @@ class DynamodbFromDoctrineTransferCommand extends Command
         return $affectedRows;
     }
 
+    public function transferTelegramBotPaymentMethods(array $telegramBotIdMap, array &$telegramBotPaymentMethodIdMap): int
+    {
+        $this->doctrineEntityManager->clear();
+        $affectedRows = 0;
+        foreach ($this->telegramBotPaymentMethodDoctrineRepository->findAll() as $telegramBotPaymentMethod) {
+            $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()] = $this->idGenerator->generateId();
+            $newTelegramBotPaymentMethod = new TelegramBotPaymentMethod(
+                $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()],
+                $telegramBotPaymentMethod->getTelegramBot(),
+                $telegramBotPaymentMethod->getName(),
+                $telegramBotPaymentMethod->getToken(),
+                $telegramBotPaymentMethod->getCurrencyCodes(),
+                $telegramBotPaymentMethod->getCreatedAt(),
+            );
+            $newTelegramBotPaymentMethod->setTelegramBotId($telegramBotIdMap[$telegramBotPaymentMethod->getTelegramBotId()] ?? null);
+            $this->dynamodbEntityManager->persist($newTelegramBotPaymentMethod);
+            $affectedRows++;
+        }
+        $this->dynamodbEntityManager->flush();
+        return $affectedRows;
+    }
+
     private function transferTelegramBotPayments(array $telegramBotIdMap, array $telegramBotPaymentMethodIdMap): int
     {
         $this->doctrineEntityManager->clear();
@@ -339,23 +354,6 @@ class DynamodbFromDoctrineTransferCommand extends Command
                 ->setTelegramBotId($telegramBotIdMap[$telegramBotPayment->getTelegramBot()?->getId()] ?? null)
             ;
             $this->dynamodbEntityManager->persist($telegramBotPayment);
-            $affectedRows++;
-        }
-        $this->dynamodbEntityManager->flush();
-        return $affectedRows;
-    }
-
-    private function transferFeedbackUserSubscriptions(): int
-    {
-        $this->doctrineEntityManager->clear();
-        $affectedRows = 0;
-        foreach ($this->feedbackUserSubscriptionDoctrineRepository->findAll() as $feedbackUserSubscription) {
-            $feedbackUserSubscription
-                ->setTelegramPaymentId($feedbackUserSubscription->getTelegramPayment()?->getId())
-                ->setMessengerUserId($feedbackUserSubscription->getMessengerUser()?->getId())
-                ->setUserId($feedbackUserSubscription->getUser()?->getId())
-            ;
-            $this->dynamodbEntityManager->persist($feedbackUserSubscription);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();
@@ -384,28 +382,6 @@ class DynamodbFromDoctrineTransferCommand extends Command
                 $telegramBotConversation->getState()
             );
             $this->dynamodbEntityManager->persist($newTelegramBotConversation);
-            $affectedRows++;
-        }
-        $this->dynamodbEntityManager->flush();
-        return $affectedRows;
-    }
-
-    public function transferTelegramBotPaymentMethods(array $telegramBotIdMap, array &$telegramBotPaymentMethodIdMap): int
-    {
-        $this->doctrineEntityManager->clear();
-        $affectedRows = 0;
-        foreach ($this->telegramBotPaymentMethodDoctrineRepository->findAll() as $telegramBotPaymentMethod) {
-            $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()] = $this->idGenerator->generateId();
-            $newTelegramBotPaymentMethod = new TelegramBotPaymentMethod(
-                $telegramBotPaymentMethodIdMap[$telegramBotPaymentMethod->getId()],
-                $telegramBotPaymentMethod->getTelegramBot(),
-                $telegramBotPaymentMethod->getName(),
-                $telegramBotPaymentMethod->getToken(),
-                $telegramBotPaymentMethod->getCurrencyCodes(),
-                $telegramBotPaymentMethod->getCreatedAt(),
-            );
-            $newTelegramBotPaymentMethod->setTelegramBotId($telegramBotIdMap[$telegramBotPaymentMethod->getTelegramBotId()] ?? null);
-            $this->dynamodbEntityManager->persist($newTelegramBotPaymentMethod);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();
@@ -470,6 +446,30 @@ class DynamodbFromDoctrineTransferCommand extends Command
                 ->setTelegramBotId($telegramBotIdMap[$feedbackNotification->getTelegramBot()?->getId()] ?? null)
             ;
             $this->dynamodbEntityManager->persist($feedbackNotification);
+            $affectedRows++;
+        }
+        $this->dynamodbEntityManager->flush();
+        return $affectedRows;
+    }
+
+    protected function configure(): void
+    {
+        $this->setDescription('Load data from doctrine to your dynamodb database')
+            ->addOption('em', null, InputOption::VALUE_REQUIRED, 'The entity manager to use for this command.')
+        ;
+    }
+
+    private function transferFeedbackUserSubscriptions(): int
+    {
+        $this->doctrineEntityManager->clear();
+        $affectedRows = 0;
+        foreach ($this->feedbackUserSubscriptionDoctrineRepository->findAll() as $feedbackUserSubscription) {
+            $feedbackUserSubscription
+                ->setTelegramPaymentId($feedbackUserSubscription->getTelegramPayment()?->getId())
+                ->setMessengerUserId($feedbackUserSubscription->getMessengerUser()?->getId())
+                ->setUserId($feedbackUserSubscription->getUser()?->getId())
+            ;
+            $this->dynamodbEntityManager->persist($feedbackUserSubscription);
             $affectedRows++;
         }
         $this->dynamodbEntityManager->flush();

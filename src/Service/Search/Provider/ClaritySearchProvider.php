@@ -169,88 +169,26 @@ class ClaritySearchProvider extends SearchProvider implements SearchProviderInte
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return true;
-    }
-
-    private function searchPersons(string $name): ?ClarityPersons
-    {
-        $url = '/persons?search=' . urlencode($name);
-        $headers = [
-            'Referer' => 'https://clarity-project.info/persons',
-        ];
-        $crawler = $this->crawlerProvider->getCrawler('GET', $url, base: self::URL, headers: $headers, user: true);
-
-        $items = $crawler->filter('.results-wrap .item')->each(static function (Crawler $item): ?ClarityPerson {
-            $a = $item->filter('a');
-
-            if ($a->count() === 0) {
-                return null;
-            }
-
-            $name = trim($a->eq(0)->text());
-
-            if (empty($name)) {
-                return null;
-            }
-
-            $href = trim($a->eq(0)->attr('href') ?? '');
-            $href = empty($href) ? null : (self::URL . $href);
-
-            return new ClarityPerson(
-                $name,
-                href: empty($href) ? null : $href,
-                count: empty($count) ? null : $count
-            );
-        });
-
-        $items = array_values(array_filter($items));
-
-        return count($items) === 0 ? null : new ClarityPersons($items);
-    }
-
-    private function searchPersonEdrs(string $url, string $referer = null): ?ClarityPersonEdrs
+    private function searchPersonSecurity(string $url, string $referer = null): ?ClarityPersonSecurities
     {
         $crawler = $this->getPersonCrawler($url, $referer);
 
-        // todo: replace with https://clarity-project.info/edrs/?search=%name% (this variant holds addresses for fops)
-        // todo: process @mainEntity json
-
-        $table = $crawler->filter('[data-id="edrs"] table')->eq(0);
+        $table = $crawler->filter('[data-id="security"]');
         $header = [];
-        $tr = $table->children('tr')->eq(0);
-        $tr->filter('th')->each(function (Crawler $th) use (&$header) {
+        $table->filter('tr')->eq(0)->filter('th')->each(function (Crawler $th) use (&$header) {
             $header[] = trim($th->text());
         });
 
-        if (!isset($header[0]) || !str_contains($header[0], 'Назва')) {
+        if (!isset($header[0]) || !str_contains($header[0], 'ПІБ')) {
             return null;
         }
 
-        $ids = [];
-
-        $items = $table->children('tr.item')->each(static function (Crawler $tr) use ($header, &$ids): ?ClarityPersonEdr {
-            $id = $tr->attr('data-id');
-
-            if (in_array($id, $ids, true)) {
-                return null;
-            }
-
-            $ids[] = $id;
-
+        $items = $table->filter('tr.item')->each(static function (Crawler $tr) use ($header): ?ClarityPersonSecurity {
             $tds = $tr->filter('td');
 
-            $nameEl = $tds->eq(0);
-
-            if ($nameEl->count() === 0) {
+            if ($tds->count() === 1) {
                 return null;
             }
-
-            $active = str_contains(trim($nameEl->text()), 'Зареєстровано');
-
-            $toRemove = $tds->eq(0)->children()->last()->getNode(0);
-            $toRemove->parentNode->removeChild($toRemove);
 
             $name = trim($tds->eq(0)->text());
 
@@ -258,38 +196,71 @@ class ClaritySearchProvider extends SearchProvider implements SearchProviderInte
                 return null;
             }
 
-            $hrefEl = $tr->filter('a');
-
-            if ($hrefEl->count() !== 0) {
-                $href = trim($hrefEl->eq(0)->attr('href') ?? '');
-                $href = empty($href) ? null : (self::URL . $href);
+            if (isset($header[1]) && str_contains($header[1], 'народження') && $tds->eq(1)->count() !== 0) {
+                $bornAt = trim($tds->eq(1)->text());
+                $bornAt = empty($bornAt) ? null : DateTimeImmutable::createFromFormat('d.m.Y', $bornAt)->setTime(0, 0);
+                $bornAt = $bornAt === false ? null : $bornAt;
             }
 
-            if (isset($header[1]) && str_contains($header[1], 'ЄДРПОУ') && $tds->eq(1)->count() !== 0) {
-                $number = preg_replace('/[^0-9]/', '', trim($tds->eq(1)->text()));
+            if (isset($header[2]) && str_contains($header[2], 'Категорія') && $tds->eq(2)->count() !== 0) {
+                $category = trim($tds->eq(2)->text());
             }
 
-            if (isset($header[2]) && $tds->eq(2)->count() !== 0) {
-                $address = trim($tds->eq(2)->text());
+            if (isset($header[3]) && str_contains($header[3], 'Регіон') && $tds->eq(3)->count() !== 0) {
+                $region = trim($tds->eq(3)->text());
             }
 
-            if (isset($header[3]) && $tds->eq(3)->count() !== 0) {
-                $type = trim($tds->eq(3)->text());
+            if (isset($header[4]) && str_contains($header[4], 'зникнення') && $tds->eq(4)->count() !== 0) {
+                if ($tds->eq(4)->filter('.small')->count() !== 0) {
+                    $archive = trim($tds->eq(4)->filter('.small')->text());
+                    $archive = empty($archive) ? null : str_contains($archive, 'архівна');
+                }
+
+                if (!empty($tds->eq(4)->getNode(0)?->firstChild?->textContent)) {
+                    $absentAt = trim($tds->eq(4)->getNode(0)->firstChild->textContent ?? '');
+                    $absentAt = empty($absentAt) ? null : DateTimeImmutable::createFromFormat('d.m.Y', $absentAt)->setTime(0, 0);
+                    $absentAt = $absentAt === false ? null : $absentAt;
+                }
             }
 
-            return new ClarityPersonEdr(
+            $accusation = null;
+            $precaution = null;
+
+            $nextTr = $tr->nextAll();
+
+            if ($nextTr->matches('.table-collapse-details')) {
+                $trs = $nextTr->filter('tr');
+                if ($trs->eq(5)->filter('td')->count() !== 0 && str_contains($trs->eq(5)->filter('td')->eq(0)->text(), 'Звинувачення')) {
+                    $accusation = trim($trs->eq(5)->filter('td')->eq(1)->text());
+                }
+                if ($trs->eq(6)->filter('td')->count() !== 0 && str_contains($trs->eq(6)->filter('td')->eq(0)->text(), 'Запобіжний')) {
+                    $precaution = trim($trs->eq(6)->filter('td')->eq(1)->text());
+                }
+            }
+
+            return new ClarityPersonSecurity(
                 $name,
-                type: empty($type) ? null : $type,
-                href: empty($href) ? null : $href,
-                number: empty($number) ? null : $number,
-                active: $active,
-                address: empty($address) ? null : $address
+                bornAt: empty($bornAt) ? null : $bornAt,
+                category: empty($category) ? null : $category,
+                region: empty($region) ? null : $region,
+                absentAt: empty($absentAt) ? null : $absentAt,
+                archive: $archive ?? null,
+                accusation: empty($accusation) ? null : $accusation,
+                precaution: empty($precaution) ? null : $precaution
             );
         });
 
         $items = array_values(array_filter($items));
 
-        return count($items) === 0 ? null : new ClarityPersonEdrs($items);
+        return count($items) === 0 ? null : new ClarityPersonSecurities($items);
+    }
+
+    private function getPersonCrawler(string $url, string $referer = null): Crawler
+    {
+        $headers = $referer === null ? ['Referer' => $referer] : null;
+        $base = str_starts_with($url, self::URL) ? null : self::URL;
+
+        return $this->crawlerProvider->getCrawler('GET', $url, base: $base, headers: $headers, user: true);
     }
 
     private function searchPersonCourts(string $url, string $referer = null): ?ClarityPersonCourts
@@ -405,92 +376,6 @@ class ClaritySearchProvider extends SearchProvider implements SearchProviderInte
         return count($items) === 0 ? null : new ClarityPersonDebtors($items);
     }
 
-    private function searchPersonSecurity(string $url, string $referer = null): ?ClarityPersonSecurities
-    {
-        $crawler = $this->getPersonCrawler($url, $referer);
-
-        $table = $crawler->filter('[data-id="security"]');
-        $header = [];
-        $table->filter('tr')->eq(0)->filter('th')->each(function (Crawler $th) use (&$header) {
-            $header[] = trim($th->text());
-        });
-
-        if (!isset($header[0]) || !str_contains($header[0], 'ПІБ')) {
-            return null;
-        }
-
-        $items = $table->filter('tr.item')->each(static function (Crawler $tr) use ($header): ?ClarityPersonSecurity {
-            $tds = $tr->filter('td');
-
-            if ($tds->count() === 1) {
-                return null;
-            }
-
-            $name = trim($tds->eq(0)->text());
-
-            if (empty($name)) {
-                return null;
-            }
-
-            if (isset($header[1]) && str_contains($header[1], 'народження') && $tds->eq(1)->count() !== 0) {
-                $bornAt = trim($tds->eq(1)->text());
-                $bornAt = empty($bornAt) ? null : DateTimeImmutable::createFromFormat('d.m.Y', $bornAt)->setTime(0, 0);
-                $bornAt = $bornAt === false ? null : $bornAt;
-            }
-
-            if (isset($header[2]) && str_contains($header[2], 'Категорія') && $tds->eq(2)->count() !== 0) {
-                $category = trim($tds->eq(2)->text());
-            }
-
-            if (isset($header[3]) && str_contains($header[3], 'Регіон') && $tds->eq(3)->count() !== 0) {
-                $region = trim($tds->eq(3)->text());
-            }
-
-            if (isset($header[4]) && str_contains($header[4], 'зникнення') && $tds->eq(4)->count() !== 0) {
-                if ($tds->eq(4)->filter('.small')->count() !== 0) {
-                    $archive = trim($tds->eq(4)->filter('.small')->text());
-                    $archive = empty($archive) ? null : str_contains($archive, 'архівна');
-                }
-
-                if (!empty($tds->eq(4)->getNode(0)?->firstChild?->textContent)) {
-                    $absentAt = trim($tds->eq(4)->getNode(0)->firstChild->textContent ?? '');
-                    $absentAt = empty($absentAt) ? null : DateTimeImmutable::createFromFormat('d.m.Y', $absentAt)->setTime(0, 0);
-                    $absentAt = $absentAt === false ? null : $absentAt;
-                }
-            }
-
-            $accusation = null;
-            $precaution = null;
-
-            $nextTr = $tr->nextAll();
-
-            if ($nextTr->matches('.table-collapse-details')) {
-                $trs = $nextTr->filter('tr');
-                if ($trs->eq(5)->filter('td')->count() !== 0 && str_contains($trs->eq(5)->filter('td')->eq(0)->text(), 'Звинувачення')) {
-                    $accusation = trim($trs->eq(5)->filter('td')->eq(1)->text());
-                }
-                if ($trs->eq(6)->filter('td')->count() !== 0 && str_contains($trs->eq(6)->filter('td')->eq(0)->text(), 'Запобіжний')) {
-                    $precaution = trim($trs->eq(6)->filter('td')->eq(1)->text());
-                }
-            }
-
-            return new ClarityPersonSecurity(
-                $name,
-                bornAt: empty($bornAt) ? null : $bornAt,
-                category: empty($category) ? null : $category,
-                region: empty($region) ? null : $region,
-                absentAt: empty($absentAt) ? null : $absentAt,
-                archive: $archive ?? null,
-                accusation: empty($accusation) ? null : $accusation,
-                precaution: empty($precaution) ? null : $precaution
-            );
-        });
-
-        $items = array_values(array_filter($items));
-
-        return count($items) === 0 ? null : new ClarityPersonSecurities($items);
-    }
-
     private function searchPersonEnforcements(string $url, string $referer = null): ?ClarityPersonEnforcements
     {
         $crawler = $this->getPersonCrawler($url, $referer);
@@ -561,6 +446,88 @@ class ClaritySearchProvider extends SearchProvider implements SearchProviderInte
         return count($items) === 0 ? null : new ClarityPersonEnforcements($items);
     }
 
+    private function searchPersonEdrs(string $url, string $referer = null): ?ClarityPersonEdrs
+    {
+        $crawler = $this->getPersonCrawler($url, $referer);
+
+        // todo: replace with https://clarity-project.info/edrs/?search=%name% (this variant holds addresses for fops)
+        // todo: process @mainEntity json
+
+        $table = $crawler->filter('[data-id="edrs"] table')->eq(0);
+        $header = [];
+        $tr = $table->children('tr')->eq(0);
+        $tr->filter('th')->each(function (Crawler $th) use (&$header) {
+            $header[] = trim($th->text());
+        });
+
+        if (!isset($header[0]) || !str_contains($header[0], 'Назва')) {
+            return null;
+        }
+
+        $ids = [];
+
+        $items = $table->children('tr.item')->each(static function (Crawler $tr) use ($header, &$ids): ?ClarityPersonEdr {
+            $id = $tr->attr('data-id');
+
+            if (in_array($id, $ids, true)) {
+                return null;
+            }
+
+            $ids[] = $id;
+
+            $tds = $tr->filter('td');
+
+            $nameEl = $tds->eq(0);
+
+            if ($nameEl->count() === 0) {
+                return null;
+            }
+
+            $active = str_contains(trim($nameEl->text()), 'Зареєстровано');
+
+            $toRemove = $tds->eq(0)->children()->last()->getNode(0);
+            $toRemove->parentNode->removeChild($toRemove);
+
+            $name = trim($tds->eq(0)->text());
+
+            if (empty($name)) {
+                return null;
+            }
+
+            $hrefEl = $tr->filter('a');
+
+            if ($hrefEl->count() !== 0) {
+                $href = trim($hrefEl->eq(0)->attr('href') ?? '');
+                $href = empty($href) ? null : (self::URL . $href);
+            }
+
+            if (isset($header[1]) && str_contains($header[1], 'ЄДРПОУ') && $tds->eq(1)->count() !== 0) {
+                $number = preg_replace('/[^0-9]/', '', trim($tds->eq(1)->text()));
+            }
+
+            if (isset($header[2]) && $tds->eq(2)->count() !== 0) {
+                $address = trim($tds->eq(2)->text());
+            }
+
+            if (isset($header[3]) && $tds->eq(3)->count() !== 0) {
+                $type = trim($tds->eq(3)->text());
+            }
+
+            return new ClarityPersonEdr(
+                $name,
+                type: empty($type) ? null : $type,
+                href: empty($href) ? null : $href,
+                number: empty($number) ? null : $number,
+                active: $active,
+                address: empty($address) ? null : $address
+            );
+        });
+
+        $items = array_values(array_filter($items));
+
+        return count($items) === 0 ? null : new ClarityPersonEdrs($items);
+    }
+
     private function searchPersonDeclarations(string $url, string $referer = null): ?ClarityPersonDeclarations
     {
         $crawler = $this->getPersonCrawler($url, $referer);
@@ -623,6 +590,42 @@ class ClaritySearchProvider extends SearchProvider implements SearchProviderInte
         return count($items) === 0 ? null : new ClarityPersonDeclarations($items);
     }
 
+    private function searchPersons(string $name): ?ClarityPersons
+    {
+        $url = '/persons?search=' . urlencode($name);
+        $headers = [
+            'Referer' => 'https://clarity-project.info/persons',
+        ];
+        $crawler = $this->crawlerProvider->getCrawler('GET', $url, base: self::URL, headers: $headers, user: true);
+
+        $items = $crawler->filter('.results-wrap .item')->each(static function (Crawler $item): ?ClarityPerson {
+            $a = $item->filter('a');
+
+            if ($a->count() === 0) {
+                return null;
+            }
+
+            $name = trim($a->eq(0)->text());
+
+            if (empty($name)) {
+                return null;
+            }
+
+            $href = trim($a->eq(0)->attr('href') ?? '');
+            $href = empty($href) ? null : (self::URL . $href);
+
+            return new ClarityPerson(
+                $name,
+                href: empty($href) ? null : $href,
+                count: empty($count) ? null : $count
+            );
+        });
+
+        $items = array_values(array_filter($items));
+
+        return count($items) === 0 ? null : new ClarityPersons($items);
+    }
+
     private function searchEdrs(string $name): ?ClarityEdrs
     {
         $url = '/edrs?search=' . urlencode($name);
@@ -679,11 +682,8 @@ class ClaritySearchProvider extends SearchProvider implements SearchProviderInte
         return count($items) === 0 ? null : new ClarityEdrs($items);
     }
 
-    private function getPersonCrawler(string $url, string $referer = null): Crawler
+    public function goodOnEmptyResult(): ?bool
     {
-        $headers = $referer === null ? ['Referer' => $referer] : null;
-        $base = str_starts_with($url, self::URL) ? null : self::URL;
-
-        return $this->crawlerProvider->getCrawler('GET', $url, base: $base, headers: $headers, user: true);
+        return true;
     }
 }

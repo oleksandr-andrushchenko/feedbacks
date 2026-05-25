@@ -67,18 +67,6 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
-    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
-    {
-        $this->state->setStep(self::STEP_CANCEL_PRESSED);
-
-        $tg->stopConversation($entity);
-
-        $message = $tg->trans('reply.canceled', domain: 'restart');
-        $message = $tg->upsetText($message);
-
-        return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
-    }
-
     public function gotConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         if ($tg->matchInput($tg->noButton()->getText())) {
@@ -124,5 +112,17 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
         $tg->reply($message);
 
         return $this->startTelegramCommandHandler->handleStart($tg);
+    }
+
+    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
+    {
+        $this->state->setStep(self::STEP_CANCEL_PRESSED);
+
+        $tg->stopConversation($entity);
+
+        $message = $tg->trans('reply.canceled', domain: 'restart');
+        $message = $tg->upsetText($message);
+
+        return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
     }
 }

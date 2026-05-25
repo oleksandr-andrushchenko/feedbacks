@@ -8,6 +8,7 @@ use App\Model\Feedback\FeedbackMedia;
 use Aws\S3\S3Client;
 use DateInterval;
 use DateTimeImmutable;
+use InvalidArgumentException;
 
 class FeedbackMediaUrlProvider
 {
@@ -22,7 +23,7 @@ class FeedbackMediaUrlProvider
         $media = $media instanceof FeedbackMedia ? $media->toArray() : $media;
 
         if (($media['storage'] ?? null) !== FeedbackMedia::STORAGE_S3) {
-            throw new \InvalidArgumentException(sprintf('Unsupported feedback media storage "%s"', $media['storage'] ?? ''));
+            throw new InvalidArgumentException(sprintf('Unsupported feedback media storage "%s"', $media['storage'] ?? ''));
         }
 
         $command = $this->s3->getCommand('GetObject', [
@@ -32,6 +33,7 @@ class FeedbackMediaUrlProvider
 
         return (string) $this->s3
             ->createPresignedRequest($command, (new DateTimeImmutable())->add($ttl))
-            ->getUri();
+            ->getUri()
+        ;
     }
 }

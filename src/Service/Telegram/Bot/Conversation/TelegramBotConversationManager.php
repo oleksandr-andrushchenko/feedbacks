@@ -38,41 +38,11 @@ class TelegramBotConversationManager
     {
     }
 
-    public function getCurrentTelegramConversation(TelegramBot $bot): ?TelegramBotConversation
-    {
-        $messengerUser = $bot->getMessengerUser();
-        $chatId = $this->telegramBotChatProvider->getTelegramChatByUpdate($bot->getUpdate())?->getId();
-
-        $this->logger?->debug(__METHOD__, [
-            'messengerUser' => $messengerUser,
-            'chatId' => $chatId,
-        ]);
-
-        if ($messengerUser === null || $chatId === null) {
-            return null;
-        }
-
-        $hash = $this->createTelegramConversationHash($messengerUser->getId(), $chatId, $bot->getEntity()->getId());
-        $conversation = $this->telegramBotConversationRepository->findOneNonDeletedByHash($hash);
-
-        $this->logger?->debug(__METHOD__, [
-            'hash' => $hash,
-            'conversation' => $conversation,
-        ]);
-
-        return $conversation;
-    }
-
     public function startTelegramConversation(TelegramBot $bot, string $class): void
     {
         $entity = $this->createTelegramConversation($bot, $class);
 
         $this->executeConversation($bot, $entity, 'invoke');
-    }
-
-    public function createTelegramConversationHash(string $messengerUserId, int|string $chatId, string $botId): string
-    {
-        return md5($messengerUserId . '-' . $chatId . '-' . $botId);
     }
 
     public function createTelegramConversation(TelegramBot $bot, string $class, TelegramBotConversationState $state = null): TelegramBotConversation
@@ -95,25 +65,9 @@ class TelegramBotConversationManager
         return $entity;
     }
 
-    public function executeTelegramConversation(TelegramBot $bot, string $class, TelegramBotConversationState $state, string $method): void
+    public function createTelegramConversationHash(string $messengerUserId, int|string $chatId, string $botId): string
     {
-        $entity = $this->createTelegramConversation($bot, $class, $state);
-
-        $this->executeConversation($bot, $entity, $method);
-    }
-
-    public function continueTelegramConversation(TelegramBot $bot, TelegramBotConversation $conversation): void
-    {
-        $this->executeConversation($bot, $conversation, 'invoke');
-    }
-
-    public function denormalizeState(?array $state, string $class): TelegramBotConversationState
-    {
-        if ($state === null) {
-            return new $class();
-        }
-
-        return $this->conversationStateDenormalizer->denormalize($state, $class);
+        return md5($messengerUserId . '-' . $chatId . '-' . $botId);
     }
 
     public function normalizeState(TelegramBotConversationState $state): array
@@ -121,27 +75,6 @@ class TelegramBotConversationManager
         $normalized = $this->conversationStateNormalizer->normalize($state);
 
         return $this->arrayNullFilter->filterNulls($normalized);
-    }
-
-    public function stopCurrentTelegramConversation(TelegramBot $bot): void
-    {
-        $conversation = $this->getCurrentTelegramConversation($bot);
-
-        if ($conversation === null) {
-            return;
-        }
-
-        $this->stopTelegramConversation($conversation);
-    }
-
-    public function stopTelegramConversation(TelegramBotConversation $entity): void
-    {
-        if ($this->saveRequests) {
-            $entity->setDeletedAt(new DateTimeImmutable());
-            $entity->setExpireAt((new DateTimeImmutable())->setTimestamp(time() + 7 * 24 * 60 * 60));
-        } else {
-            $this->entityManager->remove($entity);
-        }
     }
 
     public function executeConversation(TelegramBot $bot, TelegramBotConversation $entity, string $method): TelegramBotConversationInterface
@@ -169,5 +102,72 @@ class TelegramBotConversationManager
         ]);
 
         return $conversation;
+    }
+
+    public function denormalizeState(?array $state, string $class): TelegramBotConversationState
+    {
+        if ($state === null) {
+            return new $class();
+        }
+
+        return $this->conversationStateDenormalizer->denormalize($state, $class);
+    }
+
+    public function executeTelegramConversation(TelegramBot $bot, string $class, TelegramBotConversationState $state, string $method): void
+    {
+        $entity = $this->createTelegramConversation($bot, $class, $state);
+
+        $this->executeConversation($bot, $entity, $method);
+    }
+
+    public function continueTelegramConversation(TelegramBot $bot, TelegramBotConversation $conversation): void
+    {
+        $this->executeConversation($bot, $conversation, 'invoke');
+    }
+
+    public function stopCurrentTelegramConversation(TelegramBot $bot): void
+    {
+        $conversation = $this->getCurrentTelegramConversation($bot);
+
+        if ($conversation === null) {
+            return;
+        }
+
+        $this->stopTelegramConversation($conversation);
+    }
+
+    public function getCurrentTelegramConversation(TelegramBot $bot): ?TelegramBotConversation
+    {
+        $messengerUser = $bot->getMessengerUser();
+        $chatId = $this->telegramBotChatProvider->getTelegramChatByUpdate($bot->getUpdate())?->getId();
+
+        $this->logger?->debug(__METHOD__, [
+            'messengerUser' => $messengerUser,
+            'chatId' => $chatId,
+        ]);
+
+        if ($messengerUser === null || $chatId === null) {
+            return null;
+        }
+
+        $hash = $this->createTelegramConversationHash($messengerUser->getId(), $chatId, $bot->getEntity()->getId());
+        $conversation = $this->telegramBotConversationRepository->findOneNonDeletedByHash($hash);
+
+        $this->logger?->debug(__METHOD__, [
+            'hash' => $hash,
+            'conversation' => $conversation,
+        ]);
+
+        return $conversation;
+    }
+
+    public function stopTelegramConversation(TelegramBotConversation $entity): void
+    {
+        if ($this->saveRequests) {
+            $entity->setDeletedAt(new DateTimeImmutable());
+            $entity->setExpireAt((new DateTimeImmutable())->setTimestamp(time() + 7 * 24 * 60 * 60));
+        } else {
+            $this->entityManager->remove($entity);
+        }
     }
 }

@@ -19,11 +19,6 @@ class CurrencyProvider
     {
     }
 
-    public function hasCurrency(string $code): bool
-    {
-        return array_key_exists($code, $this->getData());
-    }
-
     public function getCurrency(string $code): ?Currency
     {
         if (!$this->hasCurrency($code)) {
@@ -33,34 +28,26 @@ class CurrencyProvider
         return $this->denormalize($this->getData()[$code]);
     }
 
-    public function getCurrencyIcon(Currency $currency): string
+    public function hasCurrency(string $code): bool
     {
-        $code = match ($currency->getCode()) {
-            'EUR' => 'eu',
-            'USD' => 'us',
-            default => null,
-        };
-        if ($code === null) {
-            $country = $this->countryProvider->getCountryByCurrency($currency->getCode());
-            $code = $country->getCode();
+        return array_key_exists($code, $this->getData());
+    }
+
+    private function getData(): array
+    {
+        static $data = null;
+
+        if ($data === null) {
+            $content = file_get_contents($this->dataPath);
+            $data = json_decode($content, true);
         }
 
-        return "\xF0\x9F\x87" . chr(ord($code[0]) + 0x45) . "\xF0\x9F\x87" . chr(ord($code[1]) + 0x45);
+        return $data;
     }
 
-    public function getUnknownCurrencyIcon(): string
+    private function denormalize(array $record): Currency
     {
-        return $this->countryProvider->getUnknownCountryIcon();
-    }
-
-    public function getCurrencyName(Currency $currency, string $localeCode = null): string
-    {
-        return $this->translator->trans($currency->getCode(), domain: 'currency', locale: $localeCode);
-    }
-
-    public function getUnknownCurrencyName(string $localeCode = null): string
-    {
-        return $this->translator->trans('ZZZ', domain: 'currency', locale: $localeCode);
+        return $this->denormalizer->denormalize($record, Currency::class, format: 'internal');
     }
 
     public function getCurrencyComposeName(Currency $currency = null, string $localeCode = null): string
@@ -78,6 +65,36 @@ class CurrencyProvider
         ]);
     }
 
+    public function getUnknownCurrencyIcon(): string
+    {
+        return $this->countryProvider->getUnknownCountryIcon();
+    }
+
+    public function getUnknownCurrencyName(string $localeCode = null): string
+    {
+        return $this->translator->trans('ZZZ', domain: 'currency', locale: $localeCode);
+    }
+
+    public function getCurrencyIcon(Currency $currency): string
+    {
+        $code = match ($currency->getCode()) {
+            'EUR' => 'eu',
+            'USD' => 'us',
+            default => null,
+        };
+        if ($code === null) {
+            $country = $this->countryProvider->getCountryByCurrency($currency->getCode());
+            $code = $country->getCode();
+        }
+
+        return "\xF0\x9F\x87" . chr(ord($code[0]) + 0x45) . "\xF0\x9F\x87" . chr(ord($code[1]) + 0x45);
+    }
+
+    public function getCurrencyName(Currency $currency, string $localeCode = null): string
+    {
+        return $this->translator->trans($currency->getCode(), domain: 'currency', locale: $localeCode);
+    }
+
     /**
      * @param array|null $currencyCodes
      * @return Currency[]
@@ -91,22 +108,5 @@ class CurrencyProvider
         }
 
         return array_map(fn ($record): Currency => $this->denormalize($record), $currencyCodes === null ? $data : array_values($data));
-    }
-
-    private function denormalize(array $record): Currency
-    {
-        return $this->denormalizer->denormalize($record, Currency::class, format: 'internal');
-    }
-
-    private function getData(): array
-    {
-        static $data = null;
-
-        if ($data === null) {
-            $content = file_get_contents($this->dataPath);
-            $data = json_decode($content, true);
-        }
-
-        return $data;
     }
 }

@@ -35,6 +35,20 @@ class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements Search
         };
     }
 
+    private function getPersonsMessage(UkrWantedPersons $record, SearchTerm $searchTerm, bool $full): string
+    {
+        $m = $this->modifier;
+
+        return $m->create()
+            ->add($m->boldModifier())
+            ->add($m->underlineModifier())
+            ->add($m->prependModifier('🚨 '))
+            ->add($m->newLineModifier(2))
+            ->add($m->appendModifier($m->implodeLinesModifier($this->getPersonWrapMessageCallback($searchTerm, $full))($record->getItems())))
+            ->apply($this->trans('persons_title'))
+        ;
+    }
+
     public function getPersonWrapMessageCallback(SearchTerm $searchTerm, bool $full): callable
     {
         $m = $this->modifier;
@@ -120,20 +134,6 @@ class UkrWantedPersonTelegramSearchViewer extends SearchViewer implements Search
                 ->add($m->bracketsModifier($this->trans('call_to')))
                 ->apply($item->getCallTo()),
         ];
-    }
-
-    private function getPersonsMessage(UkrWantedPersons $record, SearchTerm $searchTerm, bool $full): string
-    {
-        $m = $this->modifier;
-
-        return $m->create()
-            ->add($m->boldModifier())
-            ->add($m->underlineModifier())
-            ->add($m->prependModifier('🚨 '))
-            ->add($m->newLineModifier(2))
-            ->add($m->appendModifier($m->implodeLinesModifier($this->getPersonWrapMessageCallback($searchTerm, $full))($record->getItems())))
-            ->apply($this->trans('persons_title'))
-        ;
     }
 
     private function getPersonMessage(UkrWantedPerson $record, SearchTerm $searchTerm, bool $full): string

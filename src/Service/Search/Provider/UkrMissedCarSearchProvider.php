@@ -55,11 +55,6 @@ class UkrMissedCarSearchProvider extends SearchProvider implements SearchProvide
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return true;
-    }
-
     private function searchCars(string $number): ?array
     {
         $parameters = ['NOM' => $number];
@@ -123,5 +118,10 @@ class UkrMissedCarSearchProvider extends SearchProvider implements SearchProvide
         }
 
         return null;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return true;
     }
 }

@@ -15,9 +15,12 @@ class SearchTermTypeProvider
     {
     }
 
-    public function getSearchTermTypeName(SearchTermType $type, string $localeCode = null): string
+    public function getSearchTermTypeComposeName(SearchTermType $type, string $localeCode = null): string
     {
-        return $this->translator->trans($type->name, domain: 'feedbacks.search_term_type', locale: $localeCode);
+        $icon = $this->getSearchTermTypeIcon($type);
+        $name = $this->getSearchTermTypeName($type, $localeCode);
+
+        return $icon . ' ' . $name;
     }
 
     public function getSearchTermTypeIcon(SearchTermType $type): string
@@ -25,12 +28,9 @@ class SearchTermTypeProvider
         return $this->translator->trans($type->name, domain: 'feedbacks.search_term_type_icon');
     }
 
-    public function getSearchTermTypeComposeName(SearchTermType $type, string $localeCode = null): string
+    public function getSearchTermTypeName(SearchTermType $type, string $localeCode = null): string
     {
-        $icon = $this->getSearchTermTypeIcon($type);
-        $name = $this->getSearchTermTypeName($type, $localeCode);
-
-        return $icon . ' ' . $name;
+        return $this->translator->trans($type->name, domain: 'feedbacks.search_term_type', locale: $localeCode);
     }
 
     public function sortSearchTermTypes(array $types, array $sortedTypes = null): array

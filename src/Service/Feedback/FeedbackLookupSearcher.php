@@ -6,7 +6,6 @@ namespace App\Service\Feedback;
 
 use App\Entity\Feedback\FeedbackLookup;
 use App\Entity\Feedback\SearchTerm;
-use App\Entity\Feedback\SearchTermFeedbackLookup;
 use App\Enum\Feedback\SearchTermType;
 use App\Repository\Feedback\FeedbackLookupRepository;
 use App\Repository\Feedback\SearchTermFeedbackLookupDynamodbRepository;

@@ -72,6 +72,27 @@ class FeedbackCreator
         return $feedback;
     }
 
+    /**
+     * @throws FeedbackOnOneselfException
+     */
+    private function checkSearchTermUser(FeedbackTransfer $transfer): void
+    {
+        $messengerUser = $transfer->getMessengerUser();
+
+        foreach ($transfer->getSearchTerms()->getItemsAsArray() as $searchTerm) {
+            $messenger = $this->searchTermMessengerProvider->getSearchTermMessenger($searchTerm->getType());
+
+            if (
+                $messengerUser?->getUsername() !== null
+                && $messengerUser?->getMessenger() !== null
+                && strcmp(mb_strtolower($messengerUser->getUsername()), mb_strtolower($searchTerm->getNormalizedText() ?? $searchTerm->getText())) === 0
+                && $messengerUser->getMessenger() === $messenger
+            ) {
+                throw new FeedbackOnOneselfException($messengerUser);
+            }
+        }
+    }
+
     public function constructFeedback(FeedbackTransfer $transfer): Feedback
     {
         $messengerUser = $transfer->getMessengerUser();
@@ -93,26 +114,5 @@ class FeedbackCreator
             $transfer->getMedia(),
             $transfer->getTelegramBot()
         );
-    }
-
-    /**
-     * @throws FeedbackOnOneselfException
-     */
-    private function checkSearchTermUser(FeedbackTransfer $transfer): void
-    {
-        $messengerUser = $transfer->getMessengerUser();
-
-        foreach ($transfer->getSearchTerms()->getItemsAsArray() as $searchTerm) {
-            $messenger = $this->searchTermMessengerProvider->getSearchTermMessenger($searchTerm->getType());
-
-            if (
-                $messengerUser?->getUsername() !== null
-                && $messengerUser?->getMessenger() !== null
-                && strcmp(mb_strtolower($messengerUser->getUsername()), mb_strtolower($searchTerm->getNormalizedText() ?? $searchTerm->getText())) === 0
-                && $messengerUser->getMessenger() === $messenger
-            ) {
-                throw new FeedbackOnOneselfException($messengerUser);
-            }
-        }
     }
 }

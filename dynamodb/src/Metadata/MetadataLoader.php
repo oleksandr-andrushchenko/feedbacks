@@ -45,9 +45,20 @@ class MetadataLoader
         return $metadata;
     }
 
-    public function getDefaultTable(): ?string
+    /**
+     * @template T of object
+     * @param ReflectionClass<T> $reflection
+     * @return array<string, ReflectionProperty>
+     */
+    private function getClassProperties(ReflectionClass $reflection): array
     {
-        return $this->defaults['table'] ?? null;
+        $properties = [];
+
+        foreach ($reflection->getProperties() as $property) {
+            $properties[$property->getName()] = $property;
+        }
+
+        return $properties;
     }
 
     /**
@@ -96,22 +107,6 @@ class MetadataLoader
     /**
      * @template T of object
      * @param ReflectionClass<T> $reflection
-     * @return array<string, ReflectionProperty>
-     */
-    private function getClassProperties(ReflectionClass $reflection): array
-    {
-        $properties = [];
-
-        foreach ($reflection->getProperties() as $property) {
-            $properties[$property->getName()] = $property;
-        }
-
-        return $properties;
-    }
-
-    /**
-     * @template T of object
-     * @param ReflectionClass<T> $reflection
      * @return array<class-string, object>
      */
     private function getClassAttributes(ReflectionClass $reflection): array
@@ -130,6 +125,11 @@ class MetadataLoader
         }
 
         return $attributes;
+    }
+
+    public function getDefaultTable(): ?string
+    {
+        return $this->defaults['table'] ?? null;
     }
 
     /**

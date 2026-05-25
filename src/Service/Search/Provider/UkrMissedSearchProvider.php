@@ -76,11 +76,6 @@ class UkrMissedSearchProvider extends SearchProvider implements SearchProviderIn
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return true;
-    }
-
     private function searchDisappearedPersons(string $name): ?UkrMissedDisappearedPersons
     {
         $persons = $this->searchPersons($name, true);
@@ -90,17 +85,6 @@ class UkrMissedSearchProvider extends SearchProvider implements SearchProviderIn
         }
 
         return new UkrMissedDisappearedPersons($persons);
-    }
-
-    private function searchWantedPersons(string $name): ?UkrMissedWantedPersons
-    {
-        $persons = $this->searchPersons($name, false);
-
-        if ($persons === null) {
-            return null;
-        }
-
-        return new UkrMissedWantedPersons($persons);
     }
 
     private function searchPersons(string $name, bool $disappeared): ?array
@@ -155,5 +139,21 @@ class UkrMissedSearchProvider extends SearchProvider implements SearchProviderIn
         }
 
         return null;
+    }
+
+    private function searchWantedPersons(string $name): ?UkrMissedWantedPersons
+    {
+        $persons = $this->searchPersons($name, false);
+
+        if ($persons === null) {
+            return null;
+        }
+
+        return new UkrMissedWantedPersons($persons);
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
+        return true;
     }
 }

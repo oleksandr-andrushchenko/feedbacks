@@ -30,11 +30,6 @@ class OtzyvuaSearchProvider extends SearchProvider implements SearchProviderInte
         parent::__construct($searchProviderCompose);
     }
 
-    public function getName(): SearchProviderName
-    {
-        return SearchProviderName::otzyvua;
-    }
-
     public function supports(SearchTerm $searchTerm, array $context = []): bool
     {
         $countryCode = $context['countryCode'] ?? null;
@@ -95,11 +90,6 @@ class OtzyvuaSearchProvider extends SearchProvider implements SearchProviderInte
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return null;
-    }
-
     private function searchFeedbackSearchTerms(string $name): ?OtzyvuaFeedbackSearchTerms
     {
         $crawler = $this->crawlerProvider->getCrawler('GET', 'https://www.otzyvua.net/uk/search/?q=' . urlencode($name), user: true);
@@ -155,6 +145,11 @@ class OtzyvuaSearchProvider extends SearchProvider implements SearchProviderInte
         }
 
         return null;
+    }
+
+    public function getName(): SearchProviderName
+    {
+        return SearchProviderName::otzyvua;
     }
 
     private function searchFeedbacks(string $url): ?OtzyvuaFeedbacks
@@ -229,6 +224,11 @@ class OtzyvuaSearchProvider extends SearchProvider implements SearchProviderInte
             return new OtzyvuaFeedbacks(array_values($items));
         }
 
+        return null;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
         return null;
     }
 }

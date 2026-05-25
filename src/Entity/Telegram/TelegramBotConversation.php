@@ -118,26 +118,26 @@ class TelegramBotConversation implements Stringable
         return $this;
     }
 
+    public function getExpireAt(): ?DateTimeInterface
+    {
+        return $this->expireAt;
+    }
+
     public function setExpireAt(?DateTimeInterface $expireAt): self
     {
         $this->expireAt = $expireAt;
         return $this;
     }
 
-    public function getExpireAt(): ?DateTimeInterface
+    public function getDeletedAt(): ?DateTimeInterface
     {
-        return $this->expireAt;
+        return $this->deletedAt;
     }
 
     public function setDeletedAt(?DateTimeInterface $deletedAt): self
     {
         $this->deletedAt = $deletedAt;
         return $this;
-    }
-
-    public function getDeletedAt(): ?DateTimeInterface
-    {
-        return $this->deletedAt;
     }
 
     public function __toString(): string

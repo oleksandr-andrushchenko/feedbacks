@@ -55,11 +55,6 @@ class CleanTalkSearchProvider extends SearchProvider implements SearchProviderIn
         ];
     }
 
-    public function goodOnEmptyResult(): ?bool
-    {
-        return null;
-    }
-
     private function searchEmails(string $email): ?CleanTalkEmails
     {
         $crawler = $this->crawlerProvider->getCrawler('GET', '/email-checker/' . $email, base: self::URL, user: true);
@@ -190,6 +185,11 @@ class CleanTalkSearchProvider extends SearchProvider implements SearchProviderIn
             return new CleanTalkEmails(array_values($items));
         }
 
+        return null;
+    }
+
+    public function goodOnEmptyResult(): ?bool
+    {
         return null;
     }
 }

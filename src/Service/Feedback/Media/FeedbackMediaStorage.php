@@ -17,11 +17,6 @@ class FeedbackMediaStorage
     {
     }
 
-    public function enabled(): bool
-    {
-        return $this->stage === 'prod';
-    }
-
     public function put(
         string $body,
         string $key,
@@ -81,5 +76,10 @@ class FeedbackMediaStorage
             $groupId,
             $duration,
         );
+    }
+
+    public function enabled(): bool
+    {
+        return $this->stage === 'prod';
     }
 }

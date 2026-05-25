@@ -70,6 +70,26 @@ class Level1RegionsDumpCommand extends Command
         return Command::SUCCESS;
     }
 
+    private function dumpRegions(Country $country, string $targetFile, SymfonyStyle $io): void
+    {
+        $countryCode = $country->getCode();
+        $regions = $this->level1RegionRepository->findByCountry($countryCode);
+
+        $data = [];
+        foreach ($regions as $region) {
+            $data[$region->getId()] = $this->regionNormalizer->normalize($region, format: 'internal');
+        }
+
+        $json = json_encode($data);
+        $written = file_put_contents($targetFile, $json);
+
+        if ($written === false) {
+            throw new RuntimeException(sprintf('Unable to write level 1 regions into %s', $targetFile));
+        }
+
+        $io->note($json);
+    }
+
     private function updateCountries(Country $country, string $targetFile, SymfonyStyle $io): void
     {
         $countryCode = $country->getCode();
@@ -89,26 +109,6 @@ class Level1RegionsDumpCommand extends Command
 
         if ($written === false) {
             throw new RuntimeException(sprintf('Unable to write countries into %s', $targetFile));
-        }
-
-        $io->note($json);
-    }
-
-    private function dumpRegions(Country $country, string $targetFile, SymfonyStyle $io): void
-    {
-        $countryCode = $country->getCode();
-        $regions = $this->level1RegionRepository->findByCountry($countryCode);
-
-        $data = [];
-        foreach ($regions as $region) {
-            $data[$region->getId()] = $this->regionNormalizer->normalize($region, format: 'internal');
-        }
-
-        $json = json_encode($data);
-        $written = file_put_contents($targetFile, $json);
-
-        if ($written === false) {
-            throw new RuntimeException(sprintf('Unable to write level 1 regions into %s', $targetFile));
         }
 
         $io->note($json);

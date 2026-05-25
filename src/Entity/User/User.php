@@ -193,18 +193,6 @@ class User implements Stringable
         return $this;
     }
 
-    public function getSubscriptionExpireAt(): ?DateTimeInterface
-    {
-        return $this->subscriptionExpireAt;
-    }
-
-    public function setSubscriptionExpireAt(?DateTimeInterface $subscriptionExpireAt): self
-    {
-        $this->subscriptionExpireAt = $subscriptionExpireAt;
-
-        return $this;
-    }
-
     public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
@@ -248,6 +236,18 @@ class User implements Stringable
         }
 
         return new DateTimeImmutable() < $this->getSubscriptionExpireAt();
+    }
+
+    public function getSubscriptionExpireAt(): ?DateTimeInterface
+    {
+        return $this->subscriptionExpireAt;
+    }
+
+    public function setSubscriptionExpireAt(?DateTimeInterface $subscriptionExpireAt): self
+    {
+        $this->subscriptionExpireAt = $subscriptionExpireAt;
+
+        return $this;
     }
 
     public function hasSubscription(): bool

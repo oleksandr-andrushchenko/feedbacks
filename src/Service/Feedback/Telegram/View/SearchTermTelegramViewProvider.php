@@ -23,6 +23,30 @@ class SearchTermTelegramViewProvider
     {
     }
 
+    public function getSearchTermTelegramView(
+        SearchTermTransfer $searchTerm,
+        bool $addSecrets = false,
+        bool $forceType = true,
+        string $localeCode = null
+    ): string
+    {
+        $m = $this->modifier;
+        $modifier = $m->create();
+
+        $skipTypes = [
+            SearchTermType::person_name,
+            SearchTermType::email,
+            SearchTermType::url,
+            ...SearchTermType::known_messengers,
+        ];
+
+        if ($searchTerm->getType() !== null && ($forceType || !in_array($searchTerm->getType(), $skipTypes, true))) {
+            $modifier->add($m->bracketsModifier($this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), $localeCode)));
+        }
+
+        return $modifier->apply($this->getSearchTermTelegramMainView($searchTerm, addSecrets: $addSecrets));
+    }
+
     public function getSearchTermTelegramMainView(SearchTermTransfer $searchTerm, bool $addSecrets = false): string
     {
         $m = $this->modifier;
@@ -68,30 +92,6 @@ class SearchTermTelegramViewProvider
             ->add($m->boldModifier())
             ->apply($message)
         ;
-    }
-
-    public function getSearchTermTelegramView(
-        SearchTermTransfer $searchTerm,
-        bool $addSecrets = false,
-        bool $forceType = true,
-        string $localeCode = null
-    ): string
-    {
-        $m = $this->modifier;
-        $modifier = $m->create();
-
-        $skipTypes = [
-            SearchTermType::person_name,
-            SearchTermType::email,
-            SearchTermType::url,
-            ...SearchTermType::known_messengers,
-        ];
-
-        if ($searchTerm->getType() !== null && ($forceType || !in_array($searchTerm->getType(), $skipTypes, true))) {
-            $modifier->add($m->bracketsModifier($this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), $localeCode)));
-        }
-
-        return $modifier->apply($this->getSearchTermTelegramMainView($searchTerm, addSecrets: $addSecrets));
     }
 
     public function getSearchTermTelegramReverseView(

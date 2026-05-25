@@ -62,6 +62,18 @@ class SearchTermFeedbackSearch
         $this->createdAt ??= new DateTimeImmutable();
     }
 
+    public function getSearchTerm(): SearchTerm
+    {
+        return new SearchTerm(
+            $this->getSearchTermId(),
+            $this->getSearchTermText(),
+            $this->getSearchTermNormalizedText(),
+            $this->getSearchTermType(),
+            messengerUserId: $this->getMessengerUserId(),
+            createdAt: $this->getCreatedAt(),
+        );
+    }
+
     public function getSearchTermId(): string
     {
         return $this->searchTermId;
@@ -82,16 +94,14 @@ class SearchTermFeedbackSearch
         return $this->searchTermType;
     }
 
-    public function getSearchTerm(): SearchTerm
+    public function getMessengerUserId(): ?string
     {
-        return new SearchTerm(
-            $this->getSearchTermId(),
-            $this->getSearchTermText(),
-            $this->getSearchTermNormalizedText(),
-            $this->getSearchTermType(),
-            messengerUserId: $this->getMessengerUserId(),
-            createdAt: $this->getCreatedAt(),
-        );
+        return $this->messengerUserId;
+    }
+
+    public function getCreatedAt(): DateTimeInterface
+    {
+        return $this->createdAt;
     }
 
     public function getFeedbackSearchId(): string
@@ -102,11 +112,6 @@ class SearchTermFeedbackSearch
     public function getUserId(): string
     {
         return $this->userId;
-    }
-
-    public function getMessengerUserId(): ?string
-    {
-        return $this->messengerUserId;
     }
 
     public function hasUserActiveSubscription(): ?bool
@@ -132,10 +137,5 @@ class SearchTermFeedbackSearch
     public function getExtraSearchTerms(): ?array
     {
         return $this->extraSearchTerms;
-    }
-
-    public function getCreatedAt(): DateTimeInterface
-    {
-        return $this->createdAt;
     }
 }

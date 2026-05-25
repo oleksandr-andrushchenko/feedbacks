@@ -81,15 +81,15 @@ class MessengerUser implements Stringable
         return $this->messenger;
     }
 
+    public function getUserId(): ?string
+    {
+        return $this->userId;
+    }
+
     public function setUserId(?string $userId): self
     {
         $this->userId = $userId;
         return $this;
-    }
-
-    public function getUserId(): ?string
-    {
-        return $this->userId;
     }
 
     public function getUser(): ?User

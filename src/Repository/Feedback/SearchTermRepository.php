@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Repository\Feedback;
 
 use App\Entity\Feedback\SearchTerm;
-use App\Enum\Feedback\SearchTermType;
 use App\Repository\EntityRepository;
-use DateTimeInterface;
 
 /**
  * @extends EntityRepository<SearchTerm>

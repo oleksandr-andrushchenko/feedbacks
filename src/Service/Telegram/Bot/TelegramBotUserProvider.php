@@ -10,6 +10,11 @@ use Longman\TelegramBot\Entities\User;
 
 class TelegramBotUserProvider
 {
+    public function getTelegramUserByUpdate(Update $update): ?User
+    {
+        return $this->getTelegramFromHolderByUpdate($update)?->getFrom();
+    }
+
     public function getTelegramFromHolderByUpdate(Update $update): ?Entity
     {
         $updateMethods = [
@@ -34,10 +39,5 @@ class TelegramBotUserProvider
         }
 
         return null;
-    }
-
-    public function getTelegramUserByUpdate(Update $update): ?User
-    {
-        return $this->getTelegramFromHolderByUpdate($update)?->getFrom();
     }
 }

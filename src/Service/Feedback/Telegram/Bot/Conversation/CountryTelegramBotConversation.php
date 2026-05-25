@@ -53,55 +53,28 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         };
     }
 
-    public function start(TelegramBotAwareHelper $tg): ?string
-    {
-        return $this->queryChangeConfirm($tg);
-    }
-
     public function getStep(int $num, string $symbols = ''): string
     {
         return sprintf('[%d/%d%s] ', $num, 3, $symbols);
     }
 
-    public function getGuessCountries(TelegramBotAwareHelper $tg): array
+    public function start(TelegramBotAwareHelper $tg): ?string
     {
-        return $this->countryProvider->getCountries($tg->getLocaleCode());
+        return $this->queryChangeConfirm($tg);
     }
 
-    public function getCountries(): array
+    public function queryChangeConfirm(TelegramBotAwareHelper $tg, bool $help = false): ?string
     {
-        return $this->countryProvider->getCountries();
-    }
+        $this->state->setStep(self::STEP_CHANGE_CONFIRM_QUERIED);
 
-    /**
-     * @param TelegramBotAwareHelper $tg
-     * @return Level1Region[]
-     */
-    public function getLevel1Regions(TelegramBotAwareHelper $tg): array
-    {
-        $country = $this->countryProvider->getCountry($tg->getCountryCode());
+        $message = $this->getChangeConfirmQuery($tg, $help);
 
-        return $this->level1RegionProvider->getLevel1Regions($country);
-    }
+        $buttons = [];
+        $buttons[] = [$tg->yesButton(), $tg->noButton()];
+        $buttons[] = $tg->helpButton();
+        $buttons[] = $tg->cancelButton();
 
-    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
-    {
-        $this->state->setStep(self::STEP_CANCEL_PRESSED);
-
-        $message = $tg->trans('reply.canceled', domain: 'country');
-        $message .= "\n\n";
-        $message .= $this->getCurrentReply($tg);
-        $message = $tg->upsetText($message);
-        $message .= "\n";
-
-        $tg->stopConversation($entity);
-
-        $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
-
-        $keyboard = $this->chooseActionTelegramChatSender->getKeyboard($tg);
-        $this->telegramBotMatchesChatSender->sendTelegramBotMatchesIfNeed($tg, $keyboard);
-
-        return null;
+        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     public function getChangeConfirmQuery(TelegramBotAwareHelper $tg, bool $help = false): string
@@ -125,29 +98,39 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $message;
     }
 
-    public function queryChangeConfirm(TelegramBotAwareHelper $tg, bool $help = false): ?string
+    public function getCurrentReply(TelegramBotAwareHelper $tg): string
     {
-        $this->state->setStep(self::STEP_CHANGE_CONFIRM_QUERIED);
+        $domain = 'country';
+        $user = $tg->getBot()->getUser();
 
-        $message = $this->getChangeConfirmQuery($tg, $help);
+        $countryCode = $tg->getCountryCode();
+        $country = $countryCode === null ? null : $this->countryProvider->getCountry($countryCode);
+        $countryName = $this->countryProvider->getCountryComposeName($country->getCode());
+        $parameters = [
+            'country' => $countryName,
+        ];
+        $message = $tg->trans('reply.current_country', parameters: $parameters, domain: $domain);
 
-        $buttons = [];
-        $buttons[] = [$tg->yesButton(), $tg->noButton()];
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
+        $level1RegionId = $user->getLevel1RegionId();
 
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
-    }
-
-    public function queryCustomCountry(TelegramBotAwareHelper $tg): null
-    {
-        $countries = $this->getGuessCountries($tg);
-
-        if (count($countries) === 0) {
-            return $this->queryCountry($tg);
+        if ($country !== null && $level1RegionId !== null) {
+            $message .= "\n";
+            $regionName = sprintf('<u>%s</u>', $this->level1RegionProvider->getLevel1RegionNameById($country, $level1RegionId));
+            $parameters = [
+                'region' => $regionName,
+            ];
+            $message .= $tg->trans('reply.current_region', parameters: $parameters, domain: $domain);
         }
 
-        return $this->queryGuessCountry($tg);
+        $message .= "\n";
+        $timezone = $tg->getTimezone() ?? $tg->trans('reply.unknown_timezone', domain: $domain);
+        $timezoneName = sprintf('<u>%s</u>', $timezone);
+        $parameters = [
+            'timezone' => $timezoneName,
+        ];
+        $message .= $tg->trans('reply.current_timezone', parameters: $parameters, domain: $domain);
+
+        return $message;
     }
 
     public function gotChangeConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -175,42 +158,60 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $this->queryCustomCountry($tg);
     }
 
-    public function getRequestLocationButton(TelegramBotAwareHelper $tg): KeyboardButton
+    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
     {
-        return $tg->locationButton('📍 ' . $tg->trans('keyboard.request_location', domain: 'country'));
+        $this->state->setStep(self::STEP_CANCEL_PRESSED);
+
+        $message = $tg->trans('reply.canceled', domain: 'country');
+        $message .= "\n\n";
+        $message .= $this->getCurrentReply($tg);
+        $message = $tg->upsetText($message);
+        $message .= "\n";
+
+        $tg->stopConversation($entity);
+
+        $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
+
+        $keyboard = $this->chooseActionTelegramChatSender->getKeyboard($tg);
+        $this->telegramBotMatchesChatSender->sendTelegramBotMatchesIfNeed($tg, $keyboard);
+
+        return null;
     }
 
-    public function saveLocationAndReply(Location $location, TelegramBotAwareHelper $tg, Entity $entity): null
+    public function queryCustomCountry(TelegramBotAwareHelper $tg): null
     {
-        $user = $tg->getBot()->getUser();
-        $user->setLocation($location);
+        $countries = $this->getGuessCountries($tg);
 
-        try {
-            $level1Region = $this->level1RegionProvider->getLevel1RegionByLocation($user->getLocation());
-        } catch (AddressGeocodeFailedException|TimezoneGeocodeFailedException $exception) {
-            $this->logger->error($exception, [
-                'content' => $exception->getContent(),
-            ]);
-
-            $message = $tg->trans('reply.request_location_failed', domain: 'country');
-            $message = $tg->wrongText($message);
-
-            $tg->reply($message);
-
-            return $this->queryCustomCountry($tg);
+        if (count($countries) === 0) {
+            return $this->queryCountry($tg);
         }
 
-        $user
-            ->setCountryCode($level1Region->getCountryCode())
-            ->setLevel1RegionId($level1Region->getId())
-            ->setTimezone($level1Region->getTimezone())
-        ;
+        return $this->queryGuessCountry($tg);
+    }
 
-        if ($user->getTimezone() === null) {
-            return $this->queryTimezone($tg);
-        }
+    public function getGuessCountries(TelegramBotAwareHelper $tg): array
+    {
+        return $this->countryProvider->getCountries($tg->getLocaleCode());
+    }
 
-        return $this->replyAndClose($tg, $entity);
+    public function getCountries(): array
+    {
+        return $this->countryProvider->getCountries();
+    }
+
+    public function queryCountry(TelegramBotAwareHelper $tg, bool $help = false): null
+    {
+        $this->state->setStep(self::STEP_COUNTRY_QUERIED);
+
+        $message = $this->getCountryQuery($tg, false, $help);
+
+        $buttons = $this->getCountryButtons($this->getCountries(), $tg);
+        $buttons[] = $this->getRequestLocationButton($tg);
+        $buttons[] = $tg->prevButton();
+        $buttons[] = $tg->helpButton();
+        $buttons[] = $tg->cancelButton();
+
+        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     public function getCountryQuery(TelegramBotAwareHelper $tg, bool $guess, bool $help = false): string
@@ -230,6 +231,26 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $query;
     }
 
+    /**
+     * @param Country[]|null $countries
+     * @param TelegramBotAwareHelper $tg
+     * @return KeyboardButton[]
+     */
+    public function getCountryButtons(array $countries, TelegramBotAwareHelper $tg): array
+    {
+        return array_map(fn (Country $country): KeyboardButton => $this->getCountryButton($country, $tg), $countries);
+    }
+
+    public function getCountryButton(Country $country, TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->button($this->countryProvider->getCountryComposeName($country->getCode()));
+    }
+
+    public function getRequestLocationButton(TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->locationButton('📍 ' . $tg->trans('keyboard.request_location', domain: 'country'));
+    }
+
     public function queryGuessCountry(TelegramBotAwareHelper $tg, bool $help = false): null
     {
         $this->state->setStep(self::STEP_GUESS_COUNTRY_QUERIED);
@@ -245,19 +266,12 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
-    public function queryCountry(TelegramBotAwareHelper $tg, bool $help = false): null
+    public function getOtherCountryButton(TelegramBotAwareHelper $tg): KeyboardButton
     {
-        $this->state->setStep(self::STEP_COUNTRY_QUERIED);
+        $icon = $this->countryProvider->getUnknownCountryIcon();
+        $name = $tg->trans('keyboard.other');
 
-        $message = $this->getCountryQuery($tg, false, $help);
-
-        $buttons = $this->getCountryButtons($this->getCountries(), $tg);
-        $buttons[] = $this->getRequestLocationButton($tg);
-        $buttons[] = $tg->prevButton();
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
-
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
+        return $tg->button($icon . ' ' . $name);
     }
 
     public function gotCountry(TelegramBotAwareHelper $tg, Entity $entity, bool $guess): null
@@ -314,6 +328,137 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $this->queryLevel1Region($tg);
     }
 
+    public function saveLocationAndReply(Location $location, TelegramBotAwareHelper $tg, Entity $entity): null
+    {
+        $user = $tg->getBot()->getUser();
+        $user->setLocation($location);
+
+        try {
+            $level1Region = $this->level1RegionProvider->getLevel1RegionByLocation($user->getLocation());
+        } catch (AddressGeocodeFailedException|TimezoneGeocodeFailedException $exception) {
+            $this->logger->error($exception, [
+                'content' => $exception->getContent(),
+            ]);
+
+            $message = $tg->trans('reply.request_location_failed', domain: 'country');
+            $message = $tg->wrongText($message);
+
+            $tg->reply($message);
+
+            return $this->queryCustomCountry($tg);
+        }
+
+        $user
+            ->setCountryCode($level1Region->getCountryCode())
+            ->setLevel1RegionId($level1Region->getId())
+            ->setTimezone($level1Region->getTimezone())
+        ;
+
+        if ($user->getTimezone() === null) {
+            return $this->queryTimezone($tg);
+        }
+
+        return $this->replyAndClose($tg, $entity);
+    }
+
+    public function queryTimezone(TelegramBotAwareHelper $tg, bool $help = false): null
+    {
+        $this->state->setStep(self::STEP_TIMEZONE_QUERIED);
+
+        $message = $this->getTimezoneQuery($tg, $help);
+
+        $buttons = $this->getTimezoneButtons($tg);
+        $buttons[] = $this->getRequestLocationButton($tg);
+        $buttons[] = $tg->prevButton();
+        $buttons[] = $tg->helpButton();
+        $buttons[] = $tg->cancelButton();
+
+        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
+    }
+
+    public function getTimezoneQuery(TelegramBotAwareHelper $tg, bool $help = false): string
+    {
+        $query = $this->getStep(3);
+        $query .= $tg->trans('query.timezone', domain: 'country');
+        $query = $tg->queryText($query);
+
+        if ($help) {
+            $query = $tg->view('country_timezone_help', [
+                'query' => $query,
+            ]);
+        } else {
+            $query .= $tg->queryTipText($tg->useText(false));
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param TelegramBotAwareHelper $tg
+     * @return KeyboardButton[]
+     */
+    public function getTimezoneButtons(TelegramBotAwareHelper $tg): array
+    {
+        return array_map(fn (string $timezone): KeyboardButton => $this->getTimezoneButton($timezone, $tg), $this->getTimezones($tg));
+    }
+
+    public function getTimezoneButton(string $timezone, TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->button($timezone);
+    }
+
+    public function getTimezones(TelegramBotAwareHelper $tg): array
+    {
+        // todo: check level1region
+        $country = $this->countryProvider->getCountry($tg->getCountryCode());
+
+        return $country->getTimezones();
+    }
+
+    public function replyAndClose(TelegramBotAwareHelper $tg, Entity $entity): null
+    {
+        $tg->stopConversation($entity);
+
+        $message = $tg->trans('reply.ok', domain: 'country');
+        $message = $tg->okText($message);
+        $message .= "\n\n";
+        $message .= $this->getCurrentReply($tg);
+        $message .= "\n";
+
+        $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
+
+        $keyboard = $this->chooseActionTelegramChatSender->getKeyboard($tg);
+        $this->telegramBotMatchesChatSender->sendTelegramBotMatchesIfNeed($tg, $keyboard);
+
+        return null;
+    }
+
+    public function getCountryByButton(?string $button, array $countries, TelegramBotAwareHelper $tg): ?Country
+    {
+        foreach ($countries as $country) {
+            if ($this->getCountryButton($country, $tg)->getText() === $button) {
+                return $country;
+            }
+        }
+
+        return null;
+    }
+
+    public function queryLevel1Region(TelegramBotAwareHelper $tg, bool $help = false): null
+    {
+        $this->state->setStep(self::STEP_LEVEL_1_REGION_QUERIED);
+
+        $message = $this->getLevel1RegionQuery($tg, $help);
+
+        $buttons = $this->getLevel1RegionButtons($tg);
+        $buttons[] = $this->getRequestLocationButton($tg);
+        $buttons[] = $tg->prevButton();
+        $buttons[] = $tg->helpButton();
+        $buttons[] = $tg->cancelButton();
+
+        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
+    }
+
     public function getLevel1RegionQuery(TelegramBotAwareHelper $tg, bool $help = false): string
     {
         $query = $this->getStep(2);
@@ -350,30 +495,15 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $tg->button($name);
     }
 
-    public function getLevel1RegionByButton(string $button, TelegramBotAwareHelper $tg): ?Level1Region
+    /**
+     * @param TelegramBotAwareHelper $tg
+     * @return Level1Region[]
+     */
+    public function getLevel1Regions(TelegramBotAwareHelper $tg): array
     {
-        foreach ($this->getLevel1Regions($tg) as $level1Region) {
-            if ($this->getLevel1RegionButton($level1Region, $tg)->getText() === $button) {
-                return $level1Region;
-            }
-        }
+        $country = $this->countryProvider->getCountry($tg->getCountryCode());
 
-        return null;
-    }
-
-    public function queryLevel1Region(TelegramBotAwareHelper $tg, bool $help = false): null
-    {
-        $this->state->setStep(self::STEP_LEVEL_1_REGION_QUERIED);
-
-        $message = $this->getLevel1RegionQuery($tg, $help);
-
-        $buttons = $this->getLevel1RegionButtons($tg);
-        $buttons[] = $this->getRequestLocationButton($tg);
-        $buttons[] = $tg->prevButton();
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
-
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
+        return $this->level1RegionProvider->getLevel1Regions($country);
     }
 
     public function gotLevel1Region(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -436,89 +566,15 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         return $this->replyAndClose($tg, $entity);
     }
 
-    public function getCurrentReply(TelegramBotAwareHelper $tg): string
+    public function getLevel1RegionByButton(string $button, TelegramBotAwareHelper $tg): ?Level1Region
     {
-        $domain = 'country';
-        $user = $tg->getBot()->getUser();
-
-        $countryCode = $tg->getCountryCode();
-        $country = $countryCode === null ? null : $this->countryProvider->getCountry($countryCode);
-        $countryName = $this->countryProvider->getCountryComposeName($country->getCode());
-        $parameters = [
-            'country' => $countryName,
-        ];
-        $message = $tg->trans('reply.current_country', parameters: $parameters, domain: $domain);
-
-        $level1RegionId = $user->getLevel1RegionId();
-
-        if ($country !== null && $level1RegionId !== null) {
-            $message .= "\n";
-            $regionName = sprintf('<u>%s</u>', $this->level1RegionProvider->getLevel1RegionNameById($country, $level1RegionId));
-            $parameters = [
-                'region' => $regionName,
-            ];
-            $message .= $tg->trans('reply.current_region', parameters: $parameters, domain: $domain);
+        foreach ($this->getLevel1Regions($tg) as $level1Region) {
+            if ($this->getLevel1RegionButton($level1Region, $tg)->getText() === $button) {
+                return $level1Region;
+            }
         }
-
-        $message .= "\n";
-        $timezone = $tg->getTimezone() ?? $tg->trans('reply.unknown_timezone', domain: $domain);
-        $timezoneName = sprintf('<u>%s</u>', $timezone);
-        $parameters = [
-            'timezone' => $timezoneName,
-        ];
-        $message .= $tg->trans('reply.current_timezone', parameters: $parameters, domain: $domain);
-
-        return $message;
-    }
-
-    public function replyAndClose(TelegramBotAwareHelper $tg, Entity $entity): null
-    {
-        $tg->stopConversation($entity);
-
-        $message = $tg->trans('reply.ok', domain: 'country');
-        $message = $tg->okText($message);
-        $message .= "\n\n";
-        $message .= $this->getCurrentReply($tg);
-        $message .= "\n";
-
-        $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
-
-        $keyboard = $this->chooseActionTelegramChatSender->getKeyboard($tg);
-        $this->telegramBotMatchesChatSender->sendTelegramBotMatchesIfNeed($tg, $keyboard);
 
         return null;
-    }
-
-    public function getTimezoneQuery(TelegramBotAwareHelper $tg, bool $help = false): string
-    {
-        $query = $this->getStep(3);
-        $query .= $tg->trans('query.timezone', domain: 'country');
-        $query = $tg->queryText($query);
-
-        if ($help) {
-            $query = $tg->view('country_timezone_help', [
-                'query' => $query,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
-
-        return $query;
-    }
-
-    public function queryTimezone(TelegramBotAwareHelper $tg, bool $help = false): null
-    {
-        $this->state->setStep(self::STEP_TIMEZONE_QUERIED);
-
-        $message = $this->getTimezoneQuery($tg, $help);
-
-        $buttons = $this->getTimezoneButtons($tg);
-        $buttons[] = $this->getRequestLocationButton($tg);
-        $buttons[] = $tg->prevButton();
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
-
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     public function gotTimezone(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -561,62 +617,6 @@ class CountryTelegramBotConversation extends TelegramBotConversation implements 
         $user->setTimezone($timezone);
 
         return $this->replyAndClose($tg, $entity);
-    }
-
-    /**
-     * @param Country[]|null $countries
-     * @param TelegramBotAwareHelper $tg
-     * @return KeyboardButton[]
-     */
-    public function getCountryButtons(array $countries, TelegramBotAwareHelper $tg): array
-    {
-        return array_map(fn (Country $country): KeyboardButton => $this->getCountryButton($country, $tg), $countries);
-    }
-
-    public function getCountryButton(Country $country, TelegramBotAwareHelper $tg): KeyboardButton
-    {
-        return $tg->button($this->countryProvider->getCountryComposeName($country->getCode()));
-    }
-
-    public function getCountryByButton(?string $button, array $countries, TelegramBotAwareHelper $tg): ?Country
-    {
-        foreach ($countries as $country) {
-            if ($this->getCountryButton($country, $tg)->getText() === $button) {
-                return $country;
-            }
-        }
-
-        return null;
-    }
-
-    public function getOtherCountryButton(TelegramBotAwareHelper $tg): KeyboardButton
-    {
-        $icon = $this->countryProvider->getUnknownCountryIcon();
-        $name = $tg->trans('keyboard.other');
-
-        return $tg->button($icon . ' ' . $name);
-    }
-
-    public function getTimezones(TelegramBotAwareHelper $tg): array
-    {
-        // todo: check level1region
-        $country = $this->countryProvider->getCountry($tg->getCountryCode());
-
-        return $country->getTimezones();
-    }
-
-    /**
-     * @param TelegramBotAwareHelper $tg
-     * @return KeyboardButton[]
-     */
-    public function getTimezoneButtons(TelegramBotAwareHelper $tg): array
-    {
-        return array_map(fn (string $timezone): KeyboardButton => $this->getTimezoneButton($timezone, $tg), $this->getTimezones($tg));
-    }
-
-    public function getTimezoneButton(string $timezone, TelegramBotAwareHelper $tg): KeyboardButton
-    {
-        return $tg->button($timezone);
     }
 
     public function getTimezoneByButton(string $button, TelegramBotAwareHelper $tg): ?string

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Serializer\Telegram\Bot;
 
 use App\Entity\Telegram\TelegramBotPayment;
-use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Service\Telegram\TelegramBotPaymentService;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
