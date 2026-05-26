@@ -12,14 +12,20 @@ use App\Factory\Feedback\SearchTermFeedbackFactory;
 use App\Message\Event\ActivityEvent;
 use App\Message\Event\Feedback\FeedbackCreatedEvent;
 use App\Model\Feedback\Command\FeedbackCommandOptions;
+use App\Model\Telegram\TelegramMedia;
+use App\Model\Telegram\TelegramPhoto;
+use App\Model\Telegram\TelegramVideo;
 use App\Service\Feedback\SearchTerm\SearchTermMessengerProvider;
 use App\Service\Feedback\SearchTerm\SearchTermUpserter;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
+use App\Service\Telegram\Bot\TelegramBotRegistry;
+use App\Service\Telegram\TelegramMediaCreator;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class FeedbackCreator
 {
@@ -34,6 +40,9 @@ class FeedbackCreator
         private readonly SearchTermFeedbackFactory $searchTermFeedbackFactory,
         private readonly FeedbackFactory $feedbackFactory,
         private readonly FeedbackService $feedbackService,
+        private readonly TelegramMediaCreator $telegramMediaCreator,
+        private readonly TelegramBotRegistry $telegramBotRegistry,
+        private readonly NormalizerInterface $telegramMediaNormalizer,
     )
     {
     }
@@ -111,8 +120,45 @@ class FeedbackCreator
             $searchTerms,
             $transfer->getRating(),
             $transfer->getDescription(),
-            $transfer->getMedia(),
+            $this->createMedia($transfer),
             $transfer->getTelegramBot()
         );
+    }
+
+    private function createMedia(FeedbackTransfer $transfer): ?array
+    {
+        $media = $transfer->getMedia();
+        $telegramBot = $transfer->getTelegramBot();
+
+        if (empty($media)) {
+            return null;
+        }
+
+        if ($telegramBot === null) {
+            return $this->normalizeMedia($media);
+        }
+
+        $bot = $this->telegramBotRegistry->getTelegramBot($telegramBot);
+        $result = [];
+
+        foreach ($media as $item) {
+            $result[] = $item instanceof TelegramPhoto || $item instanceof TelegramVideo
+                ? $this->telegramMediaCreator->createTelegramMedia($bot, $item)
+                : $item;
+        }
+
+        return $this->normalizeMedia($result);
+    }
+
+    private function normalizeMedia(array $media): ?array
+    {
+        return array_values(array_filter(array_map(
+            fn (mixed $item): ?array => match (true) {
+                $item instanceof TelegramMedia => $this->telegramMediaNormalizer->normalize($item),
+                is_array($item) => $item,
+                default => null,
+            },
+            $media
+        ))) ?: null;
     }
 }

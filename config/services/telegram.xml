@@ -247,6 +247,10 @@
                  class="App\Serializer\Telegram\Bot\TelegramBotConversationStateNormalizer" lazy="true">
             <tag name="serializer.normalizer" priority="-970"/>
         </service>
+        <service id="app.telegram_media_normalizer"
+                 class="App\Serializer\Telegram\TelegramMediaNormalizer" lazy="true">
+            <tag name="serializer.normalizer" priority="-969"/>
+        </service>
         <service id="app.telegram_bot_payment_method_normalizer"
                  class="App\Serializer\Telegram\Bot\TelegramBotPaymentMethodNormalizer" lazy="true">
             <tag name="serializer.normalizer" priority="-967"/>

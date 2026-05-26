@@ -19,6 +19,7 @@ provider:
     TELEGRAM_ACTIVITIES_TOKEN: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ACTIVITIES_TOKEN}
     TELEGRAM_ERRORS_TOKEN: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/TELEGRAM_ERRORS_TOKEN}
     GOOGLE_API_KEY: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/GOOGLE_API_KEY}
+    OPENAI_API_KEY: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/OPENAI_API_KEY}
     DB_URL: ${ssm:/${env:AWS_PROJECT}/${sls:stage}/DB_URL}
     DYNAMODB_TABLE: ${env:DYNAMODB_TABLE}
     FEEDBACK_MEDIA_BUCKET: !Ref FeedbackMediaBucket

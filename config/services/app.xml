@@ -14,6 +14,10 @@
 
         <parameter key="app.data_dir">%kernel.project_dir%/data</parameter>
         <parameter key="app.feedback_media_bucket">%env(resolve:FEEDBACK_MEDIA_BUCKET)%</parameter>
+        <parameter key="app.openai_empty"/>
+        <parameter key="app.openai_default_model">gpt-4o-mini</parameter>
+        <parameter key="app.openai_api_key">%env(default:app.openai_empty:OPENAI_API_KEY)%</parameter>
+        <parameter key="app.openai_model">%env(default:app.openai_default_model:OPENAI_MODEL)%</parameter>
 
         <parameter key="app.telegram_activities_token">%env(resolve:TELEGRAM_ACTIVITIES_TOKEN)%</parameter>
         <parameter key="app.telegram_activities_channel">%app.telegram_admin_id%</parameter>
@@ -82,12 +86,12 @@
         <service id="app.http_requester" class="App\Service\HttpRequester" lazy="true">
             <argument type="service" id="http_client"/>
         </service>
-        <service id="app.feedback_media_storage" class="App\Service\Feedback\Media\FeedbackMediaStorage" lazy="true">
+        <service id="app.feedback_media_storage" class="App\Service\Media\MediaStorage" lazy="true">
             <argument type="service" id="aws.s3"/>
             <argument>%app.feedback_media_bucket%</argument>
             <argument>%app.stage%</argument>
         </service>
-        <service id="app.feedback_media_url_provider" class="App\Service\Feedback\Media\FeedbackMediaUrlProvider"
+        <service id="app.feedback_media_url_provider" class="App\Service\Media\MediaUrlProvider"
                  lazy="true">
             <argument type="service" id="aws.s3"/>
         </service>

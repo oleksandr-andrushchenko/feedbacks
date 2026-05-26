@@ -5,24 +5,45 @@
 ## Available commands
 
 ```
-  be-function-login    Open shell inside backend container
-  be-function-logs     View backend function logs
-  cache-clear          Clear Symfony cache inside backend container
-  cache-warmup         Warm up Symfony cache inside backend container
-  composer-install     Run composer install inside backend container
+  aws-login            Obtain AWS auth token
+  be-function-logs     View be-function function logs
+  clear-cache          Clear cache inside be-function
+  composer-install     Run composer install inside be-function container
+  console              Run Symfony console
+  create-local-dynamodb Create local DynamoDB table
+  deploy               Deploy app
+  deploy-params        Deploy params
+  down                 Stop and remove all Docker containers
+  drop-doctrine        Drop local Doctrine DB
+  drop-local-dynamodb  Drop DynamoDB table in local DynamoDB
+  fetch-local-dynamodb Fetch 100 records from local DynamoDB
+  fix-permissions      Fix permissions
   generate-migration   Generate a new Doctrine migration file
   help                 Show this help
-  import-bots          Import Telegram bots from CSV file
+  import-tg-bots       Import Telegram bots from CSV file
+  import-tg-channels   Import Telegram bots from CSV file
+  login                Open shell inside be-function container
   logs                 Tail Symfony development logs
-  ngrok-tunnel         Start ngrok tunnel for backend function
-  rdbms-login          Open MySQL shell inside database container
-  rdbms-logs           View database (MySQL) container logs
+  mysql-login          Open MySQL shell inside database container
+  mysql-logs           View database (MySQL) container logs
+  ngrok-setup          Setup ngrok
+  ngrok-tunnel         Establish ngrok tunnel
+  open                 Show local site URL
+  rebuild              Rebuild all Docker containers and show status
+  recreate-local-dynamodb Recreate DynamoDB table in local DynamoDB
+  reload-bot           Reload local tg bot
+  reload-cache         Reload local symfony cache
+  reload-doctrine      Reload local Doctrine DB
+  reload-dynamodb      Reload local Dynamodb
   restart              Restart all Docker containers and show status
+  restart-be-function  Restart be-function Docker container
   run-migrations       Execute pending Doctrine migrations
   search               Search for a Telegram user by name
-  start                Build and start all Docker containers
-  stop                 Stop and remove all Docker containers
+  serverless-setup     Setup serverless
   sync-bot-webhook     Synchronize Telegram bot webhook
+  tests                Run PHPUnit tests
+  up                   Build and start all Docker containers
+  warmup-cache         Warm up Symfony cache inside be-function container
 ```
 
 # Serverless
@@ -44,6 +65,8 @@
 * GRANT ALL PRIVILEGES ON app_test.* TO 'app'@'%';
 
 # TODO
+* upload media lag
+* create feedback - use LLM: 1 step) upload media 2 step) description
 * simplify conversations: input everything at once (use AI)
 * simplify output: one single response message
 * use param store runtime retrieval

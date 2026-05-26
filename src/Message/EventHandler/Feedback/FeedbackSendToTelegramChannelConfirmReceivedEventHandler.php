@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Message\EventHandler\Feedback;
 
+use App\Entity\Feedback\Feedback;
 use App\Entity\Telegram\TelegramChannel;
 use App\Message\Event\Feedback\FeedbackSendToTelegramChannelConfirmReceivedEvent;
+use App\Model\Telegram\TelegramMedia;
 use App\Repository\Feedback\FeedbackRepository;
 use App\Service\Feedback\FeedbackService;
 use App\Service\Feedback\Telegram\View\MultipleSearchTermTelegramViewProvider;
@@ -17,6 +19,7 @@ use App\Service\Telegram\Channel\View\TelegramChannelLinkViewProvider;
 use Longman\TelegramBot\Entities\Message;
 use Longman\TelegramBot\Entities\ServerResponse;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
 
@@ -33,6 +36,7 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
         private readonly LoggerInterface $logger,
         private readonly MessengerUserService $messengerUserService,
         private readonly FeedbackService $feedbackService,
+        private readonly DenormalizerInterface $telegramMediaDenormalizer,
     )
     {
     }
@@ -86,10 +90,15 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
                         $chatId,
                         $message,
                         keepKeyboard: true,
-                        media: $feedback->getMedia()
+                        media: $this->getMedia($feedback)
                     );
                 } else {
-                    $response = $this->telegramBotMessageSender->sendTelegramMessage($bot, $chatId, $message, keepKeyboard: true);
+                    $response = $this->telegramBotMessageSender->sendTelegramMessage(
+                        $bot,
+                        $chatId,
+                        $message,
+                        keepKeyboard: true
+                    );
                 }
 
                 if (!$response->isOk()) {
@@ -107,7 +116,7 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
                         $chatId,
                         '',
                         keepKeyboard: true,
-                        media: $feedback->getMedia()
+                        media: $this->getMedia($feedback)
                     );
 
                     if (!$response->isOk()) {
@@ -155,6 +164,23 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
 
             $this->telegramBotMessageSender->sendTelegramMessage($bot, $userChatId, $message, keepKeyboard: true);
         }
+    }
+
+    /**
+     * @return array<int, TelegramMedia>|null
+     */
+    private function getMedia(Feedback $feedback): ?array
+    {
+        if (!$feedback->hasMedia()) {
+            return null;
+        }
+
+        return array_map(
+            fn (array|TelegramMedia $media): TelegramMedia => $media instanceof TelegramMedia
+                ? $media
+                : $this->telegramMediaDenormalizer->denormalize($media, TelegramMedia::class),
+            $feedback->getMedia() ?? []
+        );
     }
 
     /**

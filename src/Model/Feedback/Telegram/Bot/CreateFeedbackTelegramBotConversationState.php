@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Model\Feedback\Telegram\Bot;
 
 use App\Enum\Feedback\Rating;
-use App\Model\Feedback\FeedbackMedia;
 use App\Model\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramPhoto;
+use App\Model\Telegram\TelegramVideo;
 use App\Transfer\Feedback\SearchTermsTransfer;
 
 class CreateFeedbackTelegramBotConversationState extends TelegramBotConversationState
@@ -73,7 +74,7 @@ class CreateFeedbackTelegramBotConversationState extends TelegramBotConversation
         return $this;
     }
 
-    public function addMedia(FeedbackMedia $media): self
+    public function addMedia(TelegramPhoto|TelegramVideo $media): self
     {
         $this->media[] = $media;
 

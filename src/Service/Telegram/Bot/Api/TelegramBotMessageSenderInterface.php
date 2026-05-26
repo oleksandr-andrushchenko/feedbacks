@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Bot\Api;
 
 use App\Entity\Telegram\TelegramBot;
+use App\Model\Telegram\TelegramMedia;
 use Longman\TelegramBot\Entities\Keyboard;
 use Longman\TelegramBot\Entities\ServerResponse;
 
 interface TelegramBotMessageSenderInterface
 {
+    /**
+     * @param array<TelegramMedia>|null $media
+     */
     public function sendTelegramMessage(
         TelegramBot $botEntity,
         string|int $chatId,

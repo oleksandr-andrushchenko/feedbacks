@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Service\Telegram\Bot\Api;
 
 use App\Entity\Telegram\TelegramBot;
-use App\Model\Feedback\FeedbackMedia;
-use App\Service\Feedback\Media\FeedbackMediaUrlProvider;
+use App\Model\Telegram\TelegramMedia;
+use App\Service\Media\MediaUrlProvider;
 use App\Service\Telegram\Bot\TelegramBotRegistry;
 use App\Service\Validator\HtmlValidator;
 use LogicException;
@@ -18,11 +18,14 @@ class TelegramBotMessageSender implements TelegramBotMessageSenderInterface
     public function __construct(
         private readonly TelegramBotRegistry $telegramBotRegistry,
         private readonly HtmlValidator $htmlValidator,
-        private readonly FeedbackMediaUrlProvider $feedbackMediaUrlProvider,
+        private readonly MediaUrlProvider $mediaUrlProvider,
     )
     {
     }
 
+    /**
+     * @param array<TelegramMedia>|null $media
+     */
     public function sendTelegramMessage(
         TelegramBot $botEntity,
         string|int $chatId,
@@ -78,6 +81,9 @@ class TelegramBotMessageSender implements TelegramBotMessageSenderInterface
         return $bot->sendMessage($data);
     }
 
+    /**
+     * @param array<TelegramMedia> $media
+     */
     private function sendMediaMessage(
         TelegramBot $botEntity,
         string|int $chatId,
@@ -88,16 +94,13 @@ class TelegramBotMessageSender implements TelegramBotMessageSenderInterface
     ): ServerResponse
     {
         $bot = $this->telegramBotRegistry->getTelegramBot($botEntity);
-        $media = array_map(
-            static fn (FeedbackMedia|array $item): array => $item instanceof FeedbackMedia ? $item->toArray() : $item,
-            array_values($media)
-        );
+        $media = array_values($media);
 
         if (count($media) === 1) {
             $item = $media[0];
             $data = [
                 'chat_id' => $chatId,
-                $item['type'] === 'video' ? 'video' : 'photo' => $this->getMediaSource($item),
+                $item->getType() === TelegramMedia::TYPE_VIDEO ? 'video' : 'photo' => $this->getMediaSource($item),
             ];
 
             if ($caption !== null && $caption !== '') {
@@ -112,13 +115,13 @@ class TelegramBotMessageSender implements TelegramBotMessageSenderInterface
                 $data['protect_content'] = $protectContent;
             }
 
-            return $item['type'] === 'video' ? $bot->sendVideo($data) : $bot->sendPhoto($data);
+            return $item->getType() === TelegramMedia::TYPE_VIDEO ? $bot->sendVideo($data) : $bot->sendPhoto($data);
         }
 
         $items = [];
         foreach ($media as $index => $item) {
             $payload = [
-                'type' => $item['type'] === 'video' ? 'video' : 'photo',
+                'type' => $item->getType() === TelegramMedia::TYPE_VIDEO ? 'video' : 'photo',
                 'media' => $this->getMediaSource($item),
             ];
 
@@ -145,17 +148,17 @@ class TelegramBotMessageSender implements TelegramBotMessageSenderInterface
         return $bot->sendMediaGroup($data);
     }
 
-    private function getMediaSource(array $media): string
+    private function getMediaSource(TelegramMedia $media): string
     {
-        if (isset($media['telegram_file_id'])) {
-            return $media['telegram_file_id'];
+        if ($media->getTelegramFileId() !== null) {
+            return $media->getTelegramFileId();
         }
 
-        if (isset($media['url'])) {
-            return $media['url'];
-        }
-
-        return $this->feedbackMediaUrlProvider->getUrl($media);
+        return $this->mediaUrlProvider->getUrl(
+            $media->getStorage(),
+            $media->getBucket(),
+            $media->getKey(),
+        );
     }
 
     private function sendHtmlMessage($bot, array $data, int $max = 4096): ServerResponse

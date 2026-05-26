@@ -44,13 +44,6 @@ class FeedbackTransfer
         return $this->rating;
     }
 
-    public function setRating(?Rating $rating): self
-    {
-        $this->rating = $rating;
-
-        return $this;
-    }
-
     public function getDescription(): ?string
     {
         return $this->description;
@@ -68,22 +61,8 @@ class FeedbackTransfer
         return $this->telegramBot;
     }
 
-    public function setTelegramBot(?TelegramBot $telegramBot): self
-    {
-        $this->telegramBot = $telegramBot;
-
-        return $this;
-    }
-
     public function getMedia(): ?array
     {
         return $this->media;
-    }
-
-    public function setMedia(?array $media): self
-    {
-        $this->media = $media;
-
-        return $this;
     }
 }

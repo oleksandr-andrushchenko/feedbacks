@@ -38,3 +38,6 @@ reply:
   better_bot_match: You may be interested in the following bots
   wrong: I don't understand you.
   use_primary: This bot is no longer supported. Try
+  uploads_processing: Processing file uploads...
+  uploads_processing_started: Processing started.
+  upload_uploaded: File %count% uploaded.

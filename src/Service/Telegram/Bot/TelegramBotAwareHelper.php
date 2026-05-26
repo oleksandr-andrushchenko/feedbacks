@@ -262,12 +262,17 @@ class TelegramBotAwareHelper
 
     public function yesButton(): KeyboardButton
     {
-        return $this->button('✅ ' . $this->trans('keyboard.yes'));
+        return $this->checkMarkButton($this->trans('keyboard.yes'));
     }
 
     public function button(string $text): KeyboardButton
     {
         return $this->telegramBotKeyboardFactory->createTelegramButton($text);
+    }
+
+    public function checkMarkButton(string $text): KeyboardButton
+    {
+        return $this->button('✅ ' . $text);
     }
 
     public function noButton(): KeyboardButton
@@ -292,12 +297,17 @@ class TelegramBotAwareHelper
 
     public function removeButton(string $text): KeyboardButton
     {
+        return $this->crossMarkButton($text);
+    }
+
+    public function crossMarkButton(string $text): KeyboardButton
+    {
         return $this->button('❌ ' . $text);
     }
 
     public function cancelButton(): KeyboardButton
     {
-        return $this->button('❌ ' . $this->trans('keyboard.cancel'));
+        return $this->removeButton($this->trans('keyboard.cancel'));
     }
 
     public function command(string $name, string $icon = null, bool $html = false, bool $link = false): string

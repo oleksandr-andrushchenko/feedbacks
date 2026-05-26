@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Serializer\Feedback\Telegram\Bot;
 
 use App\Enum\Feedback\Rating;
-use App\Model\Feedback\FeedbackMedia;
 use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
 use App\Model\Telegram\TelegramBotConversationState;
+use App\Model\Telegram\TelegramMedia;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
@@ -21,6 +21,8 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         private readonly DenormalizerInterface $baseConversationStateDenormalizer,
         private readonly NormalizerInterface $searchTermTransferNormalizer,
         private readonly DenormalizerInterface $searchTermTransferDenormalizer,
+        private readonly NormalizerInterface $telegramMediaNormalizer,
+        private readonly DenormalizerInterface $telegramMediaDenormalizer,
     )
     {
     }
@@ -39,7 +41,7 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
             'search_terms' => $data->getSearchTerms()->hasItems() ? array_map($searchTermCallback, $data->getSearchTerms()->getItems()) : null,
             'rating' => $data->getRating()?->value,
             'description' => $data->getDescription(),
-            'media' => $data->hasMedia() ? array_map(static fn (FeedbackMedia $media): array => $media->toArray(), $data->getMedia()) : null,
+            'media' => $data->hasMedia() ? array_map(fn (mixed $media): array => $this->telegramMediaNormalizer->normalize($media, $format, $context), $data->getMedia()) : null,
             'created_id' => $data->getCreatedId(),
         ]);
     }
@@ -59,7 +61,7 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
             ->setSearchTerms(new SearchTermsTransfer(isset($data['search_terms']) ? array_map($searchTermCallback, $data['search_terms']) : null))
             ->setRating(isset($data['rating']) ? Rating::from($data['rating']) : null)
             ->setDescription($data['description'] ?? null)
-            ->setMedia(isset($data['media']) ? array_map(static fn (array $media): FeedbackMedia => FeedbackMedia::fromArray($media), $data['media']) : null)
+            ->setMedia(isset($data['media']) ? array_map(fn (array $media): mixed => $this->telegramMediaDenormalizer->denormalize($media, TelegramMedia::class, $format, $context), $data['media']) : null)
             ->setCreatedId($data['created_id'] ?? null)
         ;
 

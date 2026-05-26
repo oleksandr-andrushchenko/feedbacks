@@ -38,3 +38,6 @@ reply:
   better_bot_match: Можливо, Вам будуть цікаві наступні боти
   wrong: Я вас не розумію.
   use_primary: Цей бот вже не підтримується. Спробуйте
+  uploads_processing: Обробляємо завантажені файли...
+  uploads_processing_started: Обробку розпочато.
+  upload_uploaded: Файл %count% завантажено.

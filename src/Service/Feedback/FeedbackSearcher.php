@@ -92,4 +92,33 @@ class FeedbackSearcher
 
         return array_slice($feedbacks, 0, $maxResults, true);
     }
+
+    /**
+     * @param array<SearchTerm> $searchTerms
+     * @return array<Feedback>
+     */
+    public function searchFeedbacksByAllSearchTerms(array $searchTerms, bool $withUsers = false, int $maxResults = 20): array
+    {
+        if (count($searchTerms) === 0) {
+            return [];
+        }
+
+        $feedbacksByTerm = array_map(
+            fn (SearchTerm $searchTerm): array => $this->searchFeedbacks($searchTerm, $withUsers, max($maxResults, 100)),
+            $searchTerms
+        );
+
+        $feedbackIdSets = array_map(
+            static fn (array $feedbacks): array => array_flip(array_map(static fn (Feedback $feedback): string => $feedback->getId(), $feedbacks)),
+            $feedbacksByTerm
+        );
+        $matchingIds = array_keys(array_intersect_key(...$feedbackIdSets));
+
+        $feedbacks = array_filter(
+            $feedbacksByTerm[0],
+            static fn (Feedback $feedback): bool => in_array($feedback->getId(), $matchingIds, true)
+        );
+
+        return array_slice(array_values($feedbacks), 0, $maxResults);
+    }
 }

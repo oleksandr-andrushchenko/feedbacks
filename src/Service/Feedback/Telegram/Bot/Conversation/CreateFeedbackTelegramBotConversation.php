@@ -23,7 +23,6 @@ use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationInterface;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
-use App\Service\Telegram\TelegramMediaCreator;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
 use App\Transfer\Feedback\SearchTermsTransfer;
@@ -57,7 +56,6 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         private readonly SearchTermTypeProvider $searchTermTypeProvider,
         private readonly FeedbackCreator $feedbackCreator,
         private readonly FeedbackRatingProvider $feedbackRatingProvider,
-        private readonly TelegramMediaCreator $telegramMediaCreator,
         private readonly MessageBusInterface $eventBus,
     )
     {
@@ -652,24 +650,41 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         return $this->queryMedia($tg);
     }
 
-    public function queryMedia(TelegramBotAwareHelper $tg, bool $help = false): null
+    public function queryMediaMessage(TelegramBotAwareHelper $tg, string $message): null
     {
         $this->state->setStep(self::STEP_MEDIA_QUERIED);
-
-        $message = $this->getMediaQuery($tg, $help);
 
         $buttons = [];
 
         if ($this->state->hasMedia()) {
-            $buttons[] = $tg->removeButton($this->getQueryMediaCountText($tg));
+            $buttons[] = $this->getRemoveMediaButton($tg);
+            $buttons[] = $this->getCreateConfirmButton($tg);
+        } else {
+            $buttons[] = $this->getSkipAndCreateConfirmButton($tg);
         }
 
-        $buttons[] = $this->getCreateConfirmButton($tg);
         $buttons[] = $tg->prevButton();
         $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
+    }
+
+    public function queryMedia(TelegramBotAwareHelper $tg, bool $help = false): null
+    {
+        return $this->queryMediaMessage($tg, $this->getMediaQuery($tg, $help));
+    }
+
+    public function queryMediaUploadStarted(TelegramBotAwareHelper $tg): null
+    {
+        return $this->queryMediaMessage($tg, $tg->trans('reply.uploads_processing_started'));
+    }
+
+    public function queryMediaUploadProgress(TelegramBotAwareHelper $tg): null
+    {
+        return $this->queryMediaMessage($tg, $tg->trans('reply.upload_uploaded', [
+            'count' => count($this->state->getMedia() ?? []),
+        ]));
     }
 
     public function getMediaQuery(TelegramBotAwareHelper $tg, bool $help = false): string
@@ -705,14 +720,24 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
         return $query;
     }
 
-    private function getQueryMediaCountText(TelegramBotAwareHelper $tg): string
+    protected function getQueryMediaCountText(TelegramBotAwareHelper $tg): string
     {
         return $tg->trans('query.media_count', ['count' => count($this->state->getMedia())], domain: 'create');
     }
 
+    public function getSkipAndCreateConfirmButton(TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->checkMarkButton($tg->trans('keyboard.skip_and_create_confirm', domain: 'create'));
+    }
+
     public function getCreateConfirmButton(TelegramBotAwareHelper $tg): KeyboardButton
     {
-        return $tg->button('✅ ' . $tg->trans('keyboard.create_confirm', domain: 'create'));
+        return $tg->checkMarkButton($tg->trans('keyboard.create_confirm', domain: 'create'));
+    }
+
+    public function getRemoveMediaButton(TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->crossMarkButton($this->getQueryMediaCountText($tg));
     }
 
     public function gotMedia(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -721,7 +746,11 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->queryDescription($tg);
         }
 
-        if ($tg->matchInput($this->getCreateConfirmButton($tg)->getText())) {
+        if ($this->state->hasMedia() && $tg->matchInput($this->getCreateConfirmButton($tg)->getText())) {
+            return $this->createAndReply($tg, $entity);
+        }
+
+        if (!$this->state->hasMedia() && $tg->matchInput($this->getSkipAndCreateConfirmButton($tg)->getText())) {
             return $this->createAndReply($tg, $entity);
         }
 
@@ -733,25 +762,24 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->gotCancel($tg, $entity);
         }
 
-        if ($this->state->hasMedia()) {
-            if ($tg->matchInput($this->getQueryMediaCountText($tg))) {
-                $this->state->setMedia(null);
+        if ($this->state->hasMedia() && $tg->matchInput($this->getRemoveMediaButton($tg)->getText())) {
+            $this->state->setMedia(null);
 
-                return $this->queryMedia($tg);
-            }
+            return $this->queryMedia($tg);
         }
 
-        $mediaTransfer = $tg->getMedia();
-        if ($mediaTransfer === null) {
+        if ($tg->getMedia() === null) {
             $tg->replyWrong(true);
 
             return $this->queryMedia($tg);
         }
 
-        $media = $this->telegramMediaCreator->createTelegramMedia($tg->getBot(), $mediaTransfer);
+        if (!$this->state->hasMedia()) {
+            $this->queryMediaUploadStarted($tg);
+        }
 
         $original = $this->state->getMedia();
-        $this->state->addMedia($media);
+        $this->state->addMedia($tg->getMedia());
 
         try {
             $this->validator->validate($this->state);
@@ -762,7 +790,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation impl
             return $this->queryMedia($tg);
         }
 
-        return $this->queryMedia($tg);
+        return $this->queryMediaUploadProgress($tg);
     }
 
     public function createAndReply(TelegramBotAwareHelper $tg, Entity $entity): null

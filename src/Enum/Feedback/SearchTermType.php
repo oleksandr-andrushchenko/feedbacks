@@ -29,7 +29,7 @@ enum SearchTermType: int
     case car_number = 1;
     case tax_number = 2;
 
-    public const base = [
+    public const array base = [
         self::messenger_profile_url,
         self::messenger_username,
         self::phone_number,
@@ -42,7 +42,7 @@ enum SearchTermType: int
         self::organization_name,
     ];
 
-    public const known_messengers = [
+    public const array known_messengers = [
         self::instagram_username,
         self::facebook_username,
         self::telegram_username,
@@ -54,7 +54,7 @@ enum SearchTermType: int
         self::vkontakte_username,
     ];
 
-    public const messengers = [
+    public const array messengers = [
         ...self::known_messengers,
         self::messenger_username,
         self::messenger_profile_url,

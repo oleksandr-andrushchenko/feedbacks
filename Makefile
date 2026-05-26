@@ -245,6 +245,7 @@ deploy-params: ## Deploy params
 		"TELEGRAM_ACTIVITIES_TOKEN:SecureString" \
 		"TELEGRAM_ERRORS_TOKEN:SecureString" \
 		"GOOGLE_API_KEY:SecureString" \
+		"OPENAI_API_KEY:SecureString" \
 		"DB_URL:SecureString"; do \
 		param_name=$${param_type%%:*}; \
 		param_kind=$${param_type##*:}; \

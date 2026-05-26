@@ -8,7 +8,6 @@ use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
 use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
-use App\Model\Feedback\FeedbackMedia;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -68,7 +67,7 @@ class Feedback
         $this->hasActiveSubscription = $this->user?->hasActiveSubscription() === true ? true : null;
         $this->messengerUserId ??= $this->messengerUser?->getId();
         $this->telegramChannelMessageIds = empty($this->telegramChannelMessageIds) ? null : $this->telegramChannelMessageIds;
-        $this->media = empty($this->media) ? null : $this->media;
+        $this->setMedia($this->media);
         $this->telegramBotId ??= $this->telegramBot?->getId();
         $this->createdAt ??= new DateTimeImmutable();
     }
@@ -218,14 +217,11 @@ class Feedback
     }
 
     /**
-     * @param array<int, FeedbackMedia|array>|null $media
+     * @param array<int, array>|null $media
      */
     public function setMedia(?array $media): self
     {
-        $this->media = array_map(
-            static fn (FeedbackMedia|array $item): array => $item instanceof FeedbackMedia ? $item->toArray() : $item,
-            $media ?? []
-        );
+        $this->media = $media ?? [];
         $this->media = empty($this->media) ? null : $this->media;
 
         return $this;
