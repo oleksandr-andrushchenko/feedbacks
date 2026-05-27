@@ -1,6 +1,7 @@
 # Contributing
 
-Contributors are always welcome! We want to make contributing to this project as easy and transparent as possible, whether it's:
+Contributors are always welcome! We want to make contributing to this project as easy and transparent as possible,
+whether it's:
 
 - Reporting a bug
 - Discussing the current state of the code
@@ -20,7 +21,9 @@ Pull requests are the best way to propose changes to the codebase. The ideal way
 
 ## Any contributions you make will be under the MIT Software License
 
-In short, when you submit code changes, your submissions are understood to be under the same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the maintainers if that's a concern.
+In short, when you submit code changes, your submissions are understood to be under the
+same [MIT License](http://choosealicense.com/licenses/mit/) that covers the project. Feel free to contact the
+maintainers if that's a concern.
 
 ## Report bugs using issues
 
@@ -42,7 +45,8 @@ We use GitHub issues to track public bugs. Report a bug by opening a new issue. 
 
 ## Use a consistent coding style
 
-Having a code well styled and organized is one of our top priorities. So we ask to follow the standards already in the code base, always based on [PSRs](https://www.php-fig.org/psr/).
+Having a code well styled and organized is one of our top priorities. So we ask to follow the standards already in the
+code base, always based on [PSRs](https://www.php-fig.org/psr/).
 
 ## License
 
@@ -50,4 +54,5 @@ By contributing, you agree that your contributions will be licensed under its MI
 
 ## References
 
-This document was adapted from [these open-source contribution guidelines](https://gist.github.com/briandk/3d2e8b3ec8daf5a27a62).
+This document was adapted
+from [these open-source contribution guidelines](https://gist.github.com/briandk/3d2e8b3ec8daf5a27a62).

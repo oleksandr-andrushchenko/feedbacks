@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Entity\Feedback;
@@ -90,6 +89,17 @@ class Feedback
     public function hasActiveSubscription(): ?bool
     {
         return $this->hasActiveSubscription;
+    }
+
+    /**
+     * @param array<int, array>|null $media
+     */
+    public function setMedia(?array $media): self
+    {
+        $this->media = $media ?? [];
+        $this->media = empty($this->media) ? null : $this->media;
+
+        return $this;
     }
 
     public function setUser(?User $user): self
@@ -214,17 +224,6 @@ class Feedback
     public function getMedia(): ?array
     {
         return $this->media;
-    }
-
-    /**
-     * @param array<int, array>|null $media
-     */
-    public function setMedia(?array $media): self
-    {
-        $this->media = $media ?? [];
-        $this->media = empty($this->media) ? null : $this->media;
-
-        return $this;
     }
 
     public function hasMedia(): bool

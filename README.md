@@ -65,12 +65,10 @@
 * GRANT ALL PRIVILEGES ON app_test.* TO 'app'@'%';
 
 # TODO
-* upload media lag
-* create feedback - use LLM: 1 step) upload media 2 step) description
-* simplify conversations: input everything at once (use AI)
+* create feedback version 2 step1: use version 1 step 1 question (+improvements)
+* feedbacks in channels: display v2 step 1 input + move all the metadata at the bottom
+* deploy: test LLM & S3
 * simplify output: one single response message
-* use param store runtime retrieval
-
 
 * queues
 * generate badge (picture) with username/rating to post in messengers

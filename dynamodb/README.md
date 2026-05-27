@@ -8,7 +8,8 @@ DynamoPHP
 ---
 
 **DynamoPHP** is a strongly-typed, attribute-based Object Data Mapper for Amazon DynamoDB. It is built on top of modern
-PHP, which enables definition of entities using PHP 8+ attributes and interaction with DynamoDB using a clean, expressive
+PHP, which enables definition of entities using PHP 8+ attributes and interaction with DynamoDB using a clean,
+expressive
 API.
 
 Inspired by data mappers like [Doctrine](https://www.doctrine-project.org) and modeled after patterns in libraries such

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Service\Telegram\Bot;
@@ -265,14 +264,14 @@ class TelegramBotAwareHelper
         return $this->checkMarkButton($this->trans('keyboard.yes'));
     }
 
-    public function button(string $text): KeyboardButton
-    {
-        return $this->telegramBotKeyboardFactory->createTelegramButton($text);
-    }
-
     public function checkMarkButton(string $text): KeyboardButton
     {
         return $this->button('✅ ' . $text);
+    }
+
+    public function button(string $text): KeyboardButton
+    {
+        return $this->telegramBotKeyboardFactory->createTelegramButton($text);
     }
 
     public function noButton(): KeyboardButton
@@ -295,6 +294,11 @@ class TelegramBotAwareHelper
         return $this->button('🚨 ' . $this->trans('keyboard.help'));
     }
 
+    public function cancelButton(): KeyboardButton
+    {
+        return $this->removeButton($this->trans('keyboard.cancel'));
+    }
+
     public function removeButton(string $text): KeyboardButton
     {
         return $this->crossMarkButton($text);
@@ -303,11 +307,6 @@ class TelegramBotAwareHelper
     public function crossMarkButton(string $text): KeyboardButton
     {
         return $this->button('❌ ' . $text);
-    }
-
-    public function cancelButton(): KeyboardButton
-    {
-        return $this->removeButton($this->trans('keyboard.cancel'));
     }
 
     public function command(string $name, string $icon = null, bool $html = false, bool $link = false): string

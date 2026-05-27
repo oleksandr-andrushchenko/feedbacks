@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace App\Model\Feedback\Telegram\Bot;
@@ -18,15 +17,15 @@ class SearchFeedbackTelegramBotConversationState extends SearchTermAwareTelegram
         $this->setSearchTerms($this->searchTerms);
     }
 
-    public function getSearchTerms(): SearchTermsTransfer
-    {
-        return $this->searchTerms;
-    }
-
     public function setSearchTerms(?SearchTermsTransfer $searchTerms): self
     {
         $this->searchTerms = $searchTerms ?? new SearchTermsTransfer();
 
         return $this;
+    }
+
+    public function getSearchTerms(): SearchTermsTransfer
+    {
+        return $this->searchTerms;
     }
 }
