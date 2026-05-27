@@ -64,7 +64,7 @@ class TelegramBotSearchCommand extends Command
             $input->getOption('provider')
         );
 
-        $this->searcher->search($searchTerm, $render, $context, $providers);
+        $this->searcher->search([$searchTerm], $render, $context, $providers);
 
         $io->success('Search has been completed');
 

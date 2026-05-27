@@ -22,14 +22,13 @@ class Searcher
     }
 
     /**
-     * @param SearchTerm $searchTerm
-     * @param callable $render
-     * @param array $context
+     * @param array<SearchTerm> $searchTerms
      * @param SearchProviderName[]|null $providers
-     * @return void
      */
-    public function search(SearchTerm $searchTerm, callable $render, array $context = [], array $providers = null): void
+    public function search(array $searchTerms, callable $render, array $context = [], array $providers = null): void
     {
+        // todo: implement multiple search terms
+        $searchTerm = array_values($searchTerms)[0];
 //        $showLimits = false;
 
         foreach ($this->getProviders($providers) as $provider) {

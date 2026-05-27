@@ -71,9 +71,9 @@ class FeedbackSearcher
                         countryCode: $searchTermFeedback->getUserCountryCode(),
                         localeCode: $searchTermFeedback->getUserLocaleCode(),
                         hasActiveSubscription: $searchTermFeedback->hasUserActiveSubscription(),
+                        messengerUserId: $searchTermFeedback->getMessengerUserId(),
                         rating: $searchTermFeedback->getFeedbackRating(),
                         text: $searchTermFeedback->getFeedbackText(),
-                        messengerUserId: $searchTermFeedback->getMessengerUserId(),
                         telegramBotId: $searchTermFeedback->getTelegramBotId(),
                         createdAt: $searchTermFeedback->getCreatedAt(),
                     );

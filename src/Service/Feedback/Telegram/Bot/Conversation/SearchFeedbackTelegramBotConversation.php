@@ -262,7 +262,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
             array_unshift($providers, SearchProviderName::feedbacks);
 
             $searchTerm = $this->feedbackSearchService->getSearchTerm($feedbackSearch);
-            $this->searcher->search($searchTerm, $render, $context, $providers);
+            $this->searcher->search([$searchTerm], $render, $context, $providers);
 
             if ($this->createConfirmStep) {
                 return $this->queryCreateConfirm($tg);

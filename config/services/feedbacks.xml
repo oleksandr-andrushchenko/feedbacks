@@ -603,8 +603,6 @@
             <argument type="service" id="app.choose_action_telegram_chat_sender"/>
             <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_search_creator"/>
-            <argument type="service" id="app.feedback_searcher"/>
-            <argument type="service" id="app.search_viewer_telegram_feedbacks"/>
             <argument type="service" id="app.search_searcher_telegram"/>
             <argument>%app.search.search_providers%</argument>
             <tag name="app.telegram_conversation_feedbacks"/>

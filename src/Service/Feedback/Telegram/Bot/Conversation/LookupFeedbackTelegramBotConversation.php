@@ -257,7 +257,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation
             ];
 
             $searchTerm = $this->feedbackLookupService->getSearchTerm($feedbackLookup);
-            $this->searcher->search($searchTerm, $render, $context, $providers);
+            $this->searcher->search([$searchTerm], $render, $context, $providers);
 
             $tg->stopConversation($entity);
 

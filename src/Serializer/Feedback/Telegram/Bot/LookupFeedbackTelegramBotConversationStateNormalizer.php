@@ -20,9 +20,6 @@ class LookupFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     /**
      * @param LookupFeedbackTelegramBotConversationState $data
-     * @param string|null $format
-     * @param array $context
-     * @return array
      * @throws ExceptionInterface
      */
     public function normalize(mixed $data, string $format = null, array $context = []): array

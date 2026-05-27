@@ -4,37 +4,22 @@ declare(strict_types=1);
 namespace App\Model\Feedback\Telegram\Bot;
 
 use App\Enum\Feedback\Rating;
-use App\Model\Telegram\TelegramBotConversationState;
 use App\Model\Telegram\TelegramPhoto;
 use App\Model\Telegram\TelegramVideo;
 use App\Transfer\Feedback\SearchTermsTransfer;
 
-class CreateFeedbackTelegramBotConversationState extends TelegramBotConversationState
+class CreateFeedbackTelegramBotConversationState extends SearchTermsAwareTelegramBotConversationState
 {
     public function __construct(
         ?int $step = null,
-        private ?SearchTermsTransfer $searchTerms = null,
+        ?SearchTermsTransfer $searchTerms = null,
         private ?Rating $rating = null,
         private ?string $description = null,
         private ?array $media = null,
         private ?string $createdId = null,
     )
     {
-        parent::__construct($step);
-
-        $this->setSearchTerms($this->searchTerms);
-    }
-
-    public function setSearchTerms(?SearchTermsTransfer $searchTerms): self
-    {
-        $this->searchTerms = $searchTerms ?? new SearchTermsTransfer();
-
-        return $this;
-    }
-
-    public function getSearchTerms(): SearchTermsTransfer
-    {
-        return $this->searchTerms;
+        parent::__construct($step, $searchTerms);
     }
 
     public function getRating(): ?Rating

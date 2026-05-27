@@ -3,20 +3,17 @@ declare(strict_types=1);
 
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Entity\Feedback\SearchTerm;
 use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Enum\Search\SearchProviderName;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
 use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
 use App\Service\Feedback\FeedbackSearchCreator;
-use App\Service\Feedback\FeedbackSearcher;
 use App\Service\Feedback\LLM\SearchTermsExtractor;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
 use App\Service\Search\Searcher;
-use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Validator\Validator;
@@ -41,8 +38,6 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
         private readonly ChooseActionTelegramChatSender $chooseActionTelegramChatSender,
         private readonly SearchTermTelegramViewProvider $searchTermTelegramViewProvider,
         private readonly FeedbackSearchCreator $feedbackSearchCreator,
-        private readonly FeedbackSearcher $feedbackSearcher,
-        private readonly FeedbackTelegramSearchViewer $feedbackTelegramSearchViewer,
         private readonly Searcher $searcher,
         private readonly array $searchProviders,
     )
@@ -195,12 +190,11 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
                 'addTime' => true,
             ];
 
-            // todo: check
-            if (count($feedbackSearchTerms) === 1) {
-                $this->searchSingleTerm($tg, $feedbackSearchTerms[0], $context);
-            } else {
-                $this->searchAllTerms($tg, $feedbackSearchTerms, $context);
-            }
+            $render = static fn (string $message) => $tg->reply($message);
+            $providers = array_map(static fn (string $name): SearchProviderName => SearchProviderName::fromName($name), $this->searchProviders);
+            array_unshift($providers, SearchProviderName::feedbacks);
+
+            $this->searcher->search($feedbackSearchTerms, $render, $context, $providers);
 
             $tg->stopConversation($entity);
 
@@ -242,37 +236,6 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
             return $this->queryDetails($tg);
         }
-    }
-
-    private function searchSingleTerm(TelegramBotAwareHelper $tg, SearchTerm $searchTerm, array $context): void
-    {
-        $render = static fn (string $message) => $tg->reply($message);
-        $providers = array_map(static fn (string $name): SearchProviderName => SearchProviderName::fromName($name), $this->searchProviders);
-        array_unshift($providers, SearchProviderName::feedbacks);
-
-        $this->searcher->search($searchTerm, $render, $context, $providers);
-    }
-
-    /**
-     * @param array<SearchTerm> $searchTerms
-     */
-    private function searchAllTerms(TelegramBotAwareHelper $tg, array $searchTerms, array $context): void
-    {
-        $tg->reply($tg->trans('reply.searching_by_details', domain: 'search'));
-
-        $feedbacks = $this->feedbackSearcher->searchFeedbacksByAllSearchTerms(
-            $searchTerms,
-            withUsers: $context['addTime'] ?? false
-        );
-        $firstSearchTerm = $searchTerms[0];
-
-        if (count($feedbacks) === 0) {
-            $tg->reply($this->feedbackTelegramSearchViewer->getEmptyMessage($firstSearchTerm, $context));
-
-            return;
-        }
-
-        $tg->reply($this->feedbackTelegramSearchViewer->getResultMessage($feedbacks, $firstSearchTerm, $context));
     }
 
     private function getSearchTermsView(TelegramBotAwareHelper $tg): string
