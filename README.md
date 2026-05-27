@@ -67,6 +67,7 @@
 # TODO
 * create feedback version 2 step1: use version 1 step 1 question (+improvements)
 * feedbacks in channels: display v2 step 1 input + move all the metadata at the bottom
+* update LLM prompts to normalize terms (e.g. Olek -> Oleksandr, Сашка -> Олександр)
 * deploy: test LLM & S3
 * simplify output: one single response message
 

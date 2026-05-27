@@ -13,13 +13,13 @@ class TelegramBotConversationFactory
     {
     }
 
-    public function createTelegramConversation(string $conversationClass): TelegramBotConversationInterface
+    public function createTelegramConversation(string $conversationClass): TelegramBotConversation
     {
         return $this->conversationServiceLocator->get(array_search($conversationClass, $this->getTelegramConversations()));
     }
 
     /**
-     * @return array|string[]|TelegramBotConversationInterface[]
+     * @return array|string[]|TelegramBotConversation[]
      */
     public function getTelegramConversations(): array
     {

@@ -76,7 +76,7 @@ class TelegramBotConversationManager
         return $this->arrayNullFilter->filterNulls($normalized);
     }
 
-    public function executeConversation(TelegramBot $bot, TelegramBotConversation $entity, string $method): TelegramBotConversationInterface
+    public function executeConversation(TelegramBot $bot, TelegramBotConversation $entity, string $method): void
     {
         $group = $this->telegramBotGroupRegistry->getTelegramGroup($bot->getEntity()->getGroup());
         // todo: throw not found exception
@@ -99,8 +99,6 @@ class TelegramBotConversationManager
             'conv_expire_at' => $entity->getExpireAt(),
             'state' => $state,
         ]);
-
-        return $conversation;
     }
 
     public function denormalizeState(?array $state, string $class): TelegramBotConversationState

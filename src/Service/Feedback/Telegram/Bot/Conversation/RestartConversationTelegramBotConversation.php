@@ -9,11 +9,10 @@ use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\Bot\Chat\StartTelegramCommandHandler;
 use App\Service\Intl\CountryProvider;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
-use App\Service\Telegram\Bot\Conversation\TelegramBotConversationInterface;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Telegram\Bot\TelegramBotLocaleSwitcher;
 
-class RestartConversationTelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
+class RestartConversationTelegramBotConversation extends TelegramBotConversation
 {
     public const int STEP_CONFIRM_QUERIED = 10;
     public const int STEP_CANCEL_PRESSED = 20;
@@ -28,20 +27,15 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
         parent::__construct(new TelegramBotConversationState());
     }
 
-    public function invoke(TelegramBotAwareHelper $tg, Entity $entity): null
+    public function invoke(TelegramBotAwareHelper $tg, Entity $entity): void
     {
-        return match ($this->state->getStep()) {
-            default => $this->start($tg),
+        match ($this->state->getStep()) {
+            default => $this->queryConfirm($tg),
             self::STEP_CONFIRM_QUERIED => $this->gotConfirm($tg, $entity),
         };
     }
 
-    public function start(TelegramBotAwareHelper $tg): ?string
-    {
-        return $this->queryConfirm($tg);
-    }
-
-    public function queryConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
     {
         $this->state->setStep(self::STEP_CONFIRM_QUERIED);
 
@@ -66,7 +60,7 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
-    public function gotConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
+    private function gotConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         if ($tg->matchInput($tg->noButton()->getText())) {
             $tg->stopConversation($entity);
@@ -113,7 +107,7 @@ class RestartConversationTelegramBotConversation extends TelegramBotConversation
         return $this->startTelegramCommandHandler->handleStart($tg);
     }
 
-    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
+    private function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
 

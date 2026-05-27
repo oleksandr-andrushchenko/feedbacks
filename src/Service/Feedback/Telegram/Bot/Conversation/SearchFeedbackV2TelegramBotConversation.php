@@ -8,7 +8,6 @@ use App\Entity\Telegram\TelegramBotConversation as Entity;
 use App\Enum\Search\SearchProviderName;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
-use App\Model\Feedback\Command\FeedbackCommandLimit;
 use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
 use App\Service\Feedback\FeedbackSearchCreator;
 use App\Service\Feedback\FeedbackSearcher;
@@ -19,7 +18,6 @@ use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
 use App\Service\Search\Searcher;
 use App\Service\Search\Viewer\Telegram\FeedbackTelegramSearchViewer;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
-use App\Service\Telegram\Bot\Conversation\TelegramBotConversationInterface;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackSearchTransfer;
@@ -31,7 +29,7 @@ use Throwable;
 /**
  * @property SearchFeedbackTelegramBotConversationState $state
  */
-class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation implements TelegramBotConversationInterface
+class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
 {
     public const int STEP_DETAILS_QUERIED = 10;
     public const int STEP_CANCEL_PRESSED = 20;
@@ -52,29 +50,40 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
         parent::__construct(new SearchFeedbackTelegramBotConversationState());
     }
 
-    public function invoke(TelegramBotAwareHelper $tg, Entity $entity): null
+    public function invoke(TelegramBotAwareHelper $tg, Entity $entity): void
     {
-        return match ($this->state->getStep()) {
-            default => $this->start($tg),
+        match ($this->state->getStep()) {
+            default => $this->queryDetails($tg),
             self::STEP_DETAILS_QUERIED => $this->gotDetails($tg, $entity),
         };
     }
 
-    public function getStep(int $num): string
+    private function getStep(int $num): string
     {
         return sprintf('[%d/%d] ', $num, 1);
     }
 
-    public function start(TelegramBotAwareHelper $tg): ?string
-    {
-        return $this->queryDetails($tg);
-    }
-
-    public function queryDetails(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryDetails(TelegramBotAwareHelper $tg, bool $help = false): null
     {
         $this->state->setStep(self::STEP_DETAILS_QUERIED);
 
-        $message = $this->getDetailsQuery($tg, $help);
+        $message = $this->getStep(1);
+        $message .= $tg->trans('query.details', domain: 'search');
+        $message = $tg->queryText($message);
+
+        if (!$help) {
+            $message .= $tg->queryTipText($tg->trans('query.details_tip', domain: 'search'));
+        }
+
+        if ($this->state->getSearchTerms()->hasItems()) {
+            $message .= $tg->alreadyAddedText(implode("\n", array_map(
+                fn (SearchTermTransfer $searchTerm): string => '▫️ ' . $this->searchTermTelegramViewProvider
+                        ->getSearchTermTelegramReverseView($searchTerm),
+                $this->state->getSearchTerms()->getItems()
+            )));
+        }
+
+        $message .= $tg->queryTipText($tg->useText(true));
 
         return $tg->reply($message, $tg->keyboard(
             $tg->helpButton(),
@@ -82,30 +91,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
         ))->null();
     }
 
-    public function getDetailsQuery(TelegramBotAwareHelper $tg, bool $help = false): string
-    {
-        $query = $this->getStep(1);
-        $query .= $tg->trans('query.details', domain: 'search');
-        $query = $tg->queryText($query);
-
-        if (!$help) {
-            $query .= $tg->queryTipText($tg->trans('query.details_tip', domain: 'search'));
-        }
-
-        if ($this->state->getSearchTerms()->hasItems()) {
-            $query .= $tg->alreadyAddedText(implode("\n", array_map(
-                fn (SearchTermTransfer $searchTerm): string => '▫️ ' . $this->searchTermTelegramViewProvider
-                        ->getSearchTermTelegramReverseView($searchTerm),
-                $this->state->getSearchTerms()->getItems()
-            )));
-        }
-
-        $query .= $tg->queryTipText($tg->useText(true));
-
-        return $query;
-    }
-
-    public function gotDetails(TelegramBotAwareHelper $tg, Entity $entity): null
+    private function gotDetails(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         if ($tg->matchInput(null)) {
             $tg->replyWrong(true);
@@ -151,7 +137,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
         return $this->searchAndReply($tg, $entity);
     }
 
-    public function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
+    private function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
 
@@ -163,7 +149,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
         return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
     }
 
-    public function parseSearchTerm(SearchTermTransfer $searchTerm, TelegramBotAwareHelper $tg): void
+    private function parseSearchTerm(SearchTermTransfer $searchTerm, TelegramBotAwareHelper $tg): void
     {
         $context = [
             'country_codes' => array_unique([
@@ -179,7 +165,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
         }
     }
 
-    public function searchAndReply(TelegramBotAwareHelper $tg, Entity $entity): null
+    private function searchAndReply(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         try {
             $feedbackSearchTerms = [];
@@ -209,6 +195,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
                 'addTime' => true,
             ];
 
+            // todo: check
             if (count($feedbackSearchTerms) === 1) {
                 $this->searchSingleTerm($tg, $feedbackSearchTerms[0], $context);
             } else {
@@ -217,13 +204,29 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
 
             $tg->stopConversation($entity);
 
-            $message = $this->getWillNotifyReply($tg);
+            $message = $tg->trans('reply.will_notify_details', [
+                'search_terms' => $this->getSearchTermsView($tg),
+            ], domain: 'search');
+
+            $message = $tg->okText($tg->queryText($message));
             $message .= "\n";
-            $message .= $this->getCreateReply($tg);
+            $message .= "\n";
+            $message .= $tg->trans('reply.create_details', [
+                'search_terms' => $this->getSearchTermsView($tg),
+                'create_command' => $tg->command('create', html: true, link: true),
+            ], domain: 'search');
+
+            $message .= $tg->okText($message);
+            $message .= "\n";
 
             return $this->chooseActionTelegramChatSender->sendActions($tg, $message, appendDefault: true);
         } catch (FeedbackCommandLimitExceededException $exception) {
-            $message = $this->getLimitExceededReply($tg, $exception->getLimit());
+            $message = $tg->view('command_limit_exceeded', [
+                'command' => 'search',
+                'period' => $exception->getLimit()->getPeriod(),
+                'count' => $exception->getLimit()->getCount(),
+                'limits' => $this->feedbackSearchCreator->getOptions()->getLimits(),
+            ]);
 
             $tg->reply($message);
 
@@ -272,18 +275,6 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
         $tg->reply($this->feedbackTelegramSearchViewer->getResultMessage($feedbacks, $firstSearchTerm, $context));
     }
 
-    public function getWillNotifyReply(TelegramBotAwareHelper $tg): string
-    {
-        $message = $tg->trans('reply.will_notify_details', [
-            'search_terms' => $this->getSearchTermsView($tg),
-        ], domain: 'search');
-
-        $message = $tg->okText($tg->queryText($message));
-        $message .= "\n";
-
-        return $message;
-    }
-
     private function getSearchTermsView(TelegramBotAwareHelper $tg): string
     {
         return implode("\n", array_map(
@@ -291,28 +282,5 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation im
                 ->getSearchTermTelegramView($searchTerm, forceType: false, localeCode: $tg->getLocaleCode()),
             $this->state->getSearchTerms()->getItems()
         ));
-    }
-
-    public function getCreateReply(TelegramBotAwareHelper $tg): string
-    {
-        $message = $tg->trans('reply.create_details', [
-            'search_terms' => $this->getSearchTermsView($tg),
-            'create_command' => $tg->command('create', html: true, link: true),
-        ], domain: 'search');
-
-        $message = $tg->okText($message);
-        $message .= "\n";
-
-        return $message;
-    }
-
-    public function getLimitExceededReply(TelegramBotAwareHelper $tg, FeedbackCommandLimit $limit): string
-    {
-        return $tg->view('command_limit_exceeded', [
-            'command' => 'search',
-            'period' => $limit->getPeriod(),
-            'count' => $limit->getCount(),
-            'limits' => $this->feedbackSearchCreator->getOptions()->getLimits(),
-        ]);
     }
 }
