@@ -91,8 +91,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation
 
         $countryCode = $tg->getCountryCode();
         $country = $countryCode === null ? null : $this->countryProvider->getCountry($countryCode);
-        // todo: check
-        $countryName = $this->countryProvider->getCountryComposeName($country->getCode());
+        $countryName = $this->countryProvider->getCountryComposeName($country?->getCode());
         $parameters = [
             'country' => $countryName,
         ];
