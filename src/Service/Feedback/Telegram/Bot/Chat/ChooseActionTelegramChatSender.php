@@ -37,7 +37,7 @@ class ChooseActionTelegramChatSender
         }
 
         if ($appendDefault) {
-            return $text . "\n" . $this->getActionQuery($tg);
+            return $text . PHP_EOL . $this->getActionQuery($tg);
         }
 
         return $text;

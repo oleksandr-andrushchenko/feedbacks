@@ -61,7 +61,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation
         $this->state->setStep(self::STEP_CHANGE_CONFIRM_QUERIED);
 
         $message = $this->getCurrentReply($tg);
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
 
         $query = $tg->trans('query.change_confirm', domain: 'country');
         $query = $tg->queryText($query);
@@ -100,7 +100,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation
         $level1RegionId = $user->getLevel1RegionId();
 
         if ($country !== null && $level1RegionId !== null) {
-            $message .= "\n";
+            $message .= PHP_EOL;
             $regionName = sprintf('<u>%s</u>', $this->level1RegionProvider->getLevel1RegionNameById($country, $level1RegionId));
             $parameters = [
                 'region' => $regionName,
@@ -108,7 +108,7 @@ class CountryTelegramBotConversation extends TelegramBotConversation
             $message .= $tg->trans('reply.current_region', parameters: $parameters, domain: $domain);
         }
 
-        $message .= "\n";
+        $message .= PHP_EOL;
         $timezone = $tg->getTimezone() ?? $tg->trans('reply.unknown_timezone', domain: $domain);
         $timezoneName = sprintf('<u>%s</u>', $timezone);
         $parameters = [
@@ -149,10 +149,10 @@ class CountryTelegramBotConversation extends TelegramBotConversation
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
 
         $message = $tg->trans('reply.canceled', domain: 'country');
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $this->getCurrentReply($tg);
         $message = $tg->upsetText($message);
-        $message .= "\n";
+        $message .= PHP_EOL;
 
         $tg->stopConversation($entity);
 
@@ -399,9 +399,9 @@ class CountryTelegramBotConversation extends TelegramBotConversation
 
         $message = $tg->trans('reply.ok', domain: 'country');
         $message = $tg->okText($message);
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $this->getCurrentReply($tg);
-        $message .= "\n";
+        $message .= PHP_EOL;
 
         $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
 

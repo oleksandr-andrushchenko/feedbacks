@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Telegram\TelegramBotConversation as Entity;
+use App\Enum\Feedback\SearchTermType;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\Feedback\FeedbackOnOneselfException;
 use App\Exception\ValidatorException;
@@ -18,9 +19,7 @@ use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
-use App\Transfer\Feedback\SearchTermTransfer;
 use Longman\TelegramBot\Entities\KeyboardButton;
-use RuntimeException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
@@ -55,13 +54,9 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         };
     }
 
-    private function getStep(int $num, string $symbols = ''): string
+    private function getStep(int $num): string
     {
-        if ($num > 2) {
-            $num = 2;
-        }
-
-        return sprintf('[%d/%d%s] ', $num, 2, $symbols);
+        return sprintf('[%d/%d] ', $num, 2);
     }
 
     private function queryDetails(TelegramBotAwareHelper $tg, bool $help = false): null
@@ -72,19 +67,22 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         $message .= $tg->trans('query.details', domain: 'create');
         $message = $tg->queryText($message);
 
-        if (!$help) {
-            $message .= $tg->queryTipText($tg->trans('query.details_tip', domain: 'create'));
+        $message .= $tg->queryTipText(trim($tg->view('search_term_types', ['types' => SearchTermType::base])));
+
+        if ($this->state->getDetails() !== null) {
+            $message .= $tg->alreadyAddedText($this->state->getDetails());
         }
 
-        if ($this->state->getDescription() !== null) {
-            $message .= $tg->alreadyAddedText($this->state->getDescription());
+        if ($help) {
+            $message = $tg->view('create_help', ['query' => $message, 'help_use_input' => true]);
+        } else {
+            $message .= $tg->queryTipText($tg->useInput());
         }
 
-        $message .= $tg->queryTipText($tg->useText(true));
         $buttons = [];
 
-        if ($this->hasRequiredDetails()) {
-            $buttons[] = $tg->crossMarkButton($this->state->getDescription());
+        if ($this->state->getDetails() !== null) {
+            $buttons[] = $this->getRemoveDetailsButton($tg);
             $buttons[] = $tg->nextButton();
         }
 
@@ -94,9 +92,9 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
-    private function hasRequiredDetails(): bool
+    private function getRemoveDetailsButton(TelegramBotAwareHelper $tg): KeyboardButton
     {
-        return $this->state->getDescription() !== null && $this->state->getSearchTerms()->hasItems() && $this->state->getRating() !== null;
+        return $tg->crossMarkButton($this->state->getDetails());
     }
 
     private function gotDetails(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -107,22 +105,18 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             return $this->queryDetails($tg);
         }
 
-        if ($this->state->getDescription() !== null) {
-            if ($tg->matchInput($tg->crossMarkButton($this->state->getDescription())->getText())) {
-                $this->state
-                    ->setDescription(null)
-                    ->setSearchTerms(null)
-                    ->setRating(null)
-                ;
+        if ($this->state->getDetails() !== null && $tg->matchInput($this->getRemoveDetailsButton($tg)->getText())) {
+            $this->state
+                ->setSearchTerms(null)
+                ->setRating(null)
+                ->setDetails(null)
+            ;
 
-                return $this->queryDetails($tg);
-            }
+            return $this->queryDetails($tg);
         }
 
-        if ($this->hasRequiredDetails()) {
-            if ($tg->matchInput($tg->nextButton()->getText())) {
-                return $this->queryMedia($tg);
-            }
+        if ($tg->matchInput($tg->nextButton()->getText())) {
+            return $this->queryMedia($tg);
         }
 
         if ($tg->matchInput($tg->helpButton()->getText())) {
@@ -133,26 +127,40 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             return $this->gotCancel($tg, $entity);
         }
 
+        $originalDetails = $this->state->getDetails();
         $originalSearchTerms = $this->state->getSearchTerms();
         $originalRating = $this->state->getRating();
-        $originalDescription = $this->state->getDescription();
-        $description = $tg->getText()->getRawValue();
 
         try {
-            $details = $this->feedbackDetailsExtractor->extract($description);
+            $details = $tg->getText()->getRawValue();
+            $data = $this->feedbackDetailsExtractor->extract($details);
 
             $this->state
-                ->setDescription($description)
-                ->setSearchTerms($details['search_terms'])
-                ->setRating($details['rating'])
+                ->setSearchTerms($data['search_terms'])
+                ->setRating($data['rating'])
+                ->setDetails($details)
             ;
 
-            if (!$this->state->getSearchTerms()->hasItems()) {
-                throw new RuntimeException('No feedback search terms were extracted.');
+            if (!$this->state->getSearchTerms()?->hasItems()) {
+                $tg->replyWarning($tg->queryText($tg->trans('reply.details_required', domain: 'create')));
+
+                return $this->queryDetails($tg);
             }
 
             foreach ($this->state->getSearchTerms()->getItemsAsArray() as $searchTerm) {
-                $this->parseSearchTerm($searchTerm, $tg);
+                $context = [
+                    'country_codes' => array_unique([
+                        $tg->getBot()->getEntity()->getCountryCode(),
+                        $tg->getCountryCode(),
+                    ]),
+                ];
+
+                if ($searchTerm->getType() === null) {
+                    $this->searchTermParser->parseWithGuessType($searchTerm, $context);
+                } else {
+                    $this->searchTermParser->parseWithKnownType($searchTerm, $context);
+                }
+
                 $this->validator->validate($searchTerm);
             }
 
@@ -161,7 +169,7 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             $this->state
                 ->setSearchTerms($originalSearchTerms)
                 ->setRating($originalRating)
-                ->setDescription($originalDescription)
+                ->setDetails($originalDetails)
             ;
             $tg->replyWarning(
                 $tg->queryText(
@@ -179,12 +187,6 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
     private function queryMedia(TelegramBotAwareHelper $tg, bool $help = false): null
     {
-        if (!$this->hasRequiredDetails()) {
-            $tg->replyWarning($tg->queryText($tg->trans('reply.details_required', domain: 'create')));
-
-            return $this->queryDetails($tg);
-        }
-
         $this->state->setStep(self::STEP_MEDIA_QUERIED);
 
         $message = $this->getStep(2);
@@ -198,30 +200,27 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         $message .= $tg->trans('query.media', $parameters, domain: 'create');
         $message = $tg->queryText($message, true);
 
-        if (!$help) {
-            $message .= $tg->queryTipText($tg->trans('query.media_tip', domain: 'create'));
-        }
+        $message .= $tg->queryTipText($tg->trans('query.media_tip', domain: 'create'));
 
         if ($this->state->hasMedia()) {
             $message .= $tg->alreadyAddedText($this->getQueryMediaCountText($tg));
         }
 
         if ($help) {
-            $message = $tg->view('create_media_help', [
-                'query' => $message,
-                'search_term' => $searchTermView,
-            ]);
+            $message = $tg->view('create_help', ['query' => $message, 'help_use_media' => true]);
         } else {
-            $message .= $tg->queryTipText($tg->useText(true));
+            $message .= $tg->queryTipText($tg->useMedia());
         }
 
         $buttons = [];
 
         if ($this->state->hasMedia()) {
-            $buttons[] = $tg->crossMarkButton($this->getQueryMediaCountText($tg));
+            $buttons[] = $this->getRemoveMediaButton($tg);
+            $buttons[] = $this->getCreateConfirmButton($tg);
+        } else {
+            $buttons[] = $this->getSkipAndCreateConfirmButton($tg);
         }
 
-        $buttons[] = $this->getSkipAndCreateConfirmButton($tg);
         $buttons[] = $tg->prevButton();
         $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
@@ -232,6 +231,16 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
     private function getQueryMediaCountText(TelegramBotAwareHelper $tg): string
     {
         return $tg->trans('query.media_count', ['count' => count($this->state->getMedia())], domain: 'create');
+    }
+
+    private function getRemoveMediaButton(TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->crossMarkButton($this->getQueryMediaCountText($tg));
+    }
+
+    private function getCreateConfirmButton(TelegramBotAwareHelper $tg): KeyboardButton
+    {
+        return $tg->checkMarkButton($tg->trans('keyboard.create_confirm', domain: 'create'));
     }
 
     private function getSkipAndCreateConfirmButton(TelegramBotAwareHelper $tg): KeyboardButton
@@ -251,31 +260,9 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
     }
 
-    private function parseSearchTerm(SearchTermTransfer $searchTerm, TelegramBotAwareHelper $tg): void
-    {
-        $context = [
-            'country_codes' => array_unique([
-                $tg->getBot()->getEntity()->getCountryCode(),
-                $tg->getCountryCode(),
-            ]),
-        ];
-
-        if ($searchTerm->getType() === null) {
-            $this->searchTermParser->parseWithGuessType($searchTerm, context: $context);
-        } else {
-            $this->searchTermParser->parseWithKnownType($searchTerm, context: $context);
-        }
-    }
-
     private function gotMedia(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         if ($tg->matchInput($tg->prevButton()->getText())) {
-            return $this->queryDetails($tg);
-        }
-
-        if (!$this->hasRequiredDetails()) {
-            $tg->replyWarning($tg->queryText($tg->trans('reply.details_required', domain: 'create')));
-
             return $this->queryDetails($tg);
         }
 
@@ -328,11 +315,6 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         ]));
     }
 
-    private function getCreateConfirmButton(TelegramBotAwareHelper $tg): KeyboardButton
-    {
-        return $tg->checkMarkButton($tg->trans('keyboard.create_confirm', domain: 'create'));
-    }
-
     private function createAndReply(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         try {
@@ -344,7 +326,7 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
                     messengerUser: $tg->getBot()->getMessengerUser(),
                     searchTerms: $this->state->getSearchTerms(),
                     rating: $this->state->getRating(),
-                    description: $this->state->getDescription(),
+                    description: $this->state->getDetails(),
                     media: $this->state->getMedia(),
                     telegramBot: $tg->getBot()->getEntity()
                 )
@@ -387,11 +369,6 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
             return $this->chooseActionTelegramChatSender->sendActions($tg);
         }
-    }
-
-    private function getRemoveMediaButton(TelegramBotAwareHelper $tg): KeyboardButton
-    {
-        return $tg->crossMarkButton($this->getQueryMediaCountText($tg));
     }
 
     private function queryMediaMessage(TelegramBotAwareHelper $tg, string $message): null

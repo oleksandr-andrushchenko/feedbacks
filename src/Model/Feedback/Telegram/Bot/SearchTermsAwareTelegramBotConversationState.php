@@ -33,14 +33,14 @@ abstract class SearchTermsAwareTelegramBotConversationState extends TelegramBotC
         $this->searchTerms = $searchTerm === null ? null : new SearchTermsTransfer([$searchTerm]);
     }
 
-    public function setSearchTerms(?SearchTermsTransfer $searchTerms): self
+    public function setSearchTerms(?SearchTermsTransfer $searchTerms): static
     {
-        $this->searchTerms = $searchTerms ?? new SearchTermsTransfer();
+        $this->searchTerms = $searchTerms;
 
         return $this;
     }
 
-    public function getSearchTerms(): SearchTermsTransfer
+    public function getSearchTerms(): ?SearchTermsTransfer
     {
         return $this->searchTerms;
     }

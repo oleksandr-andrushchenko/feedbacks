@@ -65,12 +65,14 @@
 * GRANT ALL PRIVILEGES ON app_test.* TO 'app'@'%';
 
 # TODO
-* create feedback version 2 step1: use version 1 step 1 question (+improvements)
 * feedbacks in channels: display v2 step 1 input + move all the metadata at the bottom
 * update LLM prompts to normalize terms (e.g. Olek -> Oleksandr, Сашка -> Олександр)
 * search conversation: introduce search terms priorities, and use the most prioritized one (if the full search is not implemented yet)
 * deploy: test LLM & S3
 * simplify output: one single response message
+* Reduce amount of templates in conversations, reduce amount of twig templates, simplify, reduce amount of translation files
+* remove Feedback(-s) namespace
+* display raw details for feedbacks & feedback-searches
 
 * queues
 * generate badge (picture) with username/rating to post in messengers

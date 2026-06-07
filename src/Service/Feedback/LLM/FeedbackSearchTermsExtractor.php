@@ -4,10 +4,11 @@ declare(strict_types=1);
 namespace App\Service\Feedback\LLM;
 
 use App\Enum\Feedback\SearchTermType;
+use App\Service\LLM\LlmClientInterface;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 
-readonly class SearchTermsExtractor
+readonly class FeedbackSearchTermsExtractor
 {
     public function __construct(
         private LlmClientInterface $llmClient,

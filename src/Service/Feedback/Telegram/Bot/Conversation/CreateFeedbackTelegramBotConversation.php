@@ -122,7 +122,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation
         }
 
         if ($searchTerms->hasItems()) {
-            $message .= $tg->alreadyAddedText(implode("\n", array_map(
+            $message .= $tg->alreadyAddedText(implode(PHP_EOL, array_map(
                 fn (SearchTermTransfer $searchTerm): string => '▫️ ' . $this->searchTermTelegramViewProvider
                         ->getSearchTermTelegramReverseView($searchTerm),
                 $searchTerms->getItems()
@@ -209,7 +209,7 @@ class CreateFeedbackTelegramBotConversation extends TelegramBotConversation
         try {
             $this->validator->validate($searchTerm);
         } catch (ValidatorException $exception) {
-            $tg->replyWarning(implode("\n\n", [
+            $tg->replyWarning(implode(PHP_EOL . PHP_EOL, [
                 $tg->queryText($exception->getFirstMessage()),
                 $tg->view('search_term_examples'),
             ]));

@@ -42,7 +42,7 @@ class TelegramBotDescriptionsSyncer
 
     private function getMyDescription(TelegramBot $bot): string
     {
-        $myDescription = "\n";
+        $myDescription = PHP_EOL;
         $myDescription .= 'ℹ️ ';
         $myDescription .= $this->getMyShortDescription($bot);
 

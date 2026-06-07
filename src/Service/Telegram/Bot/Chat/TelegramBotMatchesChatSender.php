@@ -39,7 +39,7 @@ class TelegramBotMatchesChatSender
         $message = $tg->infoText($message);
         $message .= ":\n\n";
         $message .= implode(
-            "\n",
+            PHP_EOL,
             array_map(
                 fn (TelegramBot $bot): string => $this->telegramBotLinkViewProvider->getTelegramBotLinkView($bot),
                 $bots

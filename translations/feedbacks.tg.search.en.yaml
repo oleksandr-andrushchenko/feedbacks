@@ -4,16 +4,15 @@ query:
   details_tip: Include names, usernames, profile links, phone numbers, emails, car numbers, tax numbers, organizations, places or any other identifiers. Results for multiple extracted terms must match all of them.
   search_term_put_one: Specify one thing
   search_term_type: Who or what %search_term% is?
-  confirm: Confirm feedbacks search by %search_term%?
-  create_confirm: Would you like to leave your own feedback on %search_term%?
+  confirm: Confirm feedbacks search by %search_terms%?
+  create_confirm: Would you like to leave your own feedback on %search_terms%?
 keyboard:
   change_search_term: Change search term
 reply:
   canceled: Feedback search dialog has been canceled.
-  will_notify: We'll let you know when something pops up about %search_term%.
-  will_notify_details: We'll let you know when something pops up about %search_terms%.
-  create: 'To leave your own feedback about %search_term% use the command: %create_command%'
-  create_details: 'To leave your own feedback about %search_terms% use the command: %create_command%'
+  will_notify: We'll let you know when something pops up about %search_terms%.
+  create: 'To leave your own feedback about %search_terms% use the command: %create_command%'
   searching_by_details: Searching feedbacks matching all extracted terms.
+  details_required: Please enter more specific search terms so we can find the right results.
   extraction_failed: Could not extract search terms from this message. Please include who or what you are interested in.
   limit_exceeded: 'You have reached feedback searching limit: %tries_for%. Try again later or buy premium subscription please.'

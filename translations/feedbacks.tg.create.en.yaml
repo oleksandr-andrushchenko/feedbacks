@@ -3,8 +3,8 @@ query:
   search_term_put_one: Specify one thing
   search_term_type: Who or what %search_term% is?
   extra_search_term: Add more info about %search_term%.
-  details: Send all feedback details in one message.
-  details_tip: Include who or what this feedback is about, any usernames, links, phone numbers, emails, car numbers, names, places or organizations, plus your experience and rating.
+  details: Tell us what happened. Include as much information as possible.
+  details_tip: Include who or what this feedback is about, what happened, and details.
   rating: Rate your experience with %search_term%.
   description: Describe your experience with %search_term%.
   description_tip: 'For example: tell how your meeting, conversation, any interaction went, describe the person, organization, place, etc.'

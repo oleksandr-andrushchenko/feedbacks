@@ -32,12 +32,20 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
      */
     public function normalize(mixed $data, string $format = null, array $context = []): array
     {
-        $searchTermCallback = fn (SearchTermTransfer $searchTerm): array => $this->searchTermTransferNormalizer->normalize($searchTerm, $format, $context);
+        $searchTermCallback = fn (SearchTermTransfer $searchTerm): array => $this->searchTermTransferNormalizer
+            ->normalize($searchTerm, $format, $context)
+        ;
         return array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
-            'search_terms' => $data->getSearchTerms()->hasItems() ? array_map($searchTermCallback, $data->getSearchTerms()->getItems()) : null,
+            'details' => $data->getDetails(),
+            'search_terms' => $data->getSearchTerms()?->hasItems()
+                ? array_map($searchTermCallback, $data->getSearchTerms()->getItems())
+                : null,
             'rating' => $data->getRating()?->value,
             'description' => $data->getDescription(),
-            'media' => $data->hasMedia() ? array_map(fn (mixed $media): array => $this->telegramMediaNormalizer->normalize($media, $format, $context), $data->getMedia()) : null,
+            'media' => $data->hasMedia()
+                ? array_map(fn (mixed $media): array => $this->telegramMediaNormalizer
+                    ->normalize($media, $format, $context), $data->getMedia())
+                : null,
             'created_id' => $data->getCreatedId(),
         ]);
     }
@@ -52,12 +60,24 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         /** @var CreateFeedbackTelegramBotConversationState $object */
         $object = $this->baseConversationStateDenormalizer->denormalize($data, $type, $format, $context);
 
-        $searchTermCallback = fn (array $searchTerm): SearchTermTransfer => $this->searchTermTransferDenormalizer->denormalize($searchTerm, SearchTermTransfer::class, $format, $context);
+        $searchTermCallback = fn (array $searchTerm): SearchTermTransfer => $this->searchTermTransferDenormalizer
+            ->denormalize($searchTerm, SearchTermTransfer::class, $format, $context)
+        ;
         $object
-            ->setSearchTerms(new SearchTermsTransfer(isset($data['search_terms']) ? array_map($searchTermCallback, $data['search_terms']) : null))
+            ->setDetails($data['details'] ?? ($data['description'] ?? null))
+            ->setSearchTerms(
+                isset($data['search_terms'])
+                    ? new SearchTermsTransfer(array_map($searchTermCallback, $data['search_terms']))
+                    : null
+            )
             ->setRating(isset($data['rating']) ? Rating::from($data['rating']) : null)
             ->setDescription($data['description'] ?? null)
-            ->setMedia(isset($data['media']) ? array_map(fn (array $media): mixed => $this->telegramMediaDenormalizer->denormalize($media, TelegramMedia::class, $format, $context), $data['media']) : null)
+            ->setMedia(
+                isset($data['media'])
+                    ? array_map(fn (array $media): mixed => $this->telegramMediaDenormalizer
+                    ->denormalize($media, TelegramMedia::class, $format, $context), $data['media'])
+                    : null
+            )
             ->setCreatedId($data['created_id'] ?? null)
         ;
 
@@ -66,7 +86,9 @@ class CreateFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === CreateFeedbackTelegramBotConversationState::class && in_array($format, [null], true);
+        return is_array($data)
+            && $type === CreateFeedbackTelegramBotConversationState::class
+            && $format === null;
     }
 
     public function getSupportedTypes(?string $format): array

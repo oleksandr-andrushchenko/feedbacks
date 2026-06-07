@@ -4,6 +4,7 @@ icon:
 help:
   use_input: Use the input field below.
   use_keyboard: Use the keyboard below.
+  use_media: Use the media upload options below.
 
 query:
   action: Select an action please.

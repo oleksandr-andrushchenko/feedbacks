@@ -174,7 +174,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
         try {
             $this->validator->validate($searchTerm);
         } catch (ValidatorException $exception) {
-            $tg->replyWarning(implode("\n\n", [
+            $tg->replyWarning(implode(PHP_EOL . PHP_EOL, [
                 $tg->queryText($exception->getFirstMessage()),
                 $tg->view('search_term_examples'),
             ]));
@@ -209,17 +209,14 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
         $this->state->setStep(self::STEP_CONFIRM_QUERIED);
 
         $message = $this->getStep(2);
-        $searchTerm = $this->searchTermTelegramViewProvider->getSearchTermTelegramView($this->state->getSearchTerm());
-        $parameters = [
-            'search_term' => $searchTerm,
-        ];
-        $message .= $tg->trans('query.confirm', parameters: $parameters, domain: 'search');
+        $searchTermsView = $this->getSearchTermsView($tg);
+        $message .= $tg->trans('query.confirm', ['search_terms' => $searchTermsView], 'search');
         $message = $tg->queryText($message);
 
         if ($help) {
             $message = $tg->view('search_confirm_help', [
                 'query' => $message,
-                'search_term' => $searchTerm,
+                'search_terms' => $searchTermsView,
             ]);
         } else {
             $message .= $tg->queryTipText($tg->useText(false));
@@ -232,6 +229,15 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
         $buttons[] = $tg->cancelButton();
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
+    }
+
+    private function getSearchTermsView(TelegramBotAwareHelper $tg): string
+    {
+        return implode(PHP_EOL, array_map(
+            fn (SearchTermTransfer $searchTerm): string => $this->searchTermTelegramViewProvider
+                ->getSearchTermTelegramView($searchTerm, forceType: false, localeCode: $tg->getLocaleCode()),
+            $this->state->getSearchTerms()->getItems()
+        ));
     }
 
     private function searchAndReply(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -271,15 +277,12 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
             $tg->stopConversation($entity);
 
             $message = $this->getWillNotifyReply($tg);
-            $message .= "\n";
-            $parameters = [
-                'search_term' => $this->searchTermTelegramViewProvider->getSearchTermTelegramMainView($this->state->getSearchTerm()),
+            $message .= PHP_EOL;
+            $message .= $tg->trans('reply.create', [
+                'search_terms' => $this->getSearchTermsView($tg),
                 'create_command' => $tg->command('create', html: true, link: true),
-            ];
-            $message .= $tg->trans('reply.create', $parameters, domain: 'search');
-
-            $message .= $tg->okText($message);
-            $message .= "\n";
+            ], 'search');
+            $message .= PHP_EOL;
 
             return $this->chooseActionTelegramChatSender->sendActions($tg, $message, appendDefault: true);
         } catch (ValidatorException $exception) {
@@ -306,12 +309,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
     {
         $this->state->setStep(self::STEP_CREATE_CONFIRM_QUERIED);
 
-        $searchTerm = $this->searchTermTelegramViewProvider->getSearchTermTelegramView($this->state->getSearchTerm());
-        $parameters = [
-            'search_term' => $searchTerm,
-        ];
-        $message = $tg->trans('query.create_confirm', parameters: $parameters, domain: 'search');
-//        $message = $tg->queryText($message);
+        $message = $tg->trans('query.create_confirm', ['search_terms' => $this->getSearchTermsView($tg),], 'search');
 
         if ($help) {
             $message = $tg->view('search_create_confirm_help', [
@@ -331,13 +329,10 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
 
     private function getWillNotifyReply(TelegramBotAwareHelper $tg): string
     {
-        $parameters = [
-            'search_term' => $this->searchTermTelegramViewProvider->getSearchTermTelegramMainView($this->state->getSearchTerm()),
-        ];
-        $message = $tg->trans('reply.will_notify', $parameters, domain: 'search');
+        $message = $tg->trans('reply.will_notify', ['search_terms' => $this->getSearchTermsView($tg)], 'search');
 
         $message = $tg->okText($tg->queryText($message));
-        $message .= "\n";
+        $message .= PHP_EOL;
 
         return $message;
     }
@@ -375,10 +370,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
         $this->state->setStep(self::STEP_SEARCH_TERM_TYPE_QUERIED);
 
         $searchTerm = $this->state->getSearchTerm()->getText();
-        $parameters = [
-            'search_term' => sprintf('<u>%s</u>', $searchTerm),
-        ];
-        $message = $tg->trans('query.search_term_type', parameters: $parameters, domain: 'search');
+        $message = $tg->trans('query.search_term_type', ['search_term' => sprintf('<u>%s</u>', $searchTerm)], 'search');
         $message = $tg->queryText($message);
 
         if ($help) {

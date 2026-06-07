@@ -149,18 +149,18 @@ class TelegramBotAwareHelper
 
     public function queryTipText(string $text): string
     {
-        return "\n\n" . '<i>' . $text . '</i>';
+        return PHP_EOL . PHP_EOL . '<i>' . $text . '</i>';
     }
 
     public function alreadyAddedText(string $text): string
     {
-        return "\n\n" . $this->queryText($this->trans('query.already_added')) . ':' . "\n" . $text;
+        return PHP_EOL . PHP_EOL . $this->queryText($this->trans('query.already_added')) . ':' . PHP_EOL . $text;
     }
 
     public function queryText(string $text, bool $optional = false): string
     {
 //        return '<u><b>' . $text . ($optional ? (' [ ' . $this->trans('query.optional') . ' ]') : '') . '</b></u>';
-        return '<b>' . $text . ($optional ? (' [ ' . $this->trans('query.optional') . ' ]') : '') . '</b>';
+        return '<b>' . $text . ($optional ? (' [' . $this->trans('query.optional') . ']') : '') . '</b>';
     }
 
     public function trans(string $id, array $parameters = [], ?string $domain = null, string $locale = null): string
@@ -230,7 +230,7 @@ class TelegramBotAwareHelper
     public function replyWrong(bool $useInput): self
     {
         $message = $this->trans('reply.wrong');
-        $message .= "\n";
+        $message .= PHP_EOL;
         $message .= $this->useText($useInput);
         $message = $this->wrongText($message);
 
@@ -242,6 +242,21 @@ class TelegramBotAwareHelper
     public function useText(bool $useInput): string
     {
         return '↘️ ' . ($useInput ? $this->trans('help.use_input') : $this->trans('help.use_keyboard'));
+    }
+
+    public function useInput(): string
+    {
+        return '↘️ ' . $this->trans('help.use_input');
+    }
+
+    public function useKeyboard(): string
+    {
+        return '↘️ ' . $this->trans('help.use_keyboard');
+    }
+
+    public function useMedia(): string
+    {
+        return '↘️ ' . $this->trans('help.use_media');
     }
 
     public function wrongText(string $text): string

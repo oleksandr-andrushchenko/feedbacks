@@ -28,9 +28,14 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
      */
     public function normalize(mixed $data, string $format = null, array $context = []): array
     {
-        $searchTermCallback = fn (SearchTermTransfer $searchTerm): array => $this->searchTermTransferNormalizer->normalize($searchTerm, $format, $context);
+        $searchTermCallback = fn (SearchTermTransfer $searchTerm): array => $this->searchTermTransferNormalizer
+            ->normalize($searchTerm, $format, $context)
+        ;
         return array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
-            'search_terms' => $data->getSearchTerms()->hasItems() ? array_map($searchTermCallback, $data->getSearchTerms()->getItems()) : null,
+            'details' => $data->getDetails(),
+            'search_terms' => $data->getSearchTerms()?->hasItems()
+                ? array_map($searchTermCallback, $data->getSearchTerms()->getItems())
+                : null,
         ]);
     }
 
@@ -44,9 +49,16 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         /** @var SearchFeedbackTelegramBotConversationState $object */
         $object = $this->baseConversationStateDenormalizer->denormalize($data, $type, $format, $context);
 
-        $searchTermCallback = fn (array $searchTerm): SearchTermTransfer => $this->searchTermTransferDenormalizer->denormalize($searchTerm, SearchTermTransfer::class, $format, $context);
+        $searchTermCallback = fn (array $searchTerm): SearchTermTransfer => $this->searchTermTransferDenormalizer
+            ->denormalize($searchTerm, SearchTermTransfer::class, $format, $context)
+        ;
         $object
-            ->setSearchTerms(new SearchTermsTransfer(isset($data['search_terms']) ? array_map($searchTermCallback, $data['search_terms']) : null))
+            ->setDetails($data['details'] ?? null)
+            ->setSearchTerms(
+                isset($data['search_terms'])
+                    ? new SearchTermsTransfer(array_map($searchTermCallback, $data['search_terms']))
+                    : null
+            )
         ;
 
         return $object;
@@ -54,7 +66,9 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
 
     public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        return is_array($data) && $type === SearchFeedbackTelegramBotConversationState::class && in_array($format, [null], true);
+        return is_array($data)
+            && $type === SearchFeedbackTelegramBotConversationState::class
+            && $format === null;
     }
 
     public function getSupportedTypes(?string $format): array

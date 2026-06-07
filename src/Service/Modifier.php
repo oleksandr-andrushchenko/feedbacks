@@ -123,7 +123,7 @@ class Modifier
                 $items[] = $this->linesModifier()($callback($item));
             }
 
-            return implode("\n\n", $items);
+            return implode(PHP_EOL . PHP_EOL, $items);
         };
     }
 
@@ -171,7 +171,7 @@ class Modifier
 
     public function newLineModifier(int $times = 1): callable
     {
-        return static fn ($any): ?string => $any === null ? null : ($any . str_repeat("\n", $times));
+        return static fn ($any): ?string => $any === null ? null : ($any . str_repeat(PHP_EOL, $times));
     }
 
     public function datetimeModifier(string|int $format, string $timezone = null, string $locale = null): callable

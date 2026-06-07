@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Service\Feedback\LLM;
+namespace App\Service\LLM;
 
 use RuntimeException;
 use Symfony\Contracts\HttpClient\HttpClientInterface;

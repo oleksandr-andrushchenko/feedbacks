@@ -171,7 +171,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation
         try {
             $this->validator->validate($searchTerm);
         } catch (ValidatorException $exception) {
-            $tg->replyWarning(implode("\n\n", [
+            $tg->replyWarning(implode(PHP_EOL . PHP_EOL, [
                 $tg->queryText($exception->getFirstMessage()),
                 $tg->view('search_term_examples'),
             ]));

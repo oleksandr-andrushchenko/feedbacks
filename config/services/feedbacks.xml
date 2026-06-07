@@ -554,18 +554,12 @@
             <argument type="service" id="app.event_bus"/>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
-        <service id="app.openai_llm_client" lazy="true"
-                 class="App\Service\Feedback\LLM\OpenAiLlmClient">
-            <argument type="service" id="http_client"/>
-            <argument>%app.openai_api_key%</argument>
-            <argument>%app.openai_model%</argument>
-        </service>
         <service id="app.feedback_details_extractor" lazy="true"
                  class="App\Service\Feedback\LLM\FeedbackDetailsExtractor">
             <argument type="service" id="app.openai_llm_client"/>
         </service>
-        <service id="app.search_terms_extractor" lazy="true"
-                 class="App\Service\Feedback\LLM\SearchTermsExtractor">
+        <service id="app.feedback_search_terms_extractor" lazy="true"
+                 class="App\Service\Feedback\LLM\FeedbackSearchTermsExtractor">
             <argument type="service" id="app.openai_llm_client"/>
         </service>
         <service id="app.telegram_conversation_create_feedback_v2" lazy="true"
@@ -598,7 +592,7 @@
         <service id="app.telegram_conversation_search_feedback_v2" lazy="true"
                  class="App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackV2TelegramBotConversation">
             <argument type="service" id="app.validator"/>
-            <argument type="service" id="app.search_terms_extractor"/>
+            <argument type="service" id="app.feedback_search_terms_extractor"/>
             <argument type="service" id="app.feedback_search_term_parser"/>
             <argument type="service" id="app.choose_action_telegram_chat_sender"/>
             <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>

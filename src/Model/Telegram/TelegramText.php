@@ -19,7 +19,7 @@ readonly class TelegramText implements Stringable
         $input = preg_replace('/ +/', ' ', $this->text);
 
         // remove empty lines
-        return implode("\n", array_filter(explode("\n", $input), static fn (string $line): bool => !in_array($line, ['', ' '], true)));
+        return implode(PHP_EOL, array_filter(explode(PHP_EOL, $input), static fn (string $line): bool => !in_array($line, ['', ' '], true)));
     }
 
     public function getRawValue(): string

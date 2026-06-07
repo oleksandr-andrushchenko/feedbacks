@@ -51,7 +51,7 @@ class FeedbackLookupTelegramViewProvider
         if ($numberToAdd !== null) {
             $message .= $this->translator->trans('icon.number', domain: 'feedbacks.tg', locale: $localeCode);
             $message .= $numberToAdd;
-            $message .= "\n";
+            $message .= PHP_EOL;
         }
 
         $message2 = '';
@@ -88,7 +88,7 @@ class FeedbackLookupTelegramViewProvider
         }
 
         if ($addSign) {
-            $message .= "\n\n";
+            $message .= PHP_EOL . PHP_EOL;
 
             $message .= $this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView($bot, channel: $channel, localeCode: $localeCode);
         }

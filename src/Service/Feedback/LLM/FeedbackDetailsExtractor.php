@@ -5,6 +5,7 @@ namespace App\Service\Feedback\LLM;
 
 use App\Enum\Feedback\Rating;
 use App\Enum\Feedback\SearchTermType;
+use App\Service\LLM\LlmClientInterface;
 use App\Transfer\Feedback\SearchTermsTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 
@@ -17,10 +18,9 @@ readonly class FeedbackDetailsExtractor
     }
 
     /**
-     * @param string $feedback
-     * @return array{search_terms: SearchTermsTransfer, rating: Rating}
+     * @return array{search_terms: ?SearchTermsTransfer, rating: ?Rating}
      */
-    public function extract(string $feedback): array
+    public function extract(string $details): array
     {
         $payload = $this->llmClient->requestJson('feedback_details', [
             [
@@ -29,7 +29,7 @@ readonly class FeedbackDetailsExtractor
             ],
             [
                 'role' => 'user',
-                'content' => $feedback,
+                'content' => $details,
             ],
         ], $this->getResponseSchema());
 
@@ -100,14 +100,15 @@ PROMPT;
         ];
     }
 
-    private function extractSearchTerms(array $payload): SearchTermsTransfer
+    private function extractSearchTerms(array $payload): ?SearchTermsTransfer
     {
-        $searchTerms = new SearchTermsTransfer();
         $items = $payload['search_terms'] ?? [];
 
         if (!is_array($items)) {
-            return $searchTerms;
+            return null;
         }
+
+        $searchTerms = new SearchTermsTransfer();
 
         foreach ($items as $item) {
             if (!is_array($item) || !isset($item['text']) || !is_string($item['text'])) {
@@ -129,10 +130,14 @@ PROMPT;
             $searchTerms->addItem(new SearchTermTransfer($text, type: $type ?? SearchTermType::unknown));
         }
 
+        if (!$searchTerms->hasItems()) {
+            return null;
+        }
+
         return $searchTerms;
     }
 
-    private function extractRating(array $payload): Rating
+    private function extractRating(array $payload): ?Rating
     {
         $rating = $payload['rating'] ?? null;
 
@@ -144,6 +149,6 @@ PROMPT;
             }
         }
 
-        return Rating::neutral;
+        return null;
     }
 }

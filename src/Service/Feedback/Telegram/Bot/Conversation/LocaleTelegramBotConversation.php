@@ -58,7 +58,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
     private function getChangeConfirmQuery(TelegramBotAwareHelper $tg, bool $help = false): string
     {
         $message = $this->getCurrentLocaleReply($tg);
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
 
         $query = $tg->trans('query.change_confirm', domain: 'locale');
         $query = $tg->queryText($query);
@@ -124,10 +124,10 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
 
         $message = $tg->trans('reply.canceled', domain: 'locale');
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $this->getCurrentLocaleReply($tg);
         $message = $tg->upsetText($message);
-        $message .= "\n";
+        $message .= PHP_EOL;
 
         $tg->stopConversation($entity);
 
@@ -266,9 +266,9 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
 
         $message = $tg->trans('reply.ok', domain: 'locale');
         $message = $tg->okText($message);
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $this->getCurrentLocaleReply($tg);
-        $message .= "\n";
+        $message .= PHP_EOL;
 
         $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
 

@@ -4,12 +4,13 @@ declare(strict_types=1);
 namespace App\Service\Feedback\Telegram\Bot\Conversation;
 
 use App\Entity\Telegram\TelegramBotConversation as Entity;
+use App\Enum\Feedback\SearchTermType;
 use App\Enum\Search\SearchProviderName;
 use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
 use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
 use App\Service\Feedback\FeedbackSearchCreator;
-use App\Service\Feedback\LLM\SearchTermsExtractor;
+use App\Service\Feedback\LLM\FeedbackSearchTermsExtractor;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\View\SearchTermTelegramViewProvider;
@@ -20,7 +21,6 @@ use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackSearchTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use DateTimeImmutable;
-use RuntimeException;
 use Throwable;
 
 /**
@@ -33,7 +33,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
     public function __construct(
         private readonly Validator $validator,
-        private readonly SearchTermsExtractor $searchTermsExtractor,
+        private readonly FeedbackSearchTermsExtractor $feedbackSearchTermsExtractor,
         private readonly SearchTermParserInterface $searchTermParser,
         private readonly ChooseActionTelegramChatSender $chooseActionTelegramChatSender,
         private readonly SearchTermTelegramViewProvider $searchTermTelegramViewProvider,
@@ -63,27 +63,30 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
         $this->state->setStep(self::STEP_DETAILS_QUERIED);
 
         $message = $this->getStep(1);
-        $message .= $tg->trans('query.details', domain: 'search');
+        $message .= $tg->trans('query.search_term', domain: 'search');
         $message = $tg->queryText($message);
 
-        if (!$help) {
-            $message .= $tg->queryTipText($tg->trans('query.details_tip', domain: 'search'));
-        }
+        $message .= $tg->queryTipText(rtrim($tg->view('search_term_types', ['types' => SearchTermType::base])));
 
-        if ($this->state->getSearchTerms()->hasItems()) {
-            $message .= $tg->alreadyAddedText(implode("\n", array_map(
+        if ($this->state->getSearchTerms()?->hasItems()) {
+            $message .= $tg->alreadyAddedText(implode(PHP_EOL, array_map(
                 fn (SearchTermTransfer $searchTerm): string => '▫️ ' . $this->searchTermTelegramViewProvider
                         ->getSearchTermTelegramReverseView($searchTerm),
                 $this->state->getSearchTerms()->getItems()
             )));
         }
 
-        $message .= $tg->queryTipText($tg->useText(true));
+        if ($help) {
+            $message = $tg->view('search_help', ['query' => $message]);
+        } else {
+            $message .= $tg->queryTipText($tg->useText(true));
+        }
 
-        return $tg->reply($message, $tg->keyboard(
-            $tg->helpButton(),
-            $tg->cancelButton()
-        ))->null();
+        $buttons = [];
+        $buttons[] = $tg->helpButton();
+        $buttons[] = $tg->cancelButton();
+
+        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     private function gotDetails(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -105,10 +108,15 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
         $original = $this->state->getSearchTerms();
 
         try {
-            $searchTerms = $this->searchTermsExtractor->extract($tg->getText()->getRawValue());
+            $details = $tg->getText()->getRawValue();
+            $searchTerms = $this->feedbackSearchTermsExtractor->extract($details);
 
-            if (!$searchTerms->hasItems()) {
-                throw new RuntimeException('No search terms were extracted.');
+            $this->state->setSearchTerms($searchTerms);
+
+            if (!$this->state->getSearchTerms()?->hasItems()) {
+                $tg->replyWarning($tg->queryText($tg->trans('reply.details_required', domain: 'create')));
+
+                return $this->queryDetails($tg);
             }
 
             foreach ($searchTerms->getItemsAsArray() as $searchTerm) {
@@ -176,12 +184,6 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
                 $feedbackSearchTerms[] = $feedbackSearch->getSearchTerm();
             }
 
-            $feedbackSearchTerms = array_values(array_filter($feedbackSearchTerms));
-
-            if (count($feedbackSearchTerms) === 0) {
-                throw new RuntimeException('No feedback search terms were created.');
-            }
-
             $context = [
                 'bot' => $tg->getBot()->getEntity(),
                 'countryCode' => $tg->getBot()->getEntity()->getCountryCode(),
@@ -198,20 +200,17 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
             $tg->stopConversation($entity);
 
-            $message = $tg->trans('reply.will_notify_details', [
-                'search_terms' => $this->getSearchTermsView($tg),
-            ], domain: 'search');
+            $message = $tg->trans('reply.will_notify', ['search_terms' => $this->getSearchTermsView($tg)], 'search');
 
             $message = $tg->okText($tg->queryText($message));
-            $message .= "\n";
-            $message .= "\n";
-            $message .= $tg->trans('reply.create_details', [
-                'search_terms' => $this->getSearchTermsView($tg),
-                'create_command' => $tg->command('create', html: true, link: true),
-            ], domain: 'search');
+            $message .= PHP_EOL;
 
-            $message .= $tg->okText($message);
-            $message .= "\n";
+//            $message .= PHP_EOL;
+//            $message .= $tg->trans('reply.create', [
+//                'search_terms' => $this->getSearchTermsView($tg),
+//                'create_command' => $tg->command('create', html: true, link: true),
+//            ], 'search');
+//            $message .= PHP_EOL;
 
             return $this->chooseActionTelegramChatSender->sendActions($tg, $message, appendDefault: true);
         } catch (FeedbackCommandLimitExceededException $exception) {
@@ -240,7 +239,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
     private function getSearchTermsView(TelegramBotAwareHelper $tg): string
     {
-        return implode("\n", array_map(
+        return implode(PHP_EOL, array_map(
             fn (SearchTermTransfer $searchTerm): string => $this->searchTermTelegramViewProvider
                 ->getSearchTermTelegramView($searchTerm, forceType: false, localeCode: $tg->getLocaleCode()),
             $this->state->getSearchTerms()->getItems()

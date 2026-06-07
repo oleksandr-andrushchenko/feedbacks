@@ -28,7 +28,7 @@ class StartTelegramCommandHandler
         $tg->reply($query);
 
         $message = $this->chooseActionTelegramChatSender->getQuery($tg);
-        $message .= "\n";
+        $message .= PHP_EOL;
         $message .= $tg->useText(false);
 
         return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message);
@@ -38,31 +38,31 @@ class StartTelegramCommandHandler
     {
         $domain = 'start';
         $message = '👋 ' . $tg->queryText($tg->trans('greetings', domain: $domain));
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= '💫 ' . $tg->trans('title', domain: $domain);
 
         $channel = $this->telegramChannelRepository->findOnePrimaryNonDeletedByBot($tg->getBot()->getEntity());
 
         if ($channel !== null) {
-            $message .= "\n\n";
+            $message .= PHP_EOL . PHP_EOL;
             $message .= $tg->queryText($tg->trans('channel', domain: $domain)) . ':';
-            $message .= "\n";
+            $message .= PHP_EOL;
             $message .= $this->telegramChannelLinkViewProvider->getTelegramChannelLinkView($channel);
         }
 
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $tg->queryText($tg->trans('main_commands', domain: $domain)) . ':';
-        $message .= "\n";
+        $message .= PHP_EOL;
         $message .= $tg->command('create', link: true);
-        $message .= "\n";
+        $message .= PHP_EOL;
         $message .= $tg->command('search', link: true);
-        $message .= "\n";
+        $message .= PHP_EOL;
         $message .= $tg->command('lookup', link: true);
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $tg->queryText($tg->trans('setting_commands', domain: $domain)) . ':';
-        $message .= "\n";
+        $message .= PHP_EOL;
         $message .= $tg->command('country', icon: $this->countryProvider->getCountryIconByCode($tg->getCountryCode()), link: true);
-        $message .= "\n";
+        $message .= PHP_EOL;
         $locale = $this->localeProvider->getLocale($tg->getLocaleCode());
         $message .= $tg->command('locale', icon: $this->localeProvider->getLocaleIcon($locale), link: true);
 

@@ -131,7 +131,7 @@ class NotifyFeedbackLookupTargetAboutNewFeedbackLookupCommandHandler
         $message = '👋 ' . $this->translator->trans('might_be_interesting', domain: 'feedbacks.tg.notify', locale: $localeCode);
         $message = '<b>' . $message . '</b>';
         $message .= ':';
-        $message .= "\n\n";
+        $message .= PHP_EOL . PHP_EOL;
         $message .= $this->feedbackLookupTelegramViewProvider->getFeedbackLookupTelegramView(
             $bot,
             $feedbackLookup,
