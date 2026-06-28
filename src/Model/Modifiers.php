@@ -18,7 +18,7 @@ class Modifiers
         return $this;
     }
 
-    public function apply($target): ?string
+    public function apply($target = ''): ?string
     {
         foreach ($this->items as $item) {
             $target = $item($target);

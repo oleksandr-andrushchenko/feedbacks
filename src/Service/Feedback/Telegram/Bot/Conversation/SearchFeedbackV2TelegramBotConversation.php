@@ -21,6 +21,7 @@ use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackSearchTransfer;
 use App\Transfer\Feedback\SearchTermTransfer;
 use DateTimeImmutable;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -39,6 +40,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
         private readonly SearchTermTelegramViewProvider $searchTermTelegramViewProvider,
         private readonly FeedbackSearchCreator $feedbackSearchCreator,
         private readonly Searcher $searcher,
+        private readonly LoggerInterface $logger,
         private readonly array $searchProviders,
     )
     {
@@ -230,7 +232,8 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
             $tg->replyWarning($tg->queryText($exception->getFirstMessage()));
 
             return $this->queryDetails($tg);
-        } catch (Throwable) {
+        } catch (Throwable $exception) {
+            $this->logger->error($exception);
             $tg->replyWarning($tg->queryText($tg->trans('reply.extraction_failed', domain: 'search')));
 
             return $this->queryDetails($tg);
@@ -241,7 +244,7 @@ class SearchFeedbackV2TelegramBotConversation extends TelegramBotConversation
     {
         return implode(PHP_EOL, array_map(
             fn (SearchTermTransfer $searchTerm): string => $this->searchTermTelegramViewProvider
-                ->getSearchTermTelegramView($searchTerm, forceType: false, localeCode: $tg->getLocaleCode()),
+                ->getSearchTermTelegramView($searchTerm, forceType: false, locale: $tg->getLocaleCode()),
             $this->state->getSearchTerms()->getItems()
         ));
     }

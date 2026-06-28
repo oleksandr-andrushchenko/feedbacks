@@ -29,9 +29,7 @@ class FeedbackSearchProvider extends SearchProvider implements SearchProviderInt
 
     public function search(SearchTerm $searchTerm, array $context = []): array
     {
-        return [
-            $this->feedbackSearcher->searchFeedbacks($searchTerm, withUsers: $context['addTime'] ?? false),
-        ];
+        return $this->feedbackSearcher->searchFeedbacks($searchTerm, withUsers: $context['addTime'] ?? false);
     }
 
     public function goodOnEmptyResult(): ?bool

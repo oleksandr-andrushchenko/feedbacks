@@ -143,10 +143,10 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
         if ($notifyUser) {
             $messengerUser = $this->feedbackService->getMessengerUser($feedback);
             $user = $this->messengerUserService->getUser($messengerUser);
-            $userLocaleCode = $user->getLocaleCode();
+            $userLocale = $user->getLocaleCode();
             $userChatId = $messengerUser->getIdentifier();
             $searchTerms = $this->feedbackService->getSearchTerms($feedback);
-            $searchTermView = $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView($searchTerms, locale: $userLocaleCode);
+            $searchTermView = $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView($searchTerms, locale: $userLocale);
             $channelViews = implode(
                 ', ',
                 array_map(
@@ -159,7 +159,7 @@ class FeedbackSendToTelegramChannelConfirmReceivedEventHandler
                 'channels' => $channelViews,
             ];
             $message = '🫡 ';
-            $message .= $this->translator->trans('feedback_published', parameters: $parameters, domain: 'feedbacks.tg.notify', locale: $userLocaleCode);
+            $message .= $this->translator->trans('feedback_published', parameters: $parameters, domain: 'feedbacks.tg.notify', locale: $userLocale);
 
             $this->telegramBotMessageSender->sendTelegramMessage($bot, $userChatId, $message, keepKeyboard: true);
         }

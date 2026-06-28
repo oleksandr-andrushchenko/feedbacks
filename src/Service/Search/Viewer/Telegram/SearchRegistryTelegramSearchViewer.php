@@ -80,7 +80,7 @@ class SearchRegistryTelegramSearchViewer extends SearchViewer implements SearchV
                     $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
                         $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
                         addSecrets: !$full,
-                        localeCode: $locale
+                        locale: $locale
                     )
                 )
             ;

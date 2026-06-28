@@ -44,7 +44,7 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
             ->add($m->underlineModifier())
             ->add($m->prependModifier('💫 '))
             ->add($m->newLineModifier(2))
-            ->add($m->appendModifier($m->implodeLinesModifier($this->getFeedbackWrapMessageCallback(full: $full, addCountry: $addCountry, addTime: $addTime, locale: $locale))($record)))
+            ->add($m->appendModifier($this->getFeedbackView($record, !$full, $addCountry, $addTime, locale: $locale)))
             ->apply($this->trans('feedbacks_title'))
         ;
     }
@@ -63,69 +63,90 @@ class FeedbackTelegramSearchViewer extends SearchViewer implements SearchViewerI
     {
         $m = $this->modifier;
 
-        return $m->create()
-            ->add($m->newLineModifier(2))
-            ->add(
-                $m->appendModifier(
-                    $m->linesModifier()(call_user_func(
-                        $this->getFeedbackWrapMessageCallback(
-                            full: !$addSecrets,
-                            addCountry: $addCountry,
-                            addTime: $addTime,
-                            locale: $locale
-                        ),
-                        $feedback
-                    ))
-                )
-            )
-            ->add($addQuotes ? $m->italicModifier() : $m->nullModifier())
-            ->add($addSign ? $m->newLineModifier(2) : $m->nullModifier())
-            ->add($addSign ? $m->appendModifier($this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView($bot, channel: $channel, localeCode: $locale)) : $m->nullModifier())
-            ->apply($this->trans('feedback_title', locale: $locale))
-        ;
+        return $this->getFeedbackView(
+            $feedback,
+            $addSecrets,
+            $addCountry,
+            $addTime,
+            $addQuotes,
+            $locale,
+            sign: $m->create()
+                ->add($m->conditionalModifier($addSign))
+                ->apply(
+                    $this->feedbackTelegramReplySignViewProvider->getFeedbackTelegramReplySignView(
+                        $bot,
+                        $channel,
+                        $locale,
+                        separator: ' • '
+                    )
+                ),
+            tagsSeparator: ' ▫️ ',
+            termsSeparator: ' ▫️ '
+        );
     }
 
-    private function getFeedbackWrapMessageCallback(
-        bool $full = false,
+    public function getFeedbackView(
+        Feedback $feedback,
+        bool $addSecrets = false,
         bool $addCountry = false,
         bool $addTime = false,
-        string $locale = null
-    ): callable
+        bool $addQuotes = false,
+        string $locale = null,
+        string $sign = null,
+        bool $addTermTypes = false,
+        string $tagsSeparator = ' • ',
+        string $termsSeparator = ' • ',
+    ): string
     {
         $m = $this->modifier;
 
-        return fn (Feedback $item): array => [
-            $m->create()
-                ->add($m->bracketsModifier($this->trans('search_terms', locale: $locale)))
-                ->apply(
-                    $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView(
-                        $this->feedbackService->getSearchTerms($item),
-                        addSecrets: !$full,
-                        locale: $locale
-                    )
-                ),
-            $m->create()
-                ->add($m->markModifier())
-                ->add($m->appendModifier(' '))
-                ->add($m->appendModifier($this->trans('mark_' . ($item->getRating()->value > 0 ? '+1' : $item->getRating()->value), locale: $locale)))
-                ->add($m->bracketsModifier($this->trans('mark', locale: $locale)))
-                ->apply($item->getRating()->value),
-            $m->create()
-                ->add($m->slashesModifier())
-                ->add($m->spoilerModifier())
-                ->add($m->bracketsModifier($this->trans('description', locale: $locale)))
-                ->apply($item->getText()),
-            $m->create()
-                ->add($m->conditionalModifier($addCountry))
-                ->add($m->slashesModifier())
-                ->add($m->countryModifier(locale: $locale))
-                ->add($m->bracketsModifier($this->trans('country', locale: $locale)))
-                ->apply($item->getCountryCode()),
-            $m->create()
-                ->add($m->conditionalModifier($addTime))
-                ->add($m->datetimeModifier(TimeProvider::DATE, timezone: $this->feedbackService->getUser($item)->getTimezone(), locale: $locale))
-                ->add($m->bracketsModifier($this->trans('created_at', locale: $locale)))
-                ->apply($item->getCreatedAt()),
-        ];
+        return $m->create()
+            ->add($m->implodeModifier($m->create()->add($m->newLineModifier(2))->apply()))
+            ->apply([
+                // mark + text
+                $m->create()
+                    ->add($m->implodeModifier(' '))
+                    ->add($addQuotes ? $m->italicModifier() : $m->nullModifier())
+                    ->apply([
+                        $m->create()->add($m->markModifier())->apply($feedback->getRating()->value),
+                        $feedback->getText(),
+                    ]),
+                // tags: terms, country, time
+                $m->create()
+                    ->add($m->filterModifier())
+                    ->add($m->implodeModifier($tagsSeparator))
+                    ->apply([
+//                        $m->create()
+//                            ->apply(
+//                                $this->multipleSearchTermTelegramViewProvider->getFeedbackSearchTermsTelegramView(
+//                                    $this->feedbackService->getSearchTerms($feedback),
+//                                    $addSecrets,
+//                                    $locale,
+//                                    $addTermTypes,
+//                                    $termsSeparator,
+//                                )
+//                            ),
+                        $m->create()
+                            ->add($m->conditionalModifier($addCountry))
+                            ->add($m->slashesModifier())
+                            ->add($m->countryModifier($locale))
+                            ->apply($feedback->getCountryCode()),
+                        $m->create()
+                            ->add($m->conditionalModifier($addTime))
+                            ->add(
+                                $m->datetimeModifier(
+                                    TimeProvider::SHORT_DATE,
+                                    $this->feedbackService->getUser($feedback)->getTimezone(),
+                                    $locale
+                                )
+                            )
+                            ->apply($feedback->getCreatedAt()),
+                    ]),
+                // sign
+                $m->create()
+                    ->add($m->conditionalModifier($sign))
+                    ->apply($sign),
+            ])
+        ;
     }
 }

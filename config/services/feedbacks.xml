@@ -598,6 +598,7 @@
             <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_search_creator"/>
             <argument type="service" id="app.search_searcher_telegram"/>
+            <argument type="service" id="logger"/>
             <argument>%app.search.search_providers%</argument>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>

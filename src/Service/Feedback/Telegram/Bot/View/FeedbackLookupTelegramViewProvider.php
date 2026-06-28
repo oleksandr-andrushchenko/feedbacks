@@ -80,7 +80,7 @@ class FeedbackLookupTelegramViewProvider
         $message .= $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
             $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
             addSecrets: $addSecrets,
-            localeCode: $localeCode
+            locale: $localeCode
         );
 
         if ($addQuotes) {

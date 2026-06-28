@@ -235,7 +235,7 @@ class SearchFeedbackTelegramBotConversation extends TelegramBotConversation
     {
         return implode(PHP_EOL, array_map(
             fn (SearchTermTransfer $searchTerm): string => $this->searchTermTelegramViewProvider
-                ->getSearchTermTelegramView($searchTerm, forceType: false, localeCode: $tg->getLocaleCode()),
+                ->getSearchTermTelegramView($searchTerm, forceType: false, locale: $tg->getLocaleCode()),
             $this->state->getSearchTerms()->getItems()
         ));
     }

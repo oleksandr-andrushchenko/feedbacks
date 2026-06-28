@@ -38,10 +38,10 @@ class FeedbackSearchSearcher
                 if (!isset($feedbackSearches[$feedbackSearchId])) {
                     $feedbackSearches[$feedbackSearchId] = new FeedbackSearch(
                         id: $feedbackSearchId,
+                        userId: $searchTermFeedbackSearch->getUserId(),
                         hasActiveSubscription: $searchTermFeedbackSearch->hasUserActiveSubscription(),
                         countryCode: $searchTermFeedbackSearch->getUserCountryCode(),
                         localeCode: $searchTermFeedbackSearch->getUserLocaleCode(),
-                        userId: $searchTermFeedbackSearch->getUserId(),
                         messengerUserId: $searchTermFeedbackSearch->getMessengerUserId(),
                         telegramBotId: $searchTermFeedbackSearch->getTelegramBotId(),
                         createdAt: $searchTermFeedbackSearch->getCreatedAt(),

@@ -100,7 +100,7 @@ class Modifier
         return static fn (?array $any): ?array => empty($any) ? null : array_filter($any);
     }
 
-    public function implodeModifier(string $separator): callable
+    public function implodeModifier(string $separator = ''): callable
     {
         return static fn (?array $any): ?string => empty($any) ? null : implode($separator, $any);
     }
@@ -133,6 +133,8 @@ class Modifier
             if (empty($any)) {
                 return null;
             }
+
+            $items = [];
 
             foreach ($any as $item) {
                 if (empty($item)) {
@@ -177,7 +179,7 @@ class Modifier
     public function datetimeModifier(string|int $format, string $timezone = null, string $locale = null): callable
     {
         if (is_string($format)) {
-            return static fn (?DateTimeInterface $any): ?string => $any === null ? null : $any->format($format);
+            return static fn (?DateTimeInterface $any): ?string => $any?->format($format);
         }
 
         return fn (?DateTimeInterface $any): ?string => $any === null ? null : $this->timeProvider->format($format, $any, $timezone, $locale);

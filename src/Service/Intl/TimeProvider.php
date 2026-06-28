@@ -10,11 +10,11 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TimeProvider
 {
-    public const DATE = 0;
-    public const DATETIME = 1;
-    public const SHORT_DATE = 2;
-    public const SHORT_DATETIME = 3;
-    public const MONTH_YEAR = 4;
+    public const int DATE = 0;
+    public const int DATETIME = 1;
+    public const int SHORT_DATE = 2;
+    public const int SHORT_DATETIME = 3;
+    public const int MONTH_YEAR = 4;
 
     public function __construct(
         private readonly TranslatorInterface $translator,

@@ -72,7 +72,6 @@
 * simplify output: one single response message
 * Reduce amount of templates in conversations, reduce amount of twig templates, simplify, reduce amount of translation files
 * remove Feedback(-s) namespace
-* display raw details for feedbacks & feedback-searches
 
 * queues
 * generate badge (picture) with username/rating to post in messengers
@@ -117,7 +116,6 @@
 * facebook bot
 * process old non-stopped conversations
 * cache bots as files
-
 
 * create all possible search terms (for each type) in case of unknown selected????
 * add overal term rating to feedback

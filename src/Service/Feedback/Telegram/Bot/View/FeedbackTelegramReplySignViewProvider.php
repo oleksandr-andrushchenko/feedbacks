@@ -24,6 +24,7 @@ class FeedbackTelegramReplySignViewProvider
         TelegramBot $bot,
         TelegramChannel $channel = null,
         string $localeCode = null,
+        string $separator = ' • ',
     ): string
     {
         $localeCode = $localeCode ?? $bot->getLocaleCode();
@@ -31,7 +32,7 @@ class FeedbackTelegramReplySignViewProvider
 
         $botLink = $this->messengerUserProfileUrlProvider->getMessengerUserProfileUrl(Messenger::telegram, $bot->getUsername());
         $message = sprintf('<a href="%s">%s</a>', $botLink, $text('search'));
-        $message .= ' • ';
+        $message .= $separator;
         $message .= sprintf('<a href="%s">%s</a>', $botLink, $text('create'));
 
         if ($channel === null) {
@@ -39,7 +40,7 @@ class FeedbackTelegramReplySignViewProvider
         }
 
         if ($channel !== null) {
-            $message .= ' • ';
+            $message .= $separator;
             $channelLink = $this->messengerUserProfileUrlProvider->getMessengerUserProfileUrl(
                 Messenger::telegram,
                 $channel->getUsername()

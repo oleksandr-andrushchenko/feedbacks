@@ -26,7 +26,7 @@ class SearchTermTelegramViewProvider
         SearchTermTransfer $searchTerm,
         bool $addSecrets = false,
         bool $forceType = true,
-        string $localeCode = null
+        string $locale = null
     ): string
     {
         $m = $this->modifier;
@@ -40,7 +40,7 @@ class SearchTermTelegramViewProvider
         ];
 
         if ($searchTerm->getType() !== null && ($forceType || !in_array($searchTerm->getType(), $skipTypes, true))) {
-            $modifier->add($m->bracketsModifier($this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), $localeCode)));
+            $modifier->add($m->bracketsModifier($this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), $locale)));
         }
 
         return $modifier->apply($this->getSearchTermTelegramMainView($searchTerm, addSecrets: $addSecrets));

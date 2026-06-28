@@ -40,5 +40,5 @@ reply:
   wrong: Я вас не розумію.
   use_primary: Цей бот вже не підтримується. Спробуйте
   uploads_processing: Обробляємо завантажені файли...
-  uploads_processing_started: Обробку розпочато.
-  upload_uploaded: Файл %count% завантажено.
+  uploads_processing_started: Завантажую файли...
+  upload_uploaded: Файл %count% завантажено

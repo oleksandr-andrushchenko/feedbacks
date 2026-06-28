@@ -8,7 +8,6 @@ use App\Enum\Feedback\SearchTermType;
 use App\Service\Feedback\SearchTerm\SearchTermProvider;
 use App\Service\Feedback\SearchTerm\SearchTermTypeProvider;
 use App\Transfer\Feedback\SearchTermsTransfer;
-use App\Transfer\Feedback\SearchTermTransfer;
 
 class MultipleSearchTermTelegramViewProvider
 {
@@ -22,18 +21,17 @@ class MultipleSearchTermTelegramViewProvider
 
     /**
      * @param SearchTerm[] $feedbackSearchTerms
-     * @param bool $addSecrets
-     * @param string|null $locale
-     * @return string
      */
     public function getFeedbackSearchTermsTelegramView(
         array $feedbackSearchTerms,
         bool $addSecrets = false,
         string $locale = null,
+        bool $addTypes = false,
+        string $separator = ' ',
     ): string
     {
         $searchTermsItems = array_map(
-            fn (SearchTerm $searchTerm): SearchTermTransfer => $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
+            fn (SearchTerm $searchTerm) => $this->searchTermProvider->getFeedbackSearchTermTransfer($searchTerm),
             $feedbackSearchTerms
         );
         $searchTerms = new SearchTermsTransfer($searchTermsItems);
@@ -45,29 +43,25 @@ class MultipleSearchTermTelegramViewProvider
         if ($searchTerms->countItems() === 1) {
             return $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
                 $searchTerms->getFirstItem(),
-                addSecrets: $addSecrets,
-                localeCode: $locale
+                $addSecrets,
+                locale: $locale
             );
         }
 
-        $sortedSearchTerms = $this->getSortedSearchTerms($searchTerms);
-        $searchTerm = $sortedSearchTerms->shiftFirstItem();
+        $views = [];
+        foreach ($this->getSortedSearchTerms($searchTerms)->getItemsAsArray() as $searchTerm) {
+            $view = $this->searchTermTelegramViewProvider->getSearchTermTelegramMainView($searchTerm, $addSecrets);
 
-        $message = $this->searchTermTelegramViewProvider->getSearchTermTelegramMainView($searchTerm, addSecrets: $addSecrets);
-        $message .= ' [ ';
+            if ($addTypes) {
+                $view .= ' [ ';
+                $view .= $this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), localeCode: $locale);
+                $view .= ' ] ';
+            }
 
-        $message .= $this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), localeCode: $locale);
-
-        foreach ($sortedSearchTerms as $searchTerm) {
-            $message .= ', ';
-            $message .= $this->searchTermTypeProvider->getSearchTermTypeName($searchTerm->getType(), localeCode: $locale);
-            $message .= ': ';
-            $message .= $this->searchTermTelegramViewProvider->getSearchTermTelegramMainView($searchTerm, addSecrets: $addSecrets);
+            $views[] = $view;
         }
 
-        $message .= ' ] ';
-
-        return $message;
+        return implode($separator, $views);
     }
 
     private function getSortedSearchTerms(SearchTermsTransfer $searchTerms): SearchTermsTransfer
@@ -109,13 +103,8 @@ class MultipleSearchTermTelegramViewProvider
             return '';
         }
 
-        $searchTerm = $this->getSortedSearchTerms($searchTerms)->getFirstItem();
+        $term = $this->getSortedSearchTerms($searchTerms)->getFirstItem();
 
-        return $this->searchTermTelegramViewProvider->getSearchTermTelegramView(
-            $searchTerm,
-            addSecrets: $addSecrets,
-            forceType: $forceType,
-            localeCode: $locale
-        );
+        return $this->searchTermTelegramViewProvider->getSearchTermTelegramView($term, $addSecrets, $forceType, $locale);
     }
 }

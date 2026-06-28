@@ -1,7 +1,7 @@
-date: '%day% %month%, %year%'
+date: '%day% %month% %year%'
 datetime: '%date% в %hour%:%minute%'
-short_date: '%day% %short_month%, %year%'
-short_date_interval_same_year: '%day1% %short_month1% - %day2% %short_month2%, %year%'
+short_date: '%day% %short_month%. %year%'
+short_date_interval_same_year: '%day1% %short_month1%. - %day2% %short_month2%. %year%'
 short_datetime: '%short_date% в %hour%:%minute%'
 month:
   1: Січень
