@@ -65,6 +65,34 @@ class CreateFeedbackV2TelegramBotCommandFunctionalTest extends TelegramBotComman
         $this->assertSame(SearchTermType::instagram_username, $state->getSearchTerms()->getFirstItem()->getType());
     }
 
+    public function testDetailsWithoutSearchTermsStillMovesToMediaStep(): void
+    {
+        $this->bootDefaultFixtures();
+
+        $conversation = $this->createConversation(
+            CreateFeedbackV2TelegramBotConversation::class,
+            (new CreateFeedbackTelegramBotConversationState())
+                ->setStep(CreateFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED)
+        );
+
+        $details = 'no_terms general experience without identifiers';
+
+        $this->typeText($details)
+            ->shouldSeeStateStep($conversation, CreateFeedbackV2TelegramBotConversation::STEP_MEDIA_QUERIED)
+            ->shouldSeeReply('query.media')
+            ->shouldSeeButtons('keyboard.skip_and_create_confirm', $this->prevButton(), $this->helpButton(), $this->cancelButton())
+        ;
+
+        $state = $this->getSerializer()->denormalize(
+            $this->getConversation()->getState(),
+            CreateFeedbackTelegramBotConversationState::class
+        );
+
+        $this->assertSame($details, $state->getDetails());
+        $this->assertSame(Rating::satisfied, $state->getRating());
+        $this->assertFalse($state->getSearchTerms()?->hasItems() ?? false);
+    }
+
     public function testDetailsExtractionFailureKeepsConversationAtDetailsStep(): void
     {
         $this->bootDefaultFixtures();
@@ -95,6 +123,27 @@ class CreateFeedbackV2TelegramBotCommandFunctionalTest extends TelegramBotComman
                 ->setSearchTerms(new SearchTermsTransfer([
                     new SearchTermTransfer('instasd', SearchTermType::instagram_username),
                 ]))
+        );
+
+        $this->typeText('✅ keyboard.skip_and_create_confirm')
+            ->shouldSeeReply('reply.created', ...$this->chooseActionReplies())
+            ->shouldSeeButtons(...$this->chooseActionButtons())
+        ;
+
+        $this->assertConversationInactive($conversation);
+        $this->assertNotEmpty($conversation->getState()['created_id'] ?? null);
+    }
+
+    public function testSkipMediaCreatesFeedbackWithoutSearchTerms(): void
+    {
+        $this->bootDefaultFixtures();
+
+        $conversation = $this->createConversation(
+            CreateFeedbackV2TelegramBotConversation::class,
+            (new CreateFeedbackTelegramBotConversationState())
+                ->setStep(CreateFeedbackV2TelegramBotConversation::STEP_MEDIA_QUERIED)
+                ->setDetails('general experience without identifiers')
+                ->setRating(Rating::satisfied)
         );
 
         $this->typeText('✅ keyboard.skip_and_create_confirm')

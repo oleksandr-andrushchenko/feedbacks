@@ -36,11 +36,6 @@ class CreateFeedbackTelegramBotConversationStateValidator extends ConstraintVali
 
         $helper = $this->helper->withContext($this->context)->withTranslationDomain('feedbacks.tg.create_validation');
 
-        if ($value->getStep() >= CreateFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED) {
-            if ($value->getSearchTerms() === null) {
-                $helper->addMessage($constraint->searchTermsNotBlankMessage);
-            }
-        }
 
         foreach (($value->getSearchTerms()?->getItemsAsArray() ?? []) as $searchTerm) {
             $this->context->getValidator()->validate($searchTerm, new SearchTermTransferConstraint());

@@ -19,6 +19,7 @@ use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
+use App\Transfer\Feedback\SearchTermsTransfer;
 use Longman\TelegramBot\Entities\KeyboardButton;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
@@ -141,13 +142,8 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
                 ->setDetails($details)
             ;
 
-            if (!$this->state->getSearchTerms()?->hasItems()) {
-                $tg->replyWarning($tg->queryText($tg->trans('reply.details_required', domain: 'create')));
 
-                return $this->queryDetails($tg);
-            }
-
-            foreach ($this->state->getSearchTerms()->getItemsAsArray() as $searchTerm) {
+            foreach (($this->state->getSearchTerms()?->getItemsAsArray() ?? []) as $searchTerm) {
                 $context = [
                     'country_codes' => array_unique([
                         $tg->getBot()->getEntity()->getCountryCode(),
@@ -191,7 +187,7 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
         $message = $this->getStep(2);
         $searchTermView = $this->multipleSearchTermTelegramViewProvider->getPrimarySearchTermTelegramView(
-            $this->state->getSearchTerms(),
+            $this->state->getSearchTerms() ?? new SearchTermsTransfer(),
             forceType: false
         );
         $parameters = [
