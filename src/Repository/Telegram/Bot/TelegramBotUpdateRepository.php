@@ -8,8 +8,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<TelegramBotUpdate>
- * @method TelegramBotUpdateDoctrineRepository getDoctrine()
- * @property TelegramBotUpdateDoctrineRepository $doctrine
  * @method TelegramBotUpdateDynamodbRepository getDynamodb()
  * @property TelegramBotUpdateDynamodbRepository $dynamodb
  * @method TelegramBotUpdate|null findOneByUpdateId($updateId)

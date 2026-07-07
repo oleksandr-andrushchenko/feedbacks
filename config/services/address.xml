@@ -8,7 +8,6 @@
                  lazy="true">
             <argument type="service" id="app.address_geocoder"/>
             <argument type="service" id="app.address_info_provider"/>
-            <argument type="service" id="app.doctrine_dry_runner"/>
             <argument type="service" id="app.orm.entity_manager"/>
             <tag name="console.command" command="address:reverse-geocode"/>
         </service>

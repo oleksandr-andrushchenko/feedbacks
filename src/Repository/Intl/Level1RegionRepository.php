@@ -8,8 +8,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<Level1Region>
- * @method Level1RegionDoctrineRepository getDoctrine()
- * @property Level1RegionDoctrineRepository doctrine
  * @method Level1RegionDynamodbRepository getDynamodb()
  * @property Level1RegionDynamodbRepository $dynamodb
  * @method Level1Region|null findOneByCountryAndName(string $countryCode, string $name)

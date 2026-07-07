@@ -10,8 +10,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<FeedbackUserSubscription>
- * @method FeedbackUserSubscriptionDoctrineRepository getDoctrine()
- * @property FeedbackUserSubscriptionDoctrineRepository $doctrine
  * @method FeedbackUserSubscriptionDynamodbRepository getDynamodb()
  * @property FeedbackUserSubscriptionDynamodbRepository $dynamodb
  * @method array<FeedbackUserSubscription> findByMessengerUser(MessengerUser $messengerUser)

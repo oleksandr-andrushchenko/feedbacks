@@ -83,65 +83,13 @@
     </parameters>
 
     <services>
-        <service id="app.feedback_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Feedback\FeedbackDoctrineRepository"/>
-        <service id="app.feedback_dynamodb_repository" parent="oa.dynamodb.entity_repository"
-                 class="App\Repository\Feedback\FeedbackDynamodbRepository"/>
-        <service id="app.feedback_repository" parent="app.entity_repository"
-                 class="App\Repository\Feedback\FeedbackRepository">
-            <argument type="service" id="app.feedback_doctrine_repository"/>
-            <argument type="service" id="app.feedback_dynamodb_repository"/>
-        </service>
 
-        <service id="app.feedback_search_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Feedback\FeedbackSearchDoctrineRepository"/>
-        <service id="app.feedback_search_dynamodb_repository" parent="oa.dynamodb.entity_repository"
-                 class="App\Repository\Feedback\FeedbackSearchDynamodbRepository"/>
-        <service id="app.feedback_search_repository" parent="app.entity_repository"
-                 class="App\Repository\Feedback\FeedbackSearchRepository">
-            <argument type="service" id="app.feedback_search_doctrine_repository"/>
-            <argument type="service" id="app.feedback_search_dynamodb_repository"/>
-        </service>
 
-        <service id="app.feedback_lookup_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Feedback\FeedbackLookupDoctrineRepository"/>
-        <service id="app.feedback_lookup_dynamodb_repository" parent="oa.dynamodb.entity_repository"
-                 class="App\Repository\Feedback\FeedbackLookupDynamodbRepository"/>
-        <service id="app.feedback_lookup_repository" parent="app.entity_repository"
-                 class="App\Repository\Feedback\FeedbackLookupRepository">
-            <argument type="service" id="app.feedback_lookup_doctrine_repository"/>
-            <argument type="service" id="app.feedback_lookup_dynamodb_repository"/>
-        </service>
 
         <service id="app.feedback_user_subscription_dynamodb_repository" parent="oa.dynamodb.entity_repository"
                  class="App\Repository\Feedback\FeedbackUserSubscriptionDynamodbRepository"/>
-        <service id="app.feedback_user_subscription_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Feedback\FeedbackUserSubscriptionDoctrineRepository"/>
-        <service id="app.feedback_user_subscription_repository" parent="app.entity_repository"
-                 class="App\Repository\Feedback\FeedbackUserSubscriptionRepository">
-            <argument type="service" id="app.feedback_user_subscription_doctrine_repository"/>
-            <argument type="service" id="app.feedback_user_subscription_dynamodb_repository"/>
-        </service>
 
-        <service id="app.search_term_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Feedback\SearchTermDoctrineRepository"/>
-        <service id="app.search_term_dynamodb_repository" parent="oa.dynamodb.entity_repository"
-                 class="App\Repository\Feedback\SearchTermDynamodbRepository"/>
-        <service id="app.search_term_repository" parent="app.entity_repository"
-                 class="App\Repository\Feedback\SearchTermRepository">
-            <argument type="service" id="app.search_term_doctrine_repository"/>
-            <argument type="service" id="app.search_term_dynamodb_repository"/>
-        </service>
 
-        <service id="app.feedback_notification_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Feedback\FeedbackNotificationDoctrineRepository"/>
-        <service id="app.feedback_notification_dynamodb_repository" parent="oa.dynamodb.entity_repository"
-                 class="App\Repository\Feedback\FeedbackNotificationDynamodbRepository"/>
-        <service id="app.feedback_notification_repository" parent="app.entity_repository"
-                 class="App\Repository\Feedback\FeedbackNotificationRepository">
-            <argument type="service" id="app.feedback_notification_doctrine_repository"/>
-            <argument type="service" id="app.feedback_notification_dynamodb_repository"/>
-        </service>
 
         <service id="app.search_term_feedback_dynamodb_repository" parent="oa.dynamodb.entity_repository"
                  class="App\Repository\Feedback\SearchTermFeedbackDynamodbRepository"/>
@@ -691,7 +639,6 @@
                  class="App\Command\Feedback\FeedbacksNormalizeSearchTermsCommand" lazy="true">
             <argument type="service" id="app.search_term_repository"/>
             <argument type="service" id="app.feedback_phone_number_search_term_text_normalizer"/>
-            <argument type="service" id="app.doctrine_dry_runner"/>
             <argument type="service" id="app.orm.entity_manager"/>
             <tag name="console.command" command="feedbacks:normalize-search-terms"/>
         </service>
@@ -699,7 +646,6 @@
                  class="App\Command\Feedback\FeedbacksAddUserSubscriptionCommand" lazy="true">
             <argument type="service" id="app.user_repository"/>
             <argument type="service" id="app.feedback_subscription_manager"/>
-            <argument type="service" id="app.doctrine_dry_runner"/>
             <argument type="service" id="app.orm.entity_manager"/>
             <tag name="console.command" command="feedbacks:subscription:add"/>
         </service>

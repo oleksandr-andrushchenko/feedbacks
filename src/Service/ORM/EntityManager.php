@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Service\ORM;
 
 use App\Model\Repository\EntityRepositoryConfig;
-use Doctrine\ORM\EntityManagerInterface as DoctrineEntityManager;
 use OA\Dynamodb\ODM\EntityManager as DynamodbEntityManager;
 
 /**
@@ -16,7 +15,6 @@ class EntityManager
 {
     public function __construct(
         private EntityRepositoryConfig $config,
-        private DoctrineEntityManager $doctrine,
         private DynamodbEntityManager $dynamodb,
     )
     {
@@ -24,16 +22,7 @@ class EntityManager
 
     public function __call(string $name, array $arguments): mixed
     {
-        if ($this->config->isDynamodb()) {
-            return call_user_func_array([$this->dynamodb, $name], $arguments);
-        }
-
-        return call_user_func_array([$this->doctrine, $name], $arguments);
-    }
-
-    public function getDoctrine(): DoctrineEntityManager
-    {
-        return $this->doctrine;
+        return call_user_func_array([$this->dynamodb, $name], $arguments);
     }
 
     public function getDynamodb(): DynamodbEntityManager

@@ -9,8 +9,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<TelegramBotPaymentMethod>
- * @method TelegramBotPaymentMethodDoctrineRepository getDoctrine()
- * @property-read TelegramBotPaymentMethodDoctrineRepository $doctrine
  * @method TelegramBotPaymentMethodDynamodbRepository getDynamodb()
  * @property-read TelegramBotPaymentMethodDynamodbRepository $dynamodb
  * @method TelegramBotPaymentMethod|null find(string $id)

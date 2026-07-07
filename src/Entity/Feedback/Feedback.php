@@ -9,8 +9,6 @@ use App\Entity\User\User;
 use App\Enum\Feedback\Rating;
 use DateTimeImmutable;
 use DateTimeInterface;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use OA\Dynamodb\Attribute\Attribute;
 use OA\Dynamodb\Attribute\Entity;
 use OA\Dynamodb\Attribute\PartitionKey;
@@ -22,7 +20,8 @@ use OA\Dynamodb\Attribute\SortKey;
 )]
 class Feedback
 {
-    private Collection $searchTerms;
+    /** @var array<SearchTerm> */
+    private array $searchTerms;
 
     public function __construct(
         #[Attribute('feedback_id')]
@@ -58,7 +57,7 @@ class Feedback
         private ?DateTimeInterface $createdAt = null,
     )
     {
-        $this->searchTerms = new ArrayCollection($searchTerms ?? []);
+        $this->searchTerms = $searchTerms ?? [];
         $this->searchTermIds ??= array_map(static fn ($term) => $term->getId(), $searchTerms ?? []);
         $this->userId ??= $this->user?->getId();
         $this->countryCode = $this->user?->getCountryCode();
@@ -150,10 +149,9 @@ class Feedback
 
     public function addSearchTerm(SearchTerm $searchTerm): self
     {
-        $this->searchTerms ??= new ArrayCollection();
         $this->searchTermIds ??= [];
 
-        $this->searchTerms->add($searchTerm);
+        $this->searchTerms[] = $searchTerm;
         $this->searchTermIds[] = $searchTerm->getId();
         return $this;
     }
@@ -165,16 +163,16 @@ class Feedback
     }
 
     /**
-     * @return Collection<SearchTerm>
+     * @return array<SearchTerm>
      */
-    public function getSearchTerms(): Collection
+    public function getSearchTerms(): array
     {
         return $this->searchTerms;
     }
 
     public function setSearchTerms(?array $searchTerms): self
     {
-        $this->searchTerms = new ArrayCollection($searchTerms ?? []);
+        $this->searchTerms = $searchTerms ?? [];
         $this->searchTermIds = array_map(static fn ($term) => $term->getId(), $searchTerms);
         return $this;
     }

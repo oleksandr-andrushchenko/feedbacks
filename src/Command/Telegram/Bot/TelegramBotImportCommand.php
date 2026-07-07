@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Command\Telegram\Bot;
 
 use App\Model\ImportResult;
-use App\Service\Doctrine\DryRunner;
 use App\Service\ORM\EntityManager;
 use App\Service\Telegram\Bot\TelegramBotImporter;
 use Symfony\Component\Console\Command\Command;
@@ -20,7 +19,6 @@ class TelegramBotImportCommand extends Command
     public function __construct(
         private readonly string $dataDir,
         private readonly TelegramBotImporter $telegramBotImporter,
-        private readonly DryRunner $dryRunner,
         private readonly EntityManager $entityManager,
     )
     {
@@ -52,6 +50,12 @@ class TelegramBotImportCommand extends Command
         $filename = $this->dataDir . '/' . $input->getArgument('file');
         $dryRun = $input->getOption('dry-run');
 
+        if ($dryRun) {
+            $io->warning("Dry run is not supported without transactional storage. No changes were made.");
+
+            return Command::SUCCESS;
+        }
+
         if (!$dryRun) {
             $confirmed = $io->askQuestion(
                 new ConfirmationQuestion(sprintf('Are you sure you want to import "%s" Telegram bots file?', $filename), true)
@@ -74,11 +78,7 @@ class TelegramBotImportCommand extends Command
         $logger = static fn (string $message) => $io->note($message);
         $func = fn () => $this->telegramBotImporter->importTelegramBots($filename, $mode, $logger);
 
-        if ($dryRun) {
-            $result = $this->dryRunner->dryRun($func, readUncommitted: true);
-        } else {
-            $result = $this->entityManager->wrapInTransaction($func);
-        }
+        $result = $this->entityManager->wrapInTransaction($func);
 
         /** @var ImportResult $result */
 

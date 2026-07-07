@@ -14,18 +14,14 @@
   deploy               Deploy app
   deploy-params        Deploy params
   down                 Stop and remove all Docker containers
-  drop-doctrine        Drop local Doctrine DB
   drop-local-dynamodb  Drop DynamoDB table in local DynamoDB
   fetch-local-dynamodb Fetch 100 records from local DynamoDB
   fix-permissions      Fix permissions
-  generate-migration   Generate a new Doctrine migration file
   help                 Show this help
   import-tg-bots       Import Telegram bots from CSV file
   import-tg-channels   Import Telegram bots from CSV file
   login                Open shell inside be-function container
   logs                 Tail Symfony development logs
-  mysql-login          Open MySQL shell inside database container
-  mysql-logs           View database (MySQL) container logs
   ngrok-setup          Setup ngrok
   ngrok-tunnel         Establish ngrok tunnel
   open                 Show local site URL
@@ -33,11 +29,9 @@
   recreate-local-dynamodb Recreate DynamoDB table in local DynamoDB
   reload-bot           Reload local tg bot
   reload-cache         Reload local symfony cache
-  reload-doctrine      Reload local Doctrine DB
   reload-dynamodb      Reload local Dynamodb
   restart              Restart all Docker containers and show status
   restart-be-function  Restart be-function Docker container
-  run-migrations       Execute pending Doctrine migrations
   search               Search for a Telegram user by name
   serverless-setup     Setup serverless
   sync-bot-webhook     Synchronize Telegram bot webhook
@@ -49,21 +43,10 @@
 # Serverless
 * https://bref.sh/docs/
 
-# Refresh db
-* php bin/console doctrine:database:drop --force
-* php bin/console doctrine:database:create
-* rm -rf migrations/*
-* php bin/console doctrine:migrations:diff
-* php bin/console doctrine:migrations:migrate
+# Refresh DynamoDB
+* make reload-dynamodb
 * php bin/console telegram:bot:import telegram_bots.csv --no-interaction
 * php bin/console telegram:channel:import telegram_channels.csv --no-interaction
-
-# Create test db
-* docker compose exec -it mysql sh
-* mysql -uroot -p1111
-* CREATE DATABASE IF NOT EXISTS app_test;
-* GRANT ALL PRIVILEGES ON app_test.* TO 'app'@'%';
-
 # TODO
 * feedbacks in channels: display v2 step 1 input + move all the metadata at the bottom
 * update LLM prompts to normalize terms (e.g. Olek -> Oleksandr, Сашка -> Олександр)
@@ -111,7 +94,6 @@
 * More money: lock feedbacks and ask money for it
 * Apply optimization tricks/tips for symfony prod application
 * move translation out of the repo
-* check doctrine queries, optimize if need
 * if phone number added (create command) and rating is good - ask phone number in order to no allow creation on self
 * facebook bot
 * process old non-stopped conversations

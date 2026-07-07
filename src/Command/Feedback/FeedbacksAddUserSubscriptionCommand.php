@@ -7,7 +7,6 @@ use App\Enum\Feedback\FeedbackSubscriptionPlanName;
 use App\Exception\Feedback\FeedbackSubscriptionPlanNotFoundException;
 use App\Exception\User\UserNotFoundException;
 use App\Repository\User\UserRepository;
-use App\Service\Doctrine\DryRunner;
 use App\Service\Feedback\Subscription\FeedbackSubscriptionManager;
 use App\Service\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +23,6 @@ class FeedbacksAddUserSubscriptionCommand extends Command
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly FeedbackSubscriptionManager $feedbackSubscriptionManager,
-        private readonly DryRunner $dryRunner,
         private readonly EntityManager $entityManager,
     )
     {
@@ -89,10 +87,9 @@ class FeedbacksAddUserSubscriptionCommand extends Command
 
         $func = fn () => $this->feedbackSubscriptionManager->createFeedbackUserSubscription($user, $plan);
 
-        if ($dryRun) {
-            $this->dryRunner->dryRun($func);
-        } else {
-            $func();
+        $func();
+
+        if (!$dryRun) {
             $this->entityManager->flush();
         }
 

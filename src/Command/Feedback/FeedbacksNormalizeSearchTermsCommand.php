@@ -6,7 +6,6 @@ namespace App\Command\Feedback;
 use App\Entity\Feedback\SearchTerm;
 use App\Enum\Feedback\SearchTermType;
 use App\Repository\Feedback\SearchTermRepository;
-use App\Service\Doctrine\DryRunner;
 use App\Service\Feedback\SearchTerm\PhoneNumberSearchTermTextNormalizer;
 use App\Service\ORM\EntityManager;
 use DateTimeImmutable;
@@ -22,7 +21,6 @@ class FeedbacksNormalizeSearchTermsCommand extends Command
     public function __construct(
         private readonly SearchTermRepository $searchTermRepository,
         private readonly PhoneNumberSearchTermTextNormalizer $phoneNumberSearchTermTextNormalizer,
-        private readonly DryRunner $dryRunner,
         private readonly EntityManager $entityManager,
     )
     {
@@ -99,10 +97,9 @@ class FeedbacksNormalizeSearchTermsCommand extends Command
 
         $func = fn () => $this->normalize($searchTerms, phones: $phones, context: $context, io: $io);
 
-        if ($dryRun) {
-            $count = $this->dryRunner->dryRun($func, readUncommitted: true);
-        } else {
-            $count = $func();
+        $count = $func();
+
+        if (!$dryRun) {
             $this->entityManager->flush();
         }
 

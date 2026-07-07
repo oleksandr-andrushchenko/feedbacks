@@ -10,8 +10,6 @@ use DateTimeInterface;
 
 /**
  * @extends EntityRepository<FeedbackSearch>
- * @method FeedbackSearchDoctrineRepository getDoctrine()
- * @property-read FeedbackSearchDoctrineRepository $doctrine
  * @method FeedbackSearchDynamodbRepository getDynamodb()
  * @property-read FeedbackSearchDynamodbRepository $dynamodb
  * @method FeedbackSearch|null findOneLast()

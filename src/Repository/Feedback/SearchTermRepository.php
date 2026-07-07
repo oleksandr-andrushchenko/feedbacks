@@ -8,8 +8,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<SearchTerm>
- * @method SearchTermDoctrineRepository getDoctrine()
- * @property SearchTermDoctrineRepository $doctrine
  * @method SearchTermDynamodbRepository getDynamodb()
  * @property SearchTermDynamodbRepository $dynamodb
  * @method SearchTerm|null find(string $id)

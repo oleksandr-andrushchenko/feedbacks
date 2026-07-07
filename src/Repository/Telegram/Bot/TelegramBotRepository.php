@@ -9,8 +9,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<TelegramBot>
- * @method TelegramBotDoctrineRepository getDoctrine()
- * @property TelegramBotDoctrineRepository $doctrine
  * @method TelegramBotDynamodbRepository getDynamodb()
  * @property TelegramBotDynamodbRepository $dynamodb
  * @method TelegramBot[] findAll()
@@ -30,10 +28,6 @@ class TelegramBotRepository extends EntityRepository
      */
     public function findPrimaryNonDeletedByGroup(TelegramBotGroupName $group): array
     {
-        if ($this->getConfig()->isDynamodb()) {
-            return $this->getDynamodb()->findPrimaryNonDeletedByGroup($group);
-        }
-
-        return $this->getDoctrine()->findPrimaryNonDeletedByGroup($group);
+        return $this->getDynamodb()->findPrimaryNonDeletedByGroup($group);
     }
 }

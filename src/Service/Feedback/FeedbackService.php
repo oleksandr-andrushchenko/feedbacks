@@ -62,17 +62,16 @@ class FeedbackService
      */
     public function getSearchTerms(Feedback $feedback): array
     {
-        if ($this->feedbackRepository->getConfig()->isDynamodb()) {
-            $searchTerms = $feedback->getSearchTerms();
+        $searchTerms = $feedback->getSearchTerms();
 
-            if (!$searchTerms->isEmpty()) {
-                return $searchTerms->toArray();
-            }
-            $searchTerms = $this->searchTermRepository->findByIds($feedback->getSearchTermIds());
-            $feedback->setSearchTerms($searchTerms);
+        if ($searchTerms !== []) {
+            return $searchTerms;
         }
 
-        return $feedback->getSearchTerms()->toArray();
+        $searchTerms = $this->searchTermRepository->findByIds($feedback->getSearchTermIds());
+        $feedback->setSearchTerms($searchTerms);
+
+        return $feedback->getSearchTerms();
     }
 
     public function getTelegramBot(Feedback $feedback): ?TelegramBot

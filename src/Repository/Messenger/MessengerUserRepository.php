@@ -10,8 +10,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<User>
- * @method MessengerUserDoctrineRepository getDoctrine()
- * @property MessengerUserDoctrineRepository $doctrine
  * @method MessengerUserDynamodbRepository getDynamodb()
  * @property MessengerUserDynamodbRepository $dynamodb
  * @method MessengerUser|null find(string $id)

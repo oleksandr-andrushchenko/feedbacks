@@ -7,13 +7,6 @@
     <services>
         <service id="app.messenger_user_dynamodb_repository" parent="oa.dynamodb.entity_repository"
                  class="App\Repository\Messenger\MessengerUserDynamodbRepository"/>
-        <service id="app.messenger_user_doctrine_repository" parent="app.doctrine.entity_repository"
-                 class="App\Repository\Messenger\MessengerUserDoctrineRepository"/>
-        <service id="app.messenger_user_repository" parent="app.entity_repository"
-                 class="App\Repository\Messenger\MessengerUserRepository">
-            <argument type="service" id="app.messenger_user_doctrine_repository"/>
-            <argument type="service" id="app.messenger_user_dynamodb_repository"/>
-        </service>
 
         <service id="app.messenger_user_transfer_normalizer"
                  class="App\Serializer\Messenger\MessengerUserTransferNormalizer">

@@ -15,5 +15,76 @@
         <service id="app.entity_repository" class="App\Repository\EntityRepository" abstract="true">
             <argument type="service" id="app.entity_repository_config"/>
         </service>
+
+        <service id="app.feedback_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Feedback\FeedbackDynamodbRepository"/>
+        <service id="app.feedback_repository" parent="app.entity_repository" class="App\Repository\Feedback\FeedbackRepository">
+            <argument type="service" id="app.feedback_dynamodb_repository"/>
+        </service>
+        <service id="app.feedback_search_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Feedback\FeedbackSearchDynamodbRepository"/>
+        <service id="app.feedback_search_repository" parent="app.entity_repository" class="App\Repository\Feedback\FeedbackSearchRepository">
+            <argument type="service" id="app.feedback_search_dynamodb_repository"/>
+        </service>
+        <service id="app.feedback_lookup_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Feedback\FeedbackLookupDynamodbRepository"/>
+        <service id="app.feedback_lookup_repository" parent="app.entity_repository" class="App\Repository\Feedback\FeedbackLookupRepository">
+            <argument type="service" id="app.feedback_lookup_dynamodb_repository"/>
+        </service>
+        <service id="app.feedback_user_subscription_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Feedback\FeedbackUserSubscriptionDynamodbRepository"/>
+        <service id="app.feedback_user_subscription_repository" parent="app.entity_repository" class="App\Repository\Feedback\FeedbackUserSubscriptionRepository">
+            <argument type="service" id="app.feedback_user_subscription_dynamodb_repository"/>
+        </service>
+        <service id="app.search_term_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Feedback\SearchTermDynamodbRepository"/>
+        <service id="app.search_term_repository" parent="app.entity_repository" class="App\Repository\Feedback\SearchTermRepository">
+            <argument type="service" id="app.search_term_dynamodb_repository"/>
+        </service>
+        <service id="app.feedback_notification_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Feedback\FeedbackNotificationDynamodbRepository"/>
+        <service id="app.feedback_notification_repository" parent="app.entity_repository" class="App\Repository\Feedback\FeedbackNotificationRepository">
+            <argument type="service" id="app.feedback_notification_dynamodb_repository"/>
+        </service>
+
+        <service id="app.telegram_bot_chat_request_second_rate_limit_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotChatRequestSecondRateLimitDynamodbRepository"/>
+        <service id="app.telegram_bot_chat_request_minute_rate_limit_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotChatRequestMinuteRateLimitDynamodbRepository"/>
+        <service id="app.telegram_bot_global_request_second_rate_limit_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotGlobalRequestSecondRateLimitDynamodbRepository"/>
+
+        <service id="app.telegram_bot_update_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotUpdateDynamodbRepository"/>
+        <service id="app.telegram_bot_update_repository" parent="app.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotUpdateRepository">
+            <argument type="service" id="app.telegram_bot_update_dynamodb_repository"/>
+        </service>
+        <service id="app.telegram_bot_conversation_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotConversationDynamodbRepository"/>
+        <service id="app.telegram_bot_conversation_repository" parent="app.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotConversationRepository">
+            <argument type="service" id="app.telegram_bot_conversation_dynamodb_repository"/>
+        </service>
+        <service id="app.telegram_bot_payment_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotPaymentDynamodbRepository"/>
+        <service id="app.telegram_bot_payment_repository" parent="app.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotPaymentRepository">
+            <argument type="service" id="app.telegram_bot_payment_dynamodb_repository"/>
+        </service>
+        <service id="app.telegram_bot_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotDynamodbRepository"/>
+        <service id="app.telegram_bot_repository" parent="app.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotRepository">
+            <argument type="service" id="app.telegram_bot_dynamodb_repository"/>
+        </service>
+        <service id="app.telegram_channel_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Channel\TelegramChannelDynamodbRepository"/>
+        <service id="app.telegram_channel_repository" parent="app.entity_repository" class="App\Repository\Telegram\Channel\TelegramChannelRepository">
+            <argument type="service" id="app.telegram_channel_dynamodb_repository"/>
+        </service>
+        <service id="app.telegram_bot_payment_method_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotPaymentMethodDynamodbRepository"/>
+        <service id="app.telegram_bot_payment_method_repository" parent="app.entity_repository" class="App\Repository\Telegram\Bot\TelegramBotPaymentMethodRepository">
+            <argument type="service" id="app.telegram_bot_payment_method_dynamodb_repository"/>
+        </service>
+
+        <service id="app.level_1_region_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Intl\Level1RegionDynamodbRepository"/>
+        <service id="app.level_1_region_repository" parent="app.entity_repository" class="App\Repository\Intl\Level1RegionRepository">
+            <argument type="service" id="app.level_1_region_dynamodb_repository"/>
+        </service>
+        <service id="app.user_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\User\UserDynamodbRepository"/>
+        <service id="app.user_repository" parent="app.entity_repository" class="App\Repository\User\UserRepository">
+            <argument type="service" id="app.user_dynamodb_repository"/>
+        </service>
+        <service id="app.user_contact_message_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\User\UserContactMessageDynamodbRepository"/>
+        <service id="app.user_contact_message_repository" parent="app.entity_repository" class="App\Repository\User\UserContactMessageRepository">
+            <argument type="service" id="app.user_contact_message_dynamodb_repository"/>
+        </service>
+        <service id="app.messenger_user_dynamodb_repository" parent="oa.dynamodb.entity_repository" class="App\Repository\Messenger\MessengerUserDynamodbRepository"/>
+        <service id="app.messenger_user_repository" parent="app.entity_repository" class="App\Repository\Messenger\MessengerUserRepository">
+            <argument type="service" id="app.messenger_user_dynamodb_repository"/>
+        </service>
     </services>
 </container>

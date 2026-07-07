@@ -8,7 +8,6 @@ use App\Exception\Telegram\Bot\TelegramBotException;
 use App\Repository\Telegram\Bot\TelegramBotChatRequestMinuteRateLimitDynamodbRepository;
 use App\Repository\Telegram\Bot\TelegramBotChatRequestSecondRateLimitDynamodbRepository;
 use App\Repository\Telegram\Bot\TelegramBotGlobalRequestSecondRateLimitDynamodbRepository;
-use App\Repository\Telegram\Bot\TelegramBotRequestDoctrineRepository;
 use App\Service\IdGenerator;
 use App\Service\ORM\EntityManager;
 use Psr\Log\LoggerInterface;
@@ -19,7 +18,6 @@ class TelegramBotRequestChecker
         private readonly TelegramBotChatRequestSecondRateLimitDynamodbRepository $telegramBotChatRequestSecondRateLimitDynamodbRepository,
         private readonly TelegramBotChatRequestMinuteRateLimitDynamodbRepository $telegramBotChatRequestMinuteRateLimitDynamodbRepository,
         private readonly TelegramBotGlobalRequestSecondRateLimitDynamodbRepository $telegramBotGlobalRequestSecondRateLimitDynamodbRepository,
-        private readonly TelegramBotRequestDoctrineRepository $telegramBotRequestDoctrineRepository,
         private readonly EntityManager $entityManager,
         private readonly IdGenerator $idGenerator,
         private readonly ?LoggerInterface $logger = null,
@@ -95,85 +93,7 @@ class TelegramBotRequestChecker
         }
 
         if ($this->checkRateLimits) {
-            $timeout = $this->waitingTimeout;
-
-            while (true) {
-                if ($timeout <= 0) {
-                    // todo: use specific
-                    throw new TelegramBotException('Timed out while waiting for a request spot!');
-                }
-
-                if ($this->entityManager->getConfig()->isDynamodb()) {
-                    $second = time();
-                    $minute = intdiv($second, 60);
-
-                    $globalSec = $this->telegramBotGlobalRequestSecondRateLimitDynamodbRepository->incrementCountBySecond($second);
-                    $this->logger?->debug('$globalSec', [
-                        'second' => $globalSec->getSecond(),
-                        'count' => $globalSec->getCount(),
-                        'expireAt' => $globalSec->getExpireAt()->getTimestamp(),
-                        'skip' => $globalSec->getCount() > 30,
-                    ]);
-
-                    if ($globalSec->getCount() > 30) {
-                        goto wait_and_retry;
-                    }
-
-                    $chatSec = $this->telegramBotChatRequestSecondRateLimitDynamodbRepository->incrementCountByChatAndSecond($chatId, $second);
-                    $this->logger?->debug('$chatSec', [
-                        'chatId' => $chatSec->getChatId(),
-                        'second' => $chatSec->getSecond(),
-                        'count' => $chatSec->getCount(),
-                        'expireAt' => $chatSec->getExpireAt()->getTimestamp(),
-                        'skip' => $chatSec->getCount() > 1,
-                    ]);
-
-                    if ($chatSec->getCount() > 1) {
-                        goto wait_and_retry;
-                    }
-
-                    $chatMin = $this->telegramBotChatRequestMinuteRateLimitDynamodbRepository->incrementCountByChatAndMinute($chatId, $minute);
-                    $this->logger?->debug('$chatMin', [
-                        'chatId' => $chatMin->getChatId(),
-                        'minute' => $chatMin->getMinute(),
-                        'count' => $chatMin->getCount(),
-                        'expireAt' => $chatMin->getExpireAt()->getTimestamp(),
-                        'skip' => $chatMin->getCount() > 20,
-                    ]);
-
-                    if ($chatMin->getCount() > 20) {
-                        goto wait_and_retry;
-                    }
-
-                    break;
-
-                    wait_and_retry:
-                    $timeout--;
-                    usleep($this->intervalBetweenChecks * 1_000_000);
-                } else {
-                    $limits = $this->telegramBotRequestDoctrineRepository->getLimits($chatId);
-
-                    if ($limits === null) {
-                        break;
-                    }
-
-                    // No more than one message per second inside a particular chat
-                    $chatPerSecond = $limits->getPerSecond() === 0;
-
-                    // No more than 30 messages per second to different chats
-                    $globalPerSecond = $limits->getPerSecondAll() < 30;
-
-                    // No more than 20 messages per minute in groups and channels
-                    $groupsPerMinute = $limits->getPerMinute() < 20;
-
-                    if ($chatPerSecond && $globalPerSecond && $groupsPerMinute) {
-                        break;
-                    }
-
-                    $timeout--;
-                    usleep($this->intervalBetweenChecks * 1_000_000);
-                }
-            }
+            $this->waitForRequestLimit($chatId);
         }
 
         if ($this->saveRequests) {
@@ -190,5 +110,72 @@ class TelegramBotRequestChecker
         }
 
         return null;
+    }
+
+    /**
+     * @throws TelegramBotException
+     */
+    private function waitForRequestLimit(int|string $chatId): void
+    {
+        $timeout = $this->waitingTimeout;
+
+        while (true) {
+            if ($timeout <= 0) {
+                // todo: use specific
+                throw new TelegramBotException('Timed out while waiting for a request spot!');
+            }
+
+            $second = time();
+            $minute = intdiv($second, 60);
+
+            $globalSec = $this->telegramBotGlobalRequestSecondRateLimitDynamodbRepository->incrementCountBySecond($second);
+            $this->logger?->debug('$globalSec', [
+                'second' => $globalSec->getSecond(),
+                'count' => $globalSec->getCount(),
+                'expireAt' => $globalSec->getExpireAt()->getTimestamp(),
+                'skip' => $globalSec->getCount() > 30,
+            ]);
+
+            if ($globalSec->getCount() > 30) {
+                $this->waitAndRetry($timeout);
+                continue;
+            }
+
+            $chatSec = $this->telegramBotChatRequestSecondRateLimitDynamodbRepository->incrementCountByChatAndSecond($chatId, $second);
+            $this->logger?->debug('$chatSec', [
+                'chatId' => $chatSec->getChatId(),
+                'second' => $chatSec->getSecond(),
+                'count' => $chatSec->getCount(),
+                'expireAt' => $chatSec->getExpireAt()->getTimestamp(),
+                'skip' => $chatSec->getCount() > 1,
+            ]);
+
+            if ($chatSec->getCount() > 1) {
+                $this->waitAndRetry($timeout);
+                continue;
+            }
+
+            $chatMin = $this->telegramBotChatRequestMinuteRateLimitDynamodbRepository->incrementCountByChatAndMinute($chatId, $minute);
+            $this->logger?->debug('$chatMin', [
+                'chatId' => $chatMin->getChatId(),
+                'minute' => $chatMin->getMinute(),
+                'count' => $chatMin->getCount(),
+                'expireAt' => $chatMin->getExpireAt()->getTimestamp(),
+                'skip' => $chatMin->getCount() > 20,
+            ]);
+
+            if ($chatMin->getCount() > 20) {
+                $this->waitAndRetry($timeout);
+                continue;
+            }
+
+            return;
+        }
+    }
+
+    private function waitAndRetry(int &$timeout): void
+    {
+        $timeout--;
+        usleep($this->intervalBetweenChecks * 1_000_000);
     }
 }

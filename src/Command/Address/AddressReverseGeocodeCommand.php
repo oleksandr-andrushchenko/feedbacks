@@ -8,7 +8,6 @@ use App\Exception\TimezoneGeocodeFailedException;
 use App\Model\Location;
 use App\Service\Address\AddressInfoProvider;
 use App\Service\AddressGeocoderInterface;
-use App\Service\Doctrine\DryRunner;
 use App\Service\ORM\EntityManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -22,7 +21,6 @@ class AddressReverseGeocodeCommand extends Command
     public function __construct(
         private readonly AddressGeocoderInterface $addressGeocoder,
         private readonly AddressInfoProvider $addressInfoProvider,
-        private readonly DryRunner $dryRunner,
         private readonly EntityManager $entityManager,
     )
     {
@@ -57,10 +55,9 @@ class AddressReverseGeocodeCommand extends Command
         try {
             $func = fn () => $this->addressGeocoder->geocodeAddress($location);
 
-            if ($dryRun) {
-                $address = $this->dryRunner->dryRun($func);
-            } else {
-                $address = $func();
+            $address = $func();
+
+            if (!$dryRun) {
                 $this->entityManager->flush();
             }
         } catch (AddressGeocodeFailedException|TimezoneGeocodeFailedException $exception) {

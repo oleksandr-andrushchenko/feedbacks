@@ -12,7 +12,6 @@ else
 endif
 
 BE_FUNCTION_CONTAINER = be-function
-MYSQL_CONTAINER = mysql
 DYNAMODB_CONTAINER = dynamodb
 
 .PHONY: help
@@ -130,22 +129,6 @@ search: ## Search for a Telegram user by name
 logs: ## Tail Symfony development logs
 	$(DC) exec -it $(BE_FUNCTION_CONTAINER) tail -f /tmp/log/dev.log
 
-.PHONY: mysql-logs
-mysql-logs: ## View database (MySQL) container logs
-	$(DC) logs $(MYSQL_CONTAINER) -f
-
-.PHONY: mysql-login
-mysql-login: ## Open MySQL shell inside database container
-	$(DC) exec -it $(MYSQL_CONTAINER) mysql -uroot -p1111 -A app
-
-.PHONY: generate-migration
-generate-migration: ## Generate a new Doctrine migration file
-	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:migrations:diff
-
-.PHONY: run-migrations
-run-migrations: ## Execute pending Doctrine migrations
-	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:migrations:migrate --no-interaction --all-or-nothing
-
 .PHONY: create-local-dynamodb
 create-local-dynamodb: ## Create local DynamoDB table
 	@echo "🚀 Creating local DynamoDB table app..."
@@ -210,16 +193,8 @@ recreate-local-dynamodb: drop-local-dynamodb create-local-dynamodb ## Recreate D
 fix-permissions: ## Fix permissions
 	sudo chown -R 1001:1001 var/ && chmod 0777 -R var/
 
-.PHONY: drop-doctrine
-drop-doctrine: ## Drop local Doctrine DB
-	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console doctrine:schema:drop --force --full-database
-
-.PHONY: reload-doctrine
-reload-doctrine: drop-doctrine run-migrations import-tg-bots import-tg-channels ## Reload local Doctrine DB
-
 .PHONY: reload-dynamodb
-reload-dynamodb: recreate-local-dynamodb ## Reload local Dynamodb
-	$(DC) exec -it $(BE_FUNCTION_CONTAINER) php bin/console dynamodb:from-doctrine:transfer
+reload-dynamodb: recreate-local-dynamodb import-tg-bots import-tg-channels ## Reload local Dynamodb
 
 .PHONY: reload-bot
 reload-bot: ngrok-tunnel sync-bot-webhook ## Reload local tg bot
@@ -245,8 +220,7 @@ deploy-params: ## Deploy params
 		"TELEGRAM_ACTIVITIES_TOKEN:SecureString" \
 		"TELEGRAM_ERRORS_TOKEN:SecureString" \
 		"GOOGLE_API_KEY:SecureString" \
-		"OPENAI_API_KEY:SecureString" \
-		"DB_URL:SecureString"; do \
+		"OPENAI_API_KEY:SecureString"; do \
 		param_name=$${param_type%%:*}; \
 		param_kind=$${param_type##*:}; \
 		value=$$(eval echo "$$"$${param_name}); \

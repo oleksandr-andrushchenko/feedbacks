@@ -10,7 +10,6 @@
 
         <service id="app.orm.entity_manager" class="App\Service\ORM\EntityManager" lazy="true">
             <argument type="service" id="app.entity_repository_config"/>
-            <argument type="service" id="doctrine.orm.entity_manager"/>
             <argument type="service" id="oa.dynamodb.entity_manager"/>
         </service>
     </services>

@@ -8,8 +8,6 @@ use App\Repository\EntityRepository;
 
 /**
  * @extends EntityRepository<FeedbackNotification>
- * @method FeedbackNotificationDoctrineRepository getDoctrine()
- * @property-read FeedbackNotificationDoctrineRepository $doctrine
  * @method FeedbackNotificationDynamodbRepository getDynamodb()
  * @property-read FeedbackNotificationDynamodbRepository $dynamodb
  */
