@@ -265,7 +265,7 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
                     SearchTermType::telegram_username,
                     SearchTermType::organization_name,
                 ]),
-            'input' => 'unknown',
+            'input' => 'wrong',
             'shouldSeeReplies' => [
                 ...$this->wrongReplies(),
                 'query.search_term_type',

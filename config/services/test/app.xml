@@ -5,6 +5,7 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
+        <service id="app.openai_llm_client" class="App\Tests\Fake\Service\LLM\FakeLlmClient" lazy="true"/>
         <service id="app.telegram_bot_message_sender"
                  class="App\Tests\Fake\Service\Telegram\Bot\Api\FakeTelegramBotMessageSender" lazy="true"/>
         <service id="app.telegram_bot_invoice_sender"

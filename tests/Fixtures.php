@@ -10,7 +10,6 @@ use App\Entity\Feedback\SearchTerm;
 use App\Entity\Intl\Level1Region;
 use App\Entity\Messenger\MessengerUser;
 use App\Entity\Telegram\TelegramBot;
-use App\Entity\Telegram\TelegramBotConversation;
 use App\Entity\Telegram\TelegramBotPaymentMethod;
 use App\Entity\Telegram\TelegramBotUpdate;
 use App\Entity\User\User;
@@ -19,7 +18,6 @@ use App\Enum\Feedback\SearchTermType;
 use App\Enum\Messenger\Messenger;
 use App\Enum\Telegram\TelegramBotGroupName;
 use App\Enum\Telegram\TelegramBotPaymentMethodName;
-use App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackTelegramBotConversation;
 use App\Service\ORM\EntityManager;
 use DateTimeImmutable;
 use RuntimeException;
@@ -75,7 +73,6 @@ class Fixtures
     public const string FEEDBACK_LOOKUP_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_lookup_23_telegram_inst';
     public const string FEEDBACK_SEARCH_13_TELEGRAM_INSTAGRAM_PROFILE_URL = 'feedback_search_13_telegram_inst';
     public const string FEEDBACK_SEARCH_23_TELEGRAM_INSTAGRAM_USERNAME = 'feedback_search_23_telegram_inst';
-    public const string TG_BOT_CONVERSATION_1 = 'telegram_bot_conversation_1';
 
 
     private array $map;
@@ -95,7 +92,6 @@ class Fixtures
         $this->mapFeedbacks();
         $this->mapFeedbackLookups();
         $this->mapFeedbackSearches();
-        $this->mapTelegramBotConversations();
     }
 
     public function get(string $ref): object
@@ -385,18 +381,6 @@ class Fixtures
             localeCode: 'uk',
             messengerUser: $this->get(Fixtures::MESSENGER_USER_2_TELEGRAM),
             telegramBot: null,
-        );
-    }
-
-    private function mapTelegramBotConversations(): void
-    {
-        $this->map[self::TG_BOT_CONVERSATION_1] = fn () => new TelegramBotConversation(
-            hash: md5('1-' . self::TELEGRAM_CHAT_ID_1 . '-1'),
-            messengerUserId: '1',
-            chatId: (string) self::TELEGRAM_CHAT_ID_1,
-            telegramBotId: '1',
-            class: CreateFeedbackTelegramBotConversation::class,
-            state: ['step' => CreateFeedbackTelegramBotConversation::STEP_SEARCH_TERM_QUERIED]
         );
     }
 }

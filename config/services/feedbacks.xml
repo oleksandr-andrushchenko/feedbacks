@@ -63,9 +63,6 @@
             </parameter>
         </parameter>
 
-        <parameter key="app.search.search_term_type_step">true</parameter>
-        <parameter key="app.search.confirm_step">false</parameter>
-        <parameter key="app.search.create_confirm_step">false</parameter>
         <parameter key="app.search.search_providers" type="collection">
             <!--            <parameter>otzyvua</parameter>-->
             <!--            <parameter>clarity</parameter>-->
@@ -541,19 +538,6 @@
             <argument type="service" id="app.telegram_bot_matches_chat_sender"/>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
-        <service id="app.telegram_conversation_create_feedback" lazy="true"
-                 class="App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackTelegramBotConversation">
-            <argument type="service" id="app.validator"/>
-            <argument type="service" id="app.feedback_search_term_parser"/>
-            <argument type="service" id="app.choose_action_telegram_chat_sender"/>
-            <argument type="service" id="app.feedback_multiple_search_term_telegram_view_provider"/>
-            <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
-            <argument type="service" id="app.feedback_search_term_type_provider"/>
-            <argument type="service" id="app.feedback_creator"/>
-            <argument type="service" id="app.feedback_rating_provider"/>
-            <argument type="service" id="app.event_bus"/>
-            <tag name="app.telegram_conversation_feedbacks"/>
-        </service>
         <service id="app.feedback_details_extractor" lazy="true"
                  class="App\Service\Feedback\LLM\FeedbackDetailsExtractor">
             <argument type="service" id="app.openai_llm_client"/>
@@ -571,22 +555,6 @@
             <argument type="service" id="app.feedback_multiple_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_creator"/>
             <argument type="service" id="app.event_bus"/>
-            <tag name="app.telegram_conversation_feedbacks"/>
-        </service>
-        <service id="app.telegram_conversation_search_feedback" lazy="true"
-                 class="App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConversation">
-            <argument type="service" id="app.validator"/>
-            <argument type="service" id="app.feedback_search_term_parser"/>
-            <argument type="service" id="app.choose_action_telegram_chat_sender"/>
-            <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
-            <argument type="service" id="app.feedback_search_term_type_provider"/>
-            <argument type="service" id="app.feedback_search_creator"/>
-            <argument type="service" id="app.search_searcher_telegram"/>
-            <argument type="service" id="app.feedback_search_service"/>
-            <argument>%app.search.search_term_type_step%</argument>
-            <argument>%app.search.confirm_step%</argument>
-            <argument>%app.search.create_confirm_step%</argument>
-            <argument>%app.search.search_providers%</argument>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
         <service id="app.telegram_conversation_search_feedback_v2" lazy="true"

@@ -5,7 +5,6 @@
         https://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
-        <parameter key="app.level_1_regions_file">%kernel.project_dir%/tests/data/level_1_regions.{country}.json
-        </parameter>
+        <parameter key="app.level_1_regions_file">%kernel.project_dir%/tests/data/level_1_regions.{country}.json</parameter>
     </parameters>
 </container>

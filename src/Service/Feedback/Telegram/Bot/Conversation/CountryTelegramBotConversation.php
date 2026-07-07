@@ -293,8 +293,9 @@ class CountryTelegramBotConversation extends TelegramBotConversation
         } else {
             $countries = $guess ? $this->getGuessCountries($tg) : $this->getCountries();
             $country = null;
-            foreach ($countries as $country) {
-                if ($this->getCountryButton($country, $tg)->getText() === $tg->getText()->getRawValue()) {
+            foreach ($countries as $candidate) {
+                if ($this->getCountryButton($candidate, $tg)->getText() === $tg->getText()->getRawValue()) {
+                    $country = $candidate;
                     break;
                 }
             }
@@ -479,8 +480,9 @@ class CountryTelegramBotConversation extends TelegramBotConversation
 
         $level1Region = null;
         if (!$tg->matchInput(null)) {
-            foreach ($this->getLevel1Regions($tg) as $level1Region) {
-                if ($this->getLevel1RegionButton($level1Region, $tg)->getText() === $tg->getText()->getRawValue()) {
+            foreach ($this->getLevel1Regions($tg) as $candidate) {
+                if ($this->getLevel1RegionButton($candidate, $tg)->getText() === $tg->getText()->getRawValue()) {
+                    $level1Region = $candidate;
                     break;
                 }
             }
@@ -545,8 +547,9 @@ class CountryTelegramBotConversation extends TelegramBotConversation
 
         $timezone = null;
         if (!$tg->matchInput(null)) {
-            foreach ($this->getTimezones($tg) as $timezone) {
-                if ($this->getTimezoneButton($timezone, $tg)->getText() === $tg->getText()->getRawValue()) {
+            foreach ($this->getTimezones($tg) as $candidate) {
+                if ($this->getTimezoneButton($candidate, $tg)->getText() === $tg->getText()->getRawValue()) {
+                    $timezone = $candidate;
                     break;
                 }
             }

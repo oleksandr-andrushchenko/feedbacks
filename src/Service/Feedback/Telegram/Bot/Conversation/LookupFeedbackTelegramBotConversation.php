@@ -102,7 +102,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation
         }
 
         if ($help) {
-            return $tg->view('lookup_search_term_help', [
+            $message = $tg->view('lookup_search_term_help', [
                 'query' => $message,
             ]);
         } else {
@@ -322,7 +322,7 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation
         $message = $tg->queryText($message);
 
         if ($help) {
-            return $tg->view('lookup_search_term_type_help', [
+            $message = $tg->view('lookup_search_term_type_help', [
                 'query' => $message,
                 'search_term' => $searchTerm,
             ]);
@@ -379,8 +379,9 @@ class LookupFeedbackTelegramBotConversation extends TelegramBotConversation
         }
 
         $type = null;
-        foreach ($this->getSearchTermTypes($searchTerm) as $type) {
-            if ($this->getSearchTermTypeButton($type, $tg)->getText() === $tg->getText()->getRawValue()) {
+        foreach ($this->getSearchTermTypes($searchTerm) as $candidate) {
+            if ($this->getSearchTermTypeButton($candidate, $tg)->getText() === $tg->getText()->getRawValue()) {
+                $type = $candidate;
                 break;
             }
         }

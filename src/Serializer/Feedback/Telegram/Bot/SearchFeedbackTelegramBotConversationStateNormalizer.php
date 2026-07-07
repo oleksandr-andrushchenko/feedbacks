@@ -31,12 +31,17 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
         $searchTermCallback = fn (SearchTermTransfer $searchTerm): array => $this->searchTermTransferNormalizer
             ->normalize($searchTerm, $format, $context)
         ;
-        return array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
-            'details' => $data->getDetails(),
+        $normalized = array_merge($this->baseConversationStateNormalizer->normalize($data, $format, $context), [
             'search_terms' => $data->getSearchTerms()?->hasItems()
                 ? array_map($searchTermCallback, $data->getSearchTerms()->getItems())
                 : null,
         ]);
+
+        if (method_exists($data, 'getDetails')) {
+            $normalized['details'] = $data->getDetails();
+        }
+
+        return $normalized;
     }
 
     public function supportsNormalization(mixed $data, ?string $format = null, array $context = []): bool
@@ -53,13 +58,16 @@ class SearchFeedbackTelegramBotConversationStateNormalizer implements Normalizer
             ->denormalize($searchTerm, SearchTermTransfer::class, $format, $context)
         ;
         $object
-            ->setDetails($data['details'] ?? null)
             ->setSearchTerms(
                 isset($data['search_terms'])
                     ? new SearchTermsTransfer(array_map($searchTermCallback, $data['search_terms']))
                     : null
             )
         ;
+
+        if (method_exists($object, 'setDetails')) {
+            $object->setDetails($data['details'] ?? null);
+        }
 
         return $object;
     }
