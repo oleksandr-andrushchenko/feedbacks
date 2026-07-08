@@ -6,6 +6,7 @@ namespace App;
 use Bref\SymfonyBridge\BrefKernel as BaseKernel;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -15,6 +16,20 @@ class Kernel extends BaseKernel
     use MicroKernelTrait {
         configureContainer as parentConfigureContainer;
         configureRoutes as parentConfigureRoutes;
+    }
+
+    protected function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new class implements CompilerPassInterface {
+            public function process(ContainerBuilder $container): void
+            {
+                if ($container->hasDefinition('config_builder.warmer')) {
+                    $container->removeDefinition('config_builder.warmer');
+                }
+            }
+        });
     }
 
     private function configureContainer(ContainerConfigurator $container, LoaderInterface $loader, ContainerBuilder $builder): void
