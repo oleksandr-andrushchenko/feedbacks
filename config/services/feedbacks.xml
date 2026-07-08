@@ -500,9 +500,9 @@
             <argument type="service" id="app.feedback_details_extractor"/>
             <argument type="service" id="app.feedback_search_term_parser"/>
             <argument type="service" id="app.choose_action_telegram_chat_sender"/>
-            <argument type="service" id="app.feedback_multiple_search_term_telegram_view_provider"/>
             <argument type="service" id="app.feedback_creator"/>
             <argument type="service" id="app.event_bus"/>
+            <argument type="service" id="logger"/>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
         <service id="app.telegram_conversation_search_feedback_v2" lazy="true"

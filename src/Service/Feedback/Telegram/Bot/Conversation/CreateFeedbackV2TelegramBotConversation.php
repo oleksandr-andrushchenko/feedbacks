@@ -14,13 +14,12 @@ use App\Service\Feedback\FeedbackCreator;
 use App\Service\Feedback\LLM\FeedbackDetailsExtractor;
 use App\Service\Feedback\SearchTerm\SearchTermParserInterface;
 use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
-use App\Service\Feedback\Telegram\View\MultipleSearchTermTelegramViewProvider;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversation;
 use App\Service\Telegram\Bot\TelegramBotAwareHelper;
 use App\Service\Validator\Validator;
 use App\Transfer\Feedback\FeedbackTransfer;
-use App\Transfer\Feedback\SearchTermsTransfer;
 use Longman\TelegramBot\Entities\KeyboardButton;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Throwable;
 
@@ -29,18 +28,18 @@ use Throwable;
  */
 class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 {
-    public const int STEP_DETAILS_QUERIED = 10;
+    public const int STEP_MEDIA_QUERIED = 10;
     public const int STEP_CANCEL_PRESSED = 30;
-    public const int STEP_MEDIA_QUERIED = 55;
+    public const int STEP_DETAILS_QUERIED = 55;
 
     public function __construct(
         private readonly Validator $validator,
         private readonly FeedbackDetailsExtractor $feedbackDetailsExtractor,
         private readonly SearchTermParserInterface $searchTermParser,
         private readonly ChooseActionTelegramChatSender $chooseActionTelegramChatSender,
-        private readonly MultipleSearchTermTelegramViewProvider $multipleSearchTermTelegramViewProvider,
         private readonly FeedbackCreator $feedbackCreator,
         private readonly MessageBusInterface $eventBus,
+        private readonly LoggerInterface $logger,
     )
     {
         parent::__construct(new CreateFeedbackTelegramBotConversationState());
@@ -49,9 +48,9 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
     public function invoke(TelegramBotAwareHelper $tg, Entity $entity): void
     {
         match ($this->state->getStep()) {
-            default => $this->queryDetails($tg),
-            self::STEP_DETAILS_QUERIED => $this->gotDetails($tg, $entity),
+            default => $this->queryMedia($tg),
             self::STEP_MEDIA_QUERIED => $this->gotMedia($tg, $entity),
+            self::STEP_DETAILS_QUERIED => $this->gotDetails($tg, $entity),
         };
     }
 
@@ -64,7 +63,7 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
     {
         $this->state->setStep(self::STEP_DETAILS_QUERIED);
 
-        $message = $this->getStep(1);
+        $message = $this->getStep(2);
         $message .= $tg->trans('query.details', domain: 'create');
         $message = $tg->queryText($message);
 
@@ -84,9 +83,10 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
         if ($this->state->getDetails() !== null) {
             $buttons[] = $this->getRemoveDetailsButton($tg);
-            $buttons[] = $tg->nextButton();
+            $buttons[] = $this->getCreateConfirmButton($tg);
         }
 
+        $buttons[] = $tg->prevButton();
         $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
@@ -116,7 +116,7 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             return $this->queryDetails($tg);
         }
 
-        if ($tg->matchInput($tg->nextButton()->getText())) {
+        if ($tg->matchInput($tg->prevButton()->getText())) {
             return $this->queryMedia($tg);
         }
 
@@ -162,6 +162,8 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
             $this->validator->validate($this->state);
         } catch (Throwable $exception) {
+            $this->logger->error($exception);
+
             $this->state
                 ->setSearchTerms($originalSearchTerms)
                 ->setRating($originalRating)
@@ -178,22 +180,15 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             return $this->queryDetails($tg);
         }
 
-        return $this->queryMedia($tg);
+        return $this->createAndReply($tg, $entity);
     }
 
     private function queryMedia(TelegramBotAwareHelper $tg, bool $help = false): null
     {
         $this->state->setStep(self::STEP_MEDIA_QUERIED);
 
-        $message = $this->getStep(2);
-        $searchTermView = $this->multipleSearchTermTelegramViewProvider->getPrimarySearchTermTelegramView(
-            $this->state->getSearchTerms() ?? new SearchTermsTransfer(),
-            forceType: false
-        );
-        $parameters = [
-            'search_term' => $searchTermView,
-        ];
-        $message .= $tg->trans('query.media', $parameters, domain: 'create');
+        $message = $this->getStep(1);
+        $message .= $tg->trans('query.media', domain: 'create');
         $message = $tg->queryText($message, true);
 
         $message .= $tg->queryTipText($tg->trans('query.media_tip', domain: 'create'));
@@ -212,12 +207,9 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
         if ($this->state->hasMedia()) {
             $buttons[] = $this->getRemoveMediaButton($tg);
-            $buttons[] = $this->getCreateConfirmButton($tg);
-        } else {
-            $buttons[] = $this->getSkipAndCreateConfirmButton($tg);
         }
 
-        $buttons[] = $tg->prevButton();
+        $buttons[] = $tg->nextButton();
         $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
@@ -239,11 +231,6 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
         return $tg->checkMarkButton($tg->trans('keyboard.create_confirm', domain: 'create'));
     }
 
-    private function getSkipAndCreateConfirmButton(TelegramBotAwareHelper $tg): KeyboardButton
-    {
-        return $tg->checkMarkButton($tg->trans('keyboard.skip_and_create_confirm', domain: 'create'));
-    }
-
     private function gotCancel(TelegramBotAwareHelper $tg, Entity $entity): null
     {
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
@@ -258,16 +245,8 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
     private function gotMedia(TelegramBotAwareHelper $tg, Entity $entity): null
     {
-        if ($tg->matchInput($tg->prevButton()->getText())) {
+        if ($tg->matchInput($tg->nextButton()->getText())) {
             return $this->queryDetails($tg);
-        }
-
-        if ($this->state->hasMedia() && $tg->matchInput($this->getCreateConfirmButton($tg)->getText())) {
-            return $this->createAndReply($tg, $entity);
-        }
-
-        if ($tg->matchInput($this->getSkipAndCreateConfirmButton($tg)->getText())) {
-            return $this->createAndReply($tg, $entity);
         }
 
         if ($tg->matchInput($tg->helpButton()->getText())) {
@@ -375,12 +354,9 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
         if ($this->state->hasMedia()) {
             $buttons[] = $this->getRemoveMediaButton($tg);
-            $buttons[] = $this->getCreateConfirmButton($tg);
-        } else {
-            $buttons[] = $this->getSkipAndCreateConfirmButton($tg);
         }
 
-        $buttons[] = $tg->prevButton();
+        $buttons[] = $tg->nextButton();
         $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
