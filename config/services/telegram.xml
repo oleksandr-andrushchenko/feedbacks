@@ -25,6 +25,14 @@
             <argument type="service" id="app.telegram_bot_webhook_info_provider"/>
             <tag name="console.command" command="telegram:bot:webhook:show"/>
         </service>
+        <service id="app.telegram_bot_webhook_sync_command" class="App\Command\Telegram\Bot\TelegramBotWebhookSyncCommand"
+                 lazy="true">
+            <argument type="service" id="app.telegram_bot_repository"/>
+            <argument type="service" id="app.telegram_bot_webhook_syncer"/>
+            <argument type="service" id="app.orm.entity_manager"/>
+            <argument type="service" id="app.telegram_bot_webhook_info_provider"/>
+            <tag name="console.command" command="telegram:bot:webhook:sync"/>
+        </service>
         <service id="app.telegram_bot_commands_sync_command"
                  class="App\Command\Telegram\Bot\TelegramBotCommandsSyncCommand" lazy="true">
             <argument type="service" id="app.telegram_bot_repository"/>

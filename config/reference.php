@@ -393,6 +393,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         default_redis_provider?: scalar|Param|null, // Default: "redis://localhost"
  *         default_valkey_provider?: scalar|Param|null, // Default: "valkey://localhost"
  *         default_memcached_provider?: scalar|Param|null, // Default: "memcached://localhost"
+ *         default_doctrine_dbal_provider?: scalar|Param|null, // Default: "database_connection"
  *         default_pdo_provider?: scalar|Param|null, // Default: null
  *         pools?: array<string, array{ // Default: []
  *             adapters?: string|list<scalar|Param|null>,
