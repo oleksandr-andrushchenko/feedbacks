@@ -1,5 +1,6 @@
 # Read the documentation at https://www.serverless.com/framework/docs/providers/aws/guide/serverless.yml/
 service: ${env:AWS_PROJECT}
+useDotenv: true
 
 provider:
   name: aws
@@ -32,12 +33,6 @@ provider:
 
 plugins:
   - ./vendor/bref/bref
-  - serverless-dotenv-plugin
-
-custom:
-  dotenv:
-    path: .env
-    include: [ ]
 
 functions:
   web:

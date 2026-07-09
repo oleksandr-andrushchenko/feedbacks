@@ -256,7 +256,7 @@ deploy: ## Deploy app
 		APP_STAGE=$(APP_STAGE) APP_ENV=$(APP_ENV) APP_DEBUG=$(APP_DEBUG) php bin/console cache:warmup --env=$(APP_ENV) \
 	"
 	@echo "🔐 Deploying $(AWS_PROJECT)-$(APP_STAGE) in $(AWS_PROJECT) profile in $(AWS_REGION) region..."
-	npm install --save-dev serverless-dotenv-plugin
+	npm install --save-dev serverless
 	serverless deploy \
 		--aws-profile $(AWS_PROJECT) \
 		--region $(AWS_REGION) \
