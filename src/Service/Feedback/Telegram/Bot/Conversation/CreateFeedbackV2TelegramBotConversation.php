@@ -100,6 +100,12 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
 
     private function gotDetails(TelegramBotAwareHelper $tg, Entity $entity): null
     {
+        if ($tg->getMedia() !== null) {
+            $this->state->addMedia($tg->getMedia());
+
+            return null;
+        }
+
         if ($tg->matchInput(null)) {
             $tg->replyWrong(true);
 
@@ -269,10 +275,6 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             return $this->queryMedia($tg);
         }
 
-        if (!$this->state->hasMedia()) {
-            $this->queryMediaMessage($tg, $tg->trans('reply.uploads_processing_started'));
-        }
-
         $original = $this->state->getMedia();
         $this->state->addMedia($tg->getMedia());
 
@@ -285,9 +287,7 @@ class CreateFeedbackV2TelegramBotConversation extends TelegramBotConversation
             return $this->queryMedia($tg);
         }
 
-        return $this->queryMediaMessage($tg, $tg->trans('reply.upload_uploaded', [
-            'count' => count($this->state->getMedia() ?? []),
-        ]));
+        return $this->queryDetails($tg);
     }
 
     private function createAndReply(TelegramBotAwareHelper $tg, Entity $entity): null

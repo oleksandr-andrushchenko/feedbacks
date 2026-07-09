@@ -204,6 +204,36 @@ abstract class TelegramBotCommandFunctionalTestCase extends DatabaseTestCase
         return $this;
     }
 
+    protected function typePhoto(
+        string $fileId = 'photo_file_id',
+        string $fileUniqueId = 'photo_file_unique_id',
+        ?string $mediaGroupId = null,
+    ): static
+    {
+        $this->bot = null;
+        $this->tg = null;
+        $data = [
+            'photo' => [[
+                'file_id' => $fileId,
+                'file_unique_id' => $fileUniqueId,
+                'width' => 640,
+                'height' => 480,
+                'file_size' => 1024,
+            ]],
+        ];
+
+        if ($mediaGroupId !== null) {
+            $data['media_group_id'] = $mediaGroupId;
+        }
+
+        $this->update = $this->getTelegramMessageUpdateFixture($data);
+        $this->getBot()->setUpdate(null);
+        $this->getBot()->setMessengerUser(null);
+        $this->handleTelegramBotUpdate($this->getBot()->getEntity(), $this->getUpdate());
+
+        return $this;
+    }
+
     protected function shouldSeeActiveConversation(string $expectedClass, TelegramBotConversationState $expectedState): static
     {
         return $this->shouldSeeConversation($expectedClass, $expectedState, true);

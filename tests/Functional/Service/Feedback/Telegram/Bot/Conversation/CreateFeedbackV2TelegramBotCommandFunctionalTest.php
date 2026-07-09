@@ -53,6 +53,53 @@ class CreateFeedbackV2TelegramBotCommandFunctionalTest extends TelegramBotComman
         ;
     }
 
+    public function testMediaUploadMovesToDetailsStepAndStoresMedia(): void
+    {
+        $this->bootDefaultFixtures();
+
+        $conversation = $this->createConversation(
+            CreateFeedbackV2TelegramBotConversation::class,
+            (new CreateFeedbackTelegramBotConversationState())
+                ->setStep(CreateFeedbackV2TelegramBotConversation::STEP_MEDIA_QUERIED)
+        );
+
+        $this->typePhoto()
+            ->shouldSeeStateStep($conversation, CreateFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED)
+            ->shouldSeeReply('query.details')
+            ->shouldSeeButtons($this->prevButton(), $this->helpButton(), $this->cancelButton())
+        ;
+
+        $state = $this->getSerializer()->denormalize(
+            $conversation->getState(),
+            CreateFeedbackTelegramBotConversationState::class
+        );
+
+        $this->assertCount(1, $state->getMedia());
+    }
+
+    public function testMediaUploadAtDetailsStepIsStoredWithoutRestartingMediaStep(): void
+    {
+        $this->bootDefaultFixtures();
+
+        $conversation = $this->createConversation(
+            CreateFeedbackV2TelegramBotConversation::class,
+            (new CreateFeedbackTelegramBotConversationState())
+                ->setStep(CreateFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED)
+        );
+
+        $this->typePhoto('photo_file_id_2', 'photo_file_unique_id_2', 'album_1')
+            ->shouldSeeStateStep($conversation, CreateFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED)
+        ;
+
+        $state = $this->getSerializer()->denormalize(
+            $conversation->getState(),
+            CreateFeedbackTelegramBotConversationState::class
+        );
+
+        $this->assertCount(1, $state->getMedia());
+        $this->assertSame('album_1', $state->getMedia()[0]->getGroupId());
+    }
+
     public function testDetailsSuccessCreatesFeedbackAndStopsConversation(): void
     {
         $this->bootDefaultFixtures();
