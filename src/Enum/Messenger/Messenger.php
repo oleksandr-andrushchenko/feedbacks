@@ -8,6 +8,7 @@ enum Messenger: int
     case unknown = 0;
     case telegram = 1;
     case instagram = 2;
+    case threads = 10;
     case facebook = 8;
     case twitter = 3;
     case tiktok = 4;

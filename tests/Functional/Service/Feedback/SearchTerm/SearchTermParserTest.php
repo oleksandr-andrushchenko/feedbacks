@@ -72,6 +72,27 @@ class SearchTermParserTest extends KernelTestCase
         }
 
         foreach ([
+                     Fixtures::INSTAGRAM_USERNAME_1,
+                     '@' . Fixtures::INSTAGRAM_USERNAME_2,
+                 ] as $text) {
+            yield 'threads username: ' . $text => [
+                'text' => $text,
+                'expectedSearchTerm' => new SearchTermTransfer($text, types: [SearchTermType::threads_username]),
+            ];
+        }
+
+        foreach ([
+                     Fixtures::INSTAGRAM_USERNAME_1,
+                     Fixtures::INSTAGRAM_USERNAME_2,
+                     Fixtures::INSTAGRAM_USERNAME_3,
+                 ] as $username) {
+            yield 'threads username: ' . ($text = $this->profileUrl(Messenger::threads, $username)) => [
+                'text' => $text,
+                'expectedSearchTerm' => new SearchTermTransfer($text, type: SearchTermType::threads_username, normalizedText: $username),
+            ];
+        }
+
+        foreach ([
                      Fixtures::TELEGRAM_USERNAME_1,
                      '@' . Fixtures::TELEGRAM_USERNAME_2,
                  ] as $text) {
@@ -490,6 +511,30 @@ class SearchTermParserTest extends KernelTestCase
                  ] as $username) {
             yield 'instagram username: ' . ($text = $this->profileUrl(Messenger::instagram, $username)) => [
                 'searchTerm' => $searchTerm = new SearchTermTransfer($text, type: SearchTermType::instagram_username, normalizedText: $username),
+                'context' => [],
+                'expectedSearchTerm' => clone $searchTerm,
+            ];
+        }
+
+        yield 'threads username: ' . ($text = Fixtures::INSTAGRAM_USERNAME_1) => [
+            'searchTerm' => $searchTerm = new SearchTermTransfer($text, type: SearchTermType::threads_username),
+            'context' => [],
+            'expectedSearchTerm' => clone $searchTerm,
+        ];
+
+        yield 'threads username: ' . ($text = '@' . ($username = Fixtures::INSTAGRAM_USERNAME_2)) => [
+            'searchTerm' => $searchTerm = new SearchTermTransfer($text, type: SearchTermType::threads_username),
+            'context' => [],
+            'expectedSearchTerm' => (clone $searchTerm)->setNormalizedText($username),
+        ];
+
+        foreach ([
+                     Fixtures::INSTAGRAM_USERNAME_1,
+                     Fixtures::INSTAGRAM_USERNAME_2,
+                     Fixtures::INSTAGRAM_USERNAME_3,
+                 ] as $username) {
+            yield 'threads username: ' . ($text = $this->profileUrl(Messenger::threads, $username)) => [
+                'searchTerm' => $searchTerm = new SearchTermTransfer($text, type: SearchTermType::threads_username, normalizedText: $username),
                 'context' => [],
                 'expectedSearchTerm' => clone $searchTerm,
             ];

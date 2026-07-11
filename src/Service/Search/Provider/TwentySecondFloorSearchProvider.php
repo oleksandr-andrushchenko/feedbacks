@@ -43,6 +43,7 @@ class TwentySecondFloorSearchProvider extends SearchProvider implements SearchPr
 
         if (in_array($type, [
             SearchTermType::instagram_username,
+            SearchTermType::threads_username,
             SearchTermType::telegram_username,
             SearchTermType::facebook_username,
             SearchTermType::tiktok_username,

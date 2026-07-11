@@ -284,6 +284,10 @@
                  class="App\Service\Feedback\SearchTerm\FacebookSearchTermParser" lazy="true">
             <tag name="app.feedback_search_term_parser"/>
         </service>
+        <service id="app.feedback_search_term_parser_threads"
+                 class="App\Service\Feedback\SearchTerm\ThreadsSearchTermParser" lazy="true">
+            <tag name="app.feedback_search_term_parser"/>
+        </service>
         <service id="app.feedback_search_term_parser_telegram"
                  class="App\Service\Feedback\SearchTerm\TelegramSearchTermParser" lazy="true">
             <tag name="app.feedback_search_term_parser"/>

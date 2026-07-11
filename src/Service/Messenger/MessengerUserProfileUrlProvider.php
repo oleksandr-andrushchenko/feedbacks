@@ -11,6 +11,7 @@ class MessengerUserProfileUrlProvider
     {
         return match ($messenger) {
             Messenger::instagram => sprintf('https://instagram.com/%s', $username),
+            Messenger::threads => sprintf('https://www.threads.net/@%s', $username),
             Messenger::facebook => sprintf(
                 'https://facebook.com/%s',
                 is_numeric($username)

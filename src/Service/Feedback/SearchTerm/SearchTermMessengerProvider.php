@@ -12,6 +12,7 @@ class SearchTermMessengerProvider
     {
         return match ($searchTermType) {
             SearchTermType::instagram_username => Messenger::instagram,
+            SearchTermType::threads_username => Messenger::threads,
             SearchTermType::facebook_username => Messenger::facebook,
             SearchTermType::reddit_username => Messenger::reddit,
             SearchTermType::onlyfans_username => Messenger::onlyfans,

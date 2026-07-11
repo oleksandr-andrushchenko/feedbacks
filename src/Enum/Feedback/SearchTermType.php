@@ -8,6 +8,7 @@ enum SearchTermType: int
     case unknown = 0;
 
     case instagram_username = 21;
+    case threads_username = 31;
     case facebook_username = 29;
     case telegram_username = 22;
     case twitter_username = 23;
@@ -43,6 +44,7 @@ enum SearchTermType: int
 
     public const array known_messengers = [
         self::instagram_username,
+        self::threads_username,
         self::facebook_username,
         self::telegram_username,
         self::twitter_username,
