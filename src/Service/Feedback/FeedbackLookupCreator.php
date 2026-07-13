@@ -4,16 +4,13 @@ declare(strict_types=1);
 namespace App\Service\Feedback;
 
 use App\Entity\Feedback\FeedbackLookup;
-use App\Exception\Feedback\FeedbackCommandLimitExceededException;
 use App\Exception\ValidatorException;
 use App\Factory\Feedback\FeedbackLookupFactory;
 use App\Factory\Feedback\SearchTermFeedbackLookupFactory;
 use App\Message\Event\ActivityEvent;
 use App\Message\Event\Feedback\FeedbackLookupCreatedEvent;
 use App\Model\Feedback\Command\FeedbackCommandOptions;
-use App\Service\Feedback\Command\FeedbackCommandLimitsChecker;
 use App\Service\Feedback\SearchTerm\SearchTermUpserter;
-use App\Service\Feedback\Statistic\FeedbackUserStatisticProviderInterface;
 use App\Service\Messenger\MessengerUserService;
 use App\Service\ORM\EntityManager;
 use App\Service\Validator\Validator;
@@ -27,8 +24,6 @@ class FeedbackLookupCreator
         private readonly FeedbackCommandOptions $options,
         private readonly EntityManager $entityManager,
         private readonly Validator $validator,
-        private readonly FeedbackUserStatisticProviderInterface $statisticProvider,
-        private readonly FeedbackCommandLimitsChecker $limitsChecker,
         private readonly SearchTermUpserter $searchTermUpserter,
         private readonly MessageBusInterface $eventBus,
         private readonly MessengerUserService $messengerUserService,
@@ -46,9 +41,8 @@ class FeedbackLookupCreator
     /**
      * @param FeedbackLookupTransfer $transfer
      * @return FeedbackLookup
-     * @throws FeedbackCommandLimitExceededException
-     * @throws ValidatorException
      * @throws ExceptionInterface
+     * @throws ValidatorException
      */
     public function createFeedbackLookup(FeedbackLookupTransfer $transfer): FeedbackLookup
     {

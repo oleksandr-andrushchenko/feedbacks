@@ -1,0 +1,18 @@
+input_details: Who or what are you looking for?
+details_examples: It can be anything, for example
+messenger_profile_url: Link to a user's social media or messenger profile
+messenger_username: Username or user ID on a social network or messenger
+email: Email address
+person_name: Full name or first name of the person
+organization_name: Company or organization name
+place_name: Place name or address
+phone_number: Phone number
+car_number: Vehicle registration number
+tax_number: Company registration or taxpayer identification number
+url: Website or web page
+use_input_field: Use the input field below
+
+add_more_details: Please enter more specific search terms so we can find the right results
+error: Could not extract search terms from this message. Specify who or what you are looking for
+canceled: Feedback search dialog has been canceled
+will_notify: We will let you know when something appears about %search_terms%

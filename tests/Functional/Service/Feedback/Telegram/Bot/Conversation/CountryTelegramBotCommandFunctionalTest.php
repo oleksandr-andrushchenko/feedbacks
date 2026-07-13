@@ -82,12 +82,11 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => $this->getCountryProvider()->getCountryIconByCode('ua') . ' country',
             'shouldSeeReplies' => [
                 ...$this->currentReplies($country, $region1, $tz),
-                'query.change_confirm',
+                'change_confirm',
             ],
             'shouldSeeButtons' => [
                 $this->yesButton(),
                 $this->noButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_CHANGE_CONFIRM_QUERIED,
@@ -101,12 +100,11 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => FeedbackTelegramBotGroup::COUNTRY,
             'shouldSeeReplies' => [
                 ...$this->currentReplies($country, $region1, $tz),
-                'query.change_confirm',
+                'change_confirm',
             ],
             'shouldSeeButtons' => [
                 $this->yesButton(),
                 $this->noButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_CHANGE_CONFIRM_QUERIED,
@@ -160,13 +158,12 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => 'uk',
             'input' => $this->yesButton(),
             'shouldSeeReplies' => [
-                'query.country',
+                'country',
             ],
             'shouldSeeButtons' => [
                 ...array_map(fn (string $country): string => $this->country($country), ['ua']),
                 $this->otherButton(),
                 $this->requestLocationButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => null,
@@ -179,13 +176,12 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => 'en',
             'input' => $this->yesButton(),
             'shouldSeeReplies' => [
-                'query.country',
+                'country',
             ],
             'shouldSeeButtons' => [
                 ...array_map(fn (string $country): string => $this->country($country), ['au', 'ca', 'us', 'nz']),
                 $this->otherButton(),
                 $this->requestLocationButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => null,
@@ -206,25 +202,6 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'shouldSeeStep' => null,
         ];
 
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'level1RegionId' => $region1 = 'ua_kyiv',
-            'timezone' => $tz = 'kyiv/tz',
-            'localeCode' => 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                ...$this->currentReplies($country, $region1, $tz),
-                'query.change_confirm',
-            ],
-            'shouldSeeButtons' => [
-                $this->yesButton(),
-                $this->noButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => CountryTelegramBotConversation::STEP_CHANGE_CONFIRM_QUERIED,
-        ];
-
         yield 'cancel' => [
             'countryCode' => $country = 'ua',
             'level1RegionId' => $region1 = 'ua_kyiv',
@@ -233,7 +210,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($country, $region1, $tz),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -303,12 +280,11 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'ru',
             'input' => $this->country($country),
             'shouldSeeReplies' => [
-                'query.level_1_region',
+                'level_1_region',
             ],
             'shouldSeeButtons' => [
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
@@ -325,7 +301,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'ru',
             'input' => $this->country($country = 'ua'),
             'shouldSeeReplies' => [
-                'query.level_1_region',
+                'level_1_region',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -335,7 +311,6 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 ],
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
@@ -352,38 +327,15 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'ua',
             'input' => $this->otherButton(),
             'shouldSeeReplies' => [
-                'query.country',
+                'country',
             ],
             'shouldSeeButtons' => [
                 ...array_map(fn (string $country): string => $this->country($country), ['af', 'zm']),
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_COUNTRY_QUERIED,
-            'shouldSeeCountryCode' => $country,
-            'shouldSeeLevel1RegionId' => $region1,
-            'shouldSeeTimezone' => $tz,
-            'shouldSeeLocaleCode' => $locale,
-        ];
-
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'level1RegionId' => $region1 = 'ua_kyiv',
-            'timezone' => $tz = 'kyiv/tz',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                'title',
-                'query.country',
-            ],
-            'shouldSeeButtons' => [
-                $this->requestLocationButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => CountryTelegramBotConversation::STEP_GUESS_COUNTRY_QUERIED,
             'shouldSeeCountryCode' => $country,
             'shouldSeeLevel1RegionId' => $region1,
             'shouldSeeTimezone' => $tz,
@@ -398,7 +350,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($country, $region1, $tz),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -477,12 +429,11 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'ru',
             'input' => $this->country($country),
             'shouldSeeReplies' => [
-                'query.level_1_region',
+                'level_1_region',
             ],
             'shouldSeeButtons' => [
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
@@ -499,7 +450,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'ru',
             'input' => $this->country($country = 'ua'),
             'shouldSeeReplies' => [
-                'query.level_1_region',
+                'level_1_region',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -509,7 +460,6 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 ],
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
@@ -527,13 +477,12 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => $this->otherButton(),
             'shouldSeeReplies' => [
                 ...$this->wrongReplies(),
-                'query.country',
+                'country',
             ],
             'shouldSeeButtons' => [
                 ...array_map(fn (string $country): string => $this->country($country), ['af', 'zm']),
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_COUNTRY_QUERIED,
@@ -550,37 +499,13 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'ua',
             'input' => $this->prevButton(),
             'shouldSeeReplies' => [
-                'query.country',
+                'country',
             ],
             'shouldSeeButtons' => [
                 $this->requestLocationButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_GUESS_COUNTRY_QUERIED,
-            'shouldSeeCountryCode' => $country,
-            'shouldSeeLevel1RegionId' => $region1,
-            'shouldSeeTimezone' => $tz,
-            'shouldSeeLocaleCode' => $locale,
-        ];
-
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'level1RegionId' => $region1 = 'ua_kyiv',
-            'timezone' => $tz = 'kyiv/tz',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                'title',
-                'query.country',
-            ],
-            'shouldSeeButtons' => [
-                $this->requestLocationButton(),
-                $this->prevButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => CountryTelegramBotConversation::STEP_COUNTRY_QUERIED,
             'shouldSeeCountryCode' => $country,
             'shouldSeeLevel1RegionId' => $region1,
             'shouldSeeTimezone' => $tz,
@@ -595,7 +520,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($country, $region1, $tz),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -674,7 +599,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'uk',
             'input' => $region1,
             'shouldSeeReplies' => [
-                'query.timezone',
+                'timezone',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -684,7 +609,6 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 ],
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_TIMEZONE_QUERIED,
@@ -701,7 +625,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'uk',
             'input' => $region1 = 'ua_lviv_oblast',
             'shouldSeeReplies' => [
-                ...$this->okReplies(),
+                'ok',
                 ...$this->currentReplies($country, $region1, $tz = 'Europe/Uzhgorod'),
                 ...$this->chooseActionReplies(),
             ],
@@ -723,7 +647,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => 'wrong',
             'shouldSeeReplies' => [
                 ...$this->wrongReplies(),
-                'query.level_1_region',
+                'level_1_region',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -733,7 +657,6 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 ],
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
@@ -750,44 +673,15 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'uk',
             'input' => $this->prevButton(),
             'shouldSeeReplies' => [
-                'query.country',
+                'country',
             ],
             'shouldSeeButtons' => [
                 $this->country($country),
                 $this->otherButton(),
                 $this->requestLocationButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_GUESS_COUNTRY_QUERIED,
-            'shouldSeeCountryCode' => $country,
-            'shouldSeeLevel1RegionId' => $region1,
-            'shouldSeeTimezone' => $tz,
-            'shouldSeeLocaleCode' => $locale,
-        ];
-
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'level1RegionId' => $region1 = 'ua_kyiv',
-            'timezone' => $tz = 'kyiv/tz',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                'title',
-                'query.level_1_region',
-            ],
-            'shouldSeeButtons' => [
-                ...[
-                    'ua_kyiv',
-                    'ua_kyiv_oblast',
-                    'ua_lviv_oblast',
-                ],
-                $this->requestLocationButton(),
-                $this->prevButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
             'shouldSeeCountryCode' => $country,
             'shouldSeeLevel1RegionId' => $region1,
             'shouldSeeTimezone' => $tz,
@@ -802,7 +696,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($country, $region1, $tz),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -881,7 +775,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'uk',
             'input' => $tz = 'Europe/Kiev',
             'shouldSeeReplies' => [
-                ...$this->okReplies(),
+                'ok',
                 ...$this->currentReplies($country, $region1, $tz),
                 ...$this->chooseActionReplies(),
             ],
@@ -903,7 +797,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'input' => 'wrong',
             'shouldSeeReplies' => [
                 ...$this->wrongReplies(),
-                'query.timezone',
+                'timezone',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -913,7 +807,6 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 ],
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_TIMEZONE_QUERIED,
@@ -930,7 +823,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'uk',
             'input' => $this->prevButton(),
             'shouldSeeReplies' => [
-                'query.level_1_region',
+                'level_1_region',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -940,38 +833,9 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 ],
                 $this->requestLocationButton(),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => CountryTelegramBotConversation::STEP_LEVEL_1_REGION_QUERIED,
-            'shouldSeeCountryCode' => $country,
-            'shouldSeeLevel1RegionId' => $region1,
-            'shouldSeeTimezone' => $tz,
-            'shouldSeeLocaleCode' => $locale,
-        ];
-
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'level1RegionId' => $region1 = 'ua_kyiv',
-            'timezone' => $tz = 'kyiv/tz',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                'title',
-                'query.timezone',
-            ],
-            'shouldSeeButtons' => [
-                ...[
-                    'Europe/Kiev',
-                    'Europe/Uzhgorod',
-                    'Europe/Zaporozhye',
-                ],
-                $this->requestLocationButton(),
-                $this->prevButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => CountryTelegramBotConversation::STEP_TIMEZONE_QUERIED,
             'shouldSeeCountryCode' => $country,
             'shouldSeeLevel1RegionId' => $region1,
             'shouldSeeTimezone' => $tz,
@@ -985,7 +849,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
             'localeCode' => $locale = 'uk',
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->currentReplies($country, $region1, $tz = 'Europe/Kiev'),
                 ...$this->chooseActionReplies(),
             ],
@@ -1095,7 +959,7 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
         $shouldSeeLocaleCode = $localeCode;
 
         $shouldSeeReplies = [
-            ...$this->okReplies(),
+            'ok',
             ...$this->currentReplies(
                 $shouldSeeCountryCode,
                 $shouldSeeLevel1RegionId,
@@ -1153,12 +1017,12 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
 
     private function otherButton(): string
     {
-        return '🌎 keyboard.other';
+        return '🌎 other';
     }
 
     private function requestLocationButton(): string
     {
-        return '📍 keyboard.request_location';
+        return '📍 select_location';
     }
 
     protected function currentReplies(
@@ -1168,11 +1032,11 @@ class CountryTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
     ): array
     {
         return [
-            'reply.current_country',
+            'current_country',
             $this->country($country),
-            'reply.current_region',
+            'current_region',
             $region1,
-            'reply.current_timezone',
+            'current_timezone',
             $tz,
         ];
     }

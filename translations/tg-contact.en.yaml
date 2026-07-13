@@ -1,0 +1,18 @@
+about_items: 'About us:'
+company: Company
+address: Address
+tax: Tax number
+contact_items: 'Contacts:'
+telegram: Telegram
+instagram: Instagram
+github: Github
+linkedin: Linkedin
+email: Email
+phone: Phone
+
+query:
+  left_message_confirm: Would you like to leave a message?
+  message: Type your message please
+reply:
+  ok: Your message has been sent and will be processed as soon as possible
+  canceled: Message adding dialog has been canceled

@@ -92,18 +92,4 @@ class SearchTermTelegramViewProvider
             ->apply($message)
         ;
     }
-
-    public function getSearchTermTelegramReverseView(
-        SearchTermTransfer $searchTerm,
-        bool $addSecrets = false,
-        string $localeCode = null
-    ): string
-    {
-        $m = $this->modifier;
-
-        return $m->create()
-            ->add($m->bracketsModifier($this->getSearchTermTelegramMainView($searchTerm, addSecrets: $addSecrets)))
-            ->apply($this->searchTermTypeProvider->getSearchTermTypeComposeName($searchTerm->getType(), localeCode: $localeCode))
-        ;
-    }
 }

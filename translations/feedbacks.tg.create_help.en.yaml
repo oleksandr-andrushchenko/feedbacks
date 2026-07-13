@@ -1,8 +1,0 @@
-title: This command allows to create feedbacks (reports, complains or gratitudes) on user, organization or place.
-search_term_type: '%search_term% can have more than one meaning, help other users understand who or what this feedback is about.'
-extra_search_term: The more information about %search_term% you add, the easier it will be for other users to find your feedback.
-rating: 'Help other users understand your attitude to %search_term%.'
-description: Add any information and/or describe your experience with %search_term%.
-media: Add any photos or videos.
-confirm: Make sure the request is correct. In addition, the number of requests is limited - use wisely.
-send_to_channel_confirm: 'Upon confirmation, your feedback will be published anonymously on the %channels% channels, in this form:'

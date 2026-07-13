@@ -1,4 +1,4 @@
-create: Add feedback
+create: Feedback
 create_old_1: Add Feedback
 create_old_2: Add feedback
 search: Search
@@ -7,11 +7,14 @@ lookup: Who searched
 lookup_old_1: Find Lookups
 subscribe: Get Premium
 subscriptions: My Premium
-country: Change Country or Region
+country: Location
 country_old_1: Change Country
 country_old_2: My Country
-locale: Change Locale
+country_old_3: Change Country or Region
+locale: Locale
 locale_old_1: My Locale
+locale_old_2: Change Locale
+locale_old_3: Change locale
 limits: Limitations
 limits_old_1: About Limits
 purge: Purge Data

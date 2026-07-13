@@ -1,0 +1,30 @@
+upload_media: Add a photo or video (optional)
+media_examples: It can be anything, for example
+user_photo: User profile photo
+messaging_screenshot: Conversation screenshot
+account_screenshot: Profile or account screenshot
+screen_recording: Screen recording
+product_or_service_photo: Photo of a product, work, or service
+other_evidence: Other photo or video evidence
+already_added: Already added
+media_count: '%count% media files'
+use_upload_button: Use the media upload options below
+
+input_details: Tell us what happened. Include as much information as possible
+details_examples: It can be anything, for example
+messenger_profile_url: Link to a user's social media or messenger profile
+messenger_username: Username or user ID on a social network or messenger
+email: Email address
+person_name: Full name or first name of the person
+organization_name: Company or organization name
+place_name: Place name or address
+phone_number: Phone number
+car_number: Vehicle registration number
+tax_number: Company registration or taxpayer identification number
+url: Website or web page
+use_input_field: Use the input field below
+
+error: Could not extract feedback details from this message. Specify who the feedback is about and whether the experience was positive, neutral, or negative
+canceled: Feedback creation dialog has been canceled
+created: Feedback has been successfully added
+on_self_forbidden: Feedback about yourself is not allowed

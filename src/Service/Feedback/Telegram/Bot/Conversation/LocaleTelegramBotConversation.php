@@ -41,39 +41,26 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
         };
     }
 
-    private function queryChangeConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryChangeConfirm(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_CHANGE_CONFIRM_QUERIED);
 
-        $message = $this->getChangeConfirmQuery($tg, $help);
-
-        $buttons = [];
-        $buttons[] = [$tg->yesButton(), $tg->noButton()];
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
-
-        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
-    }
-
-    private function getChangeConfirmQuery(TelegramBotAwareHelper $tg, bool $help = false): string
-    {
         $message = $this->getCurrentLocaleReply($tg);
         $message .= PHP_EOL . PHP_EOL;
 
-        $query = $tg->trans('query.change_confirm', domain: 'locale');
+        $query = $tg->t('change_confirm', [], 'locale');
         $query = $tg->queryText($query);
-
-        if ($help) {
-            $query = $tg->view('locale_change_confirm_help', [
-                'query' => $query,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
+        $query .= $tg->queryTipText($tg->useText(false));
 
         $message .= $query;
 
-        return $message;
+        $buttons = [
+            $tg->yesButton(),
+            $tg->noButton(),
+            $tg->cancelButton(),
+        ];
+
+        return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
     private function getCurrentLocaleReply(TelegramBotAwareHelper $tg): string
@@ -85,7 +72,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
             'locale' => $localeName,
         ];
 
-        return $tg->trans('reply.current_locale', $parameters, domain: 'locale');
+        return $tg->t('current_locale', $parameters, 'locale');
     }
 
     private function gotChangeConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -94,10 +81,6 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
             $tg->stopConversation($entity);
 
             return $this->chooseActionTelegramChatSender->sendActions($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryChangeConfirm($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {
@@ -123,7 +106,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
     {
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
 
-        $message = $tg->trans('reply.canceled', domain: 'locale');
+        $message = $tg->t('canceled', [], 'locale');
         $message .= PHP_EOL . PHP_EOL;
         $message .= $this->getCurrentLocaleReply($tg);
         $message = $tg->upsetText($message);
@@ -150,32 +133,26 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
         return $this->localeProvider->getLocales();
     }
 
-    private function queryLocale(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryLocale(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_LOCALE_QUERIED);
 
-        $message = $this->getLocaleQuery($tg, $help);
+        $message = $this->getLocaleQuery($tg);
 
         $buttons = $this->getLocaleButtons($this->getLocales(), $tg);
-        $buttons[] = $tg->prevButton();
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
+        $buttons = array_merge($buttons, [
+            $tg->prevButton(),
+            $tg->cancelButton(),
+        ]);
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
 
-    private function getLocaleQuery(TelegramBotAwareHelper $tg, bool $help = false): string
+    private function getLocaleQuery(TelegramBotAwareHelper $tg): string
     {
-        $query = $tg->trans('query.locale', domain: 'locale');
+        $query = $tg->t('locale', [], 'locale');
         $query = $tg->queryText($query);
-
-        if ($help) {
-            $query = $tg->view('locale_locale_help', [
-                'query' => $query,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
+        $query .= $tg->queryTipText($tg->useText(false));
 
         return $query;
     }
@@ -193,16 +170,17 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
         return $tg->button($this->localeProvider->getLocaleComposeName($locale));
     }
 
-    private function queryGuessLocale(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryGuessLocale(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_GUESS_LOCALE_QUERIED);
 
-        $message = $this->getLocaleQuery($tg, $help);
+        $message = $this->getLocaleQuery($tg);
 
         $buttons = $this->getLocaleButtons($this->getGuessLocales($tg), $tg);
-        $buttons[] = $this->getOtherLocaleButton($tg);
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
+        $buttons = array_merge($buttons, [
+            $this->getOtherLocaleButton($tg),
+            $tg->cancelButton(),
+        ]);
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
@@ -210,7 +188,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
     private function getOtherLocaleButton(TelegramBotAwareHelper $tg): KeyboardButton
     {
         $icon = $this->localeProvider->getUnknownLocaleIcon();
-        $name = $tg->trans('keyboard.other');
+        $name = $tg->t('other', [], 'locale');
 
         return $tg->button($icon . ' ' . $name);
     }
@@ -219,14 +197,6 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
     {
         if (!$guess && $tg->matchInput($tg->prevButton()->getText())) {
             return $this->queryGuessLocale($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            if ($guess) {
-                return $this->queryGuessLocale($tg, true);
-            }
-
-            return $this->queryLocale($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {
@@ -264,7 +234,7 @@ class LocaleTelegramBotConversation extends TelegramBotConversation
 
         $tg->stopConversation($entity);
 
-        $message = $tg->trans('reply.ok', domain: 'locale');
+        $message = $tg->t('ok', [], 'locale');
         $message = $tg->okText($message);
         $message .= PHP_EOL . PHP_EOL;
         $message .= $this->getCurrentLocaleReply($tg);

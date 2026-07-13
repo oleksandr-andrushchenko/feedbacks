@@ -51,9 +51,8 @@ class ChooseActionTelegramChatSender
     public function getKeyboard(TelegramBotAwareHelper $tg): Keyboard
     {
         $buttons = [];
-        $buttons[] = $this->getSearchButton($tg);
         $buttons[] = $this->getCreateButton($tg);
-        $buttons[] = $this->getContactButton($tg);
+        $buttons[] = $this->getSearchButton($tg);
 
         $messengerUser = $tg->getBot()->getMessengerUser();
 
@@ -68,6 +67,7 @@ class ChooseActionTelegramChatSender
 
             $buttons[] = $this->getCountryButton($tg);
             $buttons[] = $this->getLocaleButton($tg);
+            $buttons[] = $this->getContactButton($tg);
 //            $buttons[] = $this->getCommandsButton($tg);
 //            $buttons[] = $this->getLimitsButton($tg);
 //            $buttons[] = $this->getRestartButton($tg);
@@ -78,7 +78,7 @@ class ChooseActionTelegramChatSender
             $buttons[] = $this->getShowMoreButton($tg);
         }
 
-        return $tg->keyboard(...array_chunk($buttons, 2));
+        return $tg->keyboard(...$buttons);
     }
 
     public function getSearchButton(TelegramBotAwareHelper $tg): KeyboardButton
@@ -173,6 +173,7 @@ class ChooseActionTelegramChatSender
             $this->getCountryButton($tg)->getText(),
             $tg->command('country_old_1'),
             $tg->command('country_old_2'),
+            $tg->command('country_old_3'),
         ];
     }
 
@@ -181,6 +182,8 @@ class ChooseActionTelegramChatSender
         return [
             $this->getLocaleButton($tg)->getText(),
             $tg->command('locale_old_1'),
+            $tg->command('locale_old_2'),
+            $tg->command('locale_old_3'),
         ];
     }
 

@@ -172,6 +172,11 @@ class TelegramBotAwareHelper
         return $this->translator->trans($id, $parameters, $domain, $locale ?? $this->getLocaleCode());
     }
 
+    public function t(string $id, array $parameters, string $domain, string $locale = null): string
+    {
+        return $this->translator->trans($id, $parameters, sprintf('tg-%s', $domain), $locale ?? $this->getLocaleCode());
+    }
+
     public function getLocaleCode(): ?string
     {
         return $this->getBot()->getUser()?->getLocaleCode();
@@ -244,21 +249,6 @@ class TelegramBotAwareHelper
         return '↘️ ' . ($useInput ? $this->trans('help.use_input') : $this->trans('help.use_keyboard'));
     }
 
-    public function useInput(): string
-    {
-        return '↘️ ' . $this->trans('help.use_input');
-    }
-
-    public function useKeyboard(): string
-    {
-        return '↘️ ' . $this->trans('help.use_keyboard');
-    }
-
-    public function useMedia(): string
-    {
-        return '↘️ ' . $this->trans('help.use_media');
-    }
-
     public function wrongText(string $text): string
     {
         return '🤔 ' . $text;
@@ -266,7 +256,7 @@ class TelegramBotAwareHelper
 
     public function keyboard(...$buttons): Keyboard
     {
-        return $this->telegramBotKeyboardFactory->createTelegramKeyboard(...$buttons);
+        return $this->telegramBotKeyboardFactory->createTelegramKeyboard(...array_chunk($buttons, 3));
     }
 
     public function locationButton(string $text): KeyboardButton
@@ -304,11 +294,6 @@ class TelegramBotAwareHelper
         return $this->button($this->trans('keyboard.next') . ' ➡️');
     }
 
-    public function helpButton(): KeyboardButton
-    {
-        return $this->button('🚨 ' . $this->trans('keyboard.help'));
-    }
-
     public function cancelButton(): KeyboardButton
     {
         return $this->removeButton($this->trans('keyboard.cancel'));
@@ -339,6 +324,11 @@ class TelegramBotAwareHelper
         $group = $this->getBot()->getEntity()->getGroup()->name;
 
         return $this->twig->render(sprintf('%s.tg.%s.html.twig', $group, $template), $context);
+    }
+
+    public function v(string $template, array $context = []): string
+    {
+        return $this->twig->render(sprintf('tg-%s.html.twig', $template), $context);
     }
 
     public function null(): null

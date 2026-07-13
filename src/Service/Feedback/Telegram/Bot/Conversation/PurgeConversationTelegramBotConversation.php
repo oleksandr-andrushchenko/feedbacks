@@ -34,27 +34,21 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation
         };
     }
 
-    private function queryConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryConfirm(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_CONFIRM_QUERIED);
 
-        $query = $tg->trans('query.confirm', domain: 'purge');
+        $query = $tg->t('confirm', [], 'purge');
         $query = $tg->queryText($query);
-
-        if ($help) {
-            $query = $tg->view('purge_confirm_help', [
-                'query' => $query,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
+        $query .= $tg->queryTipText($tg->useText(false));
 
         $message = $query;
 
-        $buttons = [];
-        $buttons[] = [$tg->yesButton(), $tg->noButton()];
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
+        $buttons = [
+            $tg->yesButton(),
+            $tg->noButton(),
+            $tg->cancelButton(),
+        ];
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
@@ -65,10 +59,6 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation
             $tg->stopConversation($entity);
 
             return $this->chooseActionTelegramChatSender->sendActions($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryConfirm($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {
@@ -89,7 +79,7 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation
 
         $this->telegramBotLocaleSwitcher->setLocale($tg->getBot()->getEntity()->getLocaleCode());
 
-        $message = $tg->trans('reply.ok', domain: 'purge');
+        $message = $tg->t('ok', [], 'purge');
         $message = $tg->okText($message);
 
         $tg->stopConversation($entity);
@@ -103,7 +93,7 @@ class PurgeConversationTelegramBotConversation extends TelegramBotConversation
 
         $tg->stopConversation($entity);
 
-        $message = $tg->trans('reply.canceled', domain: 'purge');
+        $message = $tg->t('canceled', [], 'purge');
         $message = $tg->upsetText($message);
 
         return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);

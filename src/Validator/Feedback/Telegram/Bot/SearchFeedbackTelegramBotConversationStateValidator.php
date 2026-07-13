@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Validator\Feedback\Telegram\Bot;
 
 use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
-use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackV2TelegramBotConversation;
+use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConversation;
 use App\Service\Validator\ValidatorHelper;
 use App\Validator\Feedback\SearchTermTransferConstraint;
 use Symfony\Component\Validator\Constraint;
@@ -36,7 +36,7 @@ class SearchFeedbackTelegramBotConversationStateValidator extends ConstraintVali
 
         $helper = $this->helper->withContext($this->context)->withTranslationDomain('feedbacks.tg.search_validation');
 
-        if ($value->getStep() >= SearchFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED) {
+        if ($value->getStep() >= SearchFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED) {
             if ($value->getSearchTerms() === null) {
                 return $helper->addMessage($constraint->searchTermNotBlankMessage);
             }

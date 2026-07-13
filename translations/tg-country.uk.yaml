@@ -1,0 +1,14 @@
+change_confirm: Бажаєте змінити налаштування?
+select_location: Визначити автоматично або виставити вручну?
+country: Виберіть Вашу країну
+level_1_region: Виберіть Ваш регіон
+timezone: Виберіть Ваш часовий пояс
+request_location: Визначити автоматично
+custom_location: Виставити вручну
+request_location_failed: Ми не змогли визначити Ваше місце розташування, спробуйте вибрати вручну
+current_country: Ваша поточна країна - %country%
+current_region: Регіон - %region%
+current_timezone: Часовий пояс - %timezone%
+unknown_timezone: Невідомо
+canceled: Діалог вибору країни скасовано
+ok: Успішно оновлено

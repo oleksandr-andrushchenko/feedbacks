@@ -1,4 +1,4 @@
-create: Додати відгук
+create: Відгук
 create_old_1: Додати Відгук
 create_old_2: Додати відгук
 search: Пошук
@@ -7,11 +7,14 @@ lookup: Хто шукав
 lookup_old_1: Знайти Запити
 subscribe: Купити Преміум
 subscriptions: Мій Преміум
-country: Змінити Країну або Регіон
+country: Локація
 country_old_1: Змінити Країну
 country_old_2: Моя Країна
-locale: Змінити Мову
+country_old_3: Змінити Країну або Регіон
+locale: Мова
 locale_old_1: Моя Мова
+locale_old_2: Змінити Мову
+locale_old_3: Змінити мову
 limits: Обмеження
 limits_old_1: Про Ліміти
 purge: Видалити Дані

@@ -77,18 +77,13 @@
             <!--            <parameter>clean_talk</parameter>-->
             <parameter>should_i_answer</parameter>
         </parameter>
-
-        <parameter key="app.lookup.search_term_type_step">true</parameter>
-        <parameter key="app.lookup.confirm_step">false</parameter>
     </parameters>
 
     <services>
 
 
-
         <service id="app.feedback_user_subscription_dynamodb_repository" parent="oa.dynamodb.entity_repository"
                  class="App\Repository\Feedback\FeedbackUserSubscriptionDynamodbRepository"/>
-
 
 
         <service id="app.search_term_feedback_dynamodb_repository" parent="oa.dynamodb.entity_repository"
@@ -243,8 +238,6 @@
             <argument type="service" id="app.feedback_search_command_options"/>
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.validator"/>
-            <argument type="service" id="app.feedback_search_statistic_provider"/>
-            <argument type="service" id="app.feedback_command_limits_checker"/>
             <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
@@ -256,8 +249,6 @@
             <argument type="service" id="app.feedback_lookup_command_options"/>
             <argument type="service" id="app.orm.entity_manager"/>
             <argument type="service" id="app.validator"/>
-            <argument type="service" id="app.feedback_lookup_statistic_provider"/>
-            <argument type="service" id="app.feedback_command_limits_checker"/>
             <argument type="service" id="app.search_term_upserter"/>
             <argument type="service" id="app.event_bus"/>
             <argument type="service" id="app.messenger_user_service"/>
@@ -498,8 +489,8 @@
                  class="App\Service\Feedback\LLM\FeedbackSearchTermsExtractor">
             <argument type="service" id="app.openai_llm_client"/>
         </service>
-        <service id="app.telegram_conversation_create_feedback_v2" lazy="true"
-                 class="App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackV2TelegramBotConversation">
+        <service id="app.telegram_conversation_create_feedback" lazy="true"
+                 class="App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackTelegramBotConversation">
             <argument type="service" id="app.validator"/>
             <argument type="service" id="app.feedback_details_extractor"/>
             <argument type="service" id="app.feedback_search_term_parser"/>
@@ -509,8 +500,8 @@
             <argument type="service" id="logger"/>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
-        <service id="app.telegram_conversation_search_feedback_v2" lazy="true"
-                 class="App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackV2TelegramBotConversation">
+        <service id="app.telegram_conversation_search_feedback" lazy="true"
+                 class="App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConversation">
             <argument type="service" id="app.validator"/>
             <argument type="service" id="app.feedback_search_terms_extractor"/>
             <argument type="service" id="app.feedback_search_term_parser"/>
@@ -525,15 +516,12 @@
         <service id="app.telegram_conversation_lookup" lazy="true"
                  class="App\Service\Feedback\Telegram\Bot\Conversation\LookupFeedbackTelegramBotConversation">
             <argument type="service" id="app.validator"/>
+            <argument type="service" id="app.feedback_search_terms_extractor"/>
             <argument type="service" id="app.feedback_search_term_parser"/>
             <argument type="service" id="app.choose_action_telegram_chat_sender"/>
-            <argument type="service" id="app.feedback_search_term_telegram_view_provider"/>
-            <argument type="service" id="app.feedback_search_term_type_provider"/>
             <argument type="service" id="app.feedback_lookup_creator"/>
             <argument type="service" id="app.search_searcher_telegram"/>
-            <argument type="service" id="app.feedback_lookup_service"/>
-            <argument>%app.lookup.search_term_type_step%</argument>
-            <argument>%app.lookup.confirm_step%</argument>
+            <argument type="service" id="logger"/>
             <tag name="app.telegram_conversation_feedbacks"/>
         </service>
         <service id="app.telegram_conversation_subscribe"

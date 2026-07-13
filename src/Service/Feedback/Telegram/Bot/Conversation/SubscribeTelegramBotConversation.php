@@ -119,27 +119,19 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
         return $this->telegramBotPaymentMethodRepository->findActiveByBot($tg->getBot()->getEntity());
     }
 
-    private function queryCurrency(TelegramBotAwareHelper $tg, bool $help = false): ?string
+    private function queryCurrency(TelegramBotAwareHelper $tg): ?string
     {
         $this->state->setStep(self::STEP_CURRENCY_QUERIED);
 
         $message = $this->getStep(1);
-        $message .= $tg->trans('query.currency', domain: 'subscribe');
+        $message .= $tg->t('currency', [], 'subscribe');
         $message = $tg->queryText($message);
-
-        if ($help) {
-            $message = $tg->view('subscribe_currency_help', [
-                'query' => $message,
-            ]);
-        } else {
-            $message .= $tg->queryTipText($tg->useText(false));
-        }
+        $message .= $tg->queryTipText($tg->useText(false));
 
         $buttons = array_map(
             fn (Currency $currency): KeyboardButton => $this->getCurrencyButton($currency, $tg),
             $this->getCurrencies($tg)
         );
-        $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
@@ -150,21 +142,14 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
         return $tg->button($this->currencyProvider->getCurrencyComposeName($currency));
     }
 
-    private function querySubscriptionPlan(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function querySubscriptionPlan(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_SUBSCRIPTION_PLAN_QUERIED);
 
         $message = $this->getStep(2);
-        $message .= $tg->trans('query.subscription_plan', domain: 'subscribe');
+        $message .= $tg->t('subscription_plan', [], 'subscribe');
         $message = $tg->queryText($message);
-
-        if ($help) {
-            $message = $tg->view('subscribe_subscription_plan_help', [
-                'query' => $message,
-            ]);
-        } else {
-            $message .= $tg->queryTipText($tg->useText(false));
-        }
+        $message .= $tg->queryTipText($tg->useText(false));
 
         $buttons = array_map(
             fn (FeedbackSubscriptionPlan $subscriptionPlan): KeyboardButton => $this->getSubscriptionPlanButton($subscriptionPlan, $tg),
@@ -177,7 +162,6 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
             $buttons[] = $this->getChangeCurrencyButton($tg);
         }
 
-        $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
@@ -215,15 +199,11 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
 
     private function getChangeCurrencyButton(TelegramBotAwareHelper $tg): KeyboardButton
     {
-        return $tg->button('💱 ' . $tg->trans('keyboard.change_currency', domain: 'subscribe'));
+        return $tg->button('💱 ' . $tg->t('change_currency', [], 'subscribe'));
     }
 
     private function gotCurrency(TelegramBotAwareHelper $tg, Entity $entity): null
     {
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryCurrency($tg, true);
-        }
-
         if ($tg->matchInput($tg->cancelButton()->getText())) {
             return $this->gotCancel($tg, $entity);
         }
@@ -263,7 +243,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
     {
         $this->state->setStep(self::STEP_CANCEL_PRESSED);
 
-        $message = $tg->trans('reply.canceled', domain: 'subscribe');
+        $message = $tg->t('canceled', [], 'subscribe');
         $message = $tg->upsetText($message);
 
         $tg->stopConversation($entity);
@@ -275,10 +255,6 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
     {
         if ($this->state->currencyStep() && $tg->matchInput($tg->prevButton()->getText())) {
             return $this->queryCurrency($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->querySubscriptionPlan($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {
@@ -324,7 +300,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
             $parameters = [
                 'contact_command' => $tg->command('contact', html: true, link: true),
             ];
-            $message = $tg->trans('reply.not_accept_payments', parameters: $parameters);
+            $message = $tg->t('not_accept_payments', $parameters, 'subscribe');
             $message = $tg->failText($message);
 
             return $this->chooseActionTelegramChatSender->sendActions($tg, $message);
@@ -339,28 +315,21 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
         return $this->queryPayment($tg, $entity);
     }
 
-    private function queryPaymentMethod(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryPaymentMethod(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_PAYMENT_METHOD_QUERIED);
 
         $message = $this->getStep(3);
-        $message .= $tg->trans('query.payment_method', domain: 'subscribe');
+        $message .= $tg->t('payment_method', [], 'subscribe');
         $message = $tg->queryText($message);
 
-        if ($help) {
-            $message = $tg->view('subscribe_payment_method_help', [
-                'query' => $message,
-            ]);
-        } else {
-            $message .= $tg->queryTipText($tg->useText(false));
-        }
+        $message .= $tg->queryTipText($tg->useText(false));
 
         $buttons = array_map(
             fn (TelegramBotPaymentMethod $paymentMethod): KeyboardButton => $this->getPaymentMethodButton($paymentMethod, $tg),
             $this->getPaymentMethods($tg)
         );
         $buttons[] = $tg->prevButton();
-        $buttons[] = $tg->helpButton();
         $buttons[] = $tg->cancelButton();
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
@@ -368,7 +337,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
 
     private function getPaymentMethodButton(TelegramBotPaymentMethod $paymentMethod, TelegramBotAwareHelper $tg): KeyboardButton
     {
-        $text = $tg->trans(sprintf('payment_method.%s', $paymentMethod->getName()->name), domain: 'tg.payment_method');
+        $text = $tg->t(sprintf('payment_method.%s', $paymentMethod->getName()->name), [], 'payment-method');
 
         return $tg->button($text);
     }
@@ -385,12 +354,12 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
         $parameters = [
             'price' => $this->moneyFormatter->formatMoneyAsTelegramButton($price),
         ];
-        $payButton = $tg->trans('query.pay_button', $parameters, domain: 'subscribe', locale: $tgLocaleCode);
+        $payButton = $tg->t('pay_button', $parameters, 'subscribe', locale: $tgLocaleCode);
         $payButton = sprintf('<u>%s</u>', $payButton);
         $parameters = [
             'pay_button' => $payButton,
         ];
-        $message .= $tg->trans('query.payment', $parameters, domain: 'subscribe');
+        $message .= $tg->t('payment', $parameters, 'subscribe');
 
         $message = $tg->queryText($message);
 
@@ -413,8 +382,8 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
                 $tg->getBot()->getMessengerUser(),
                 (string) $tg->getChatId(),
                 $this->state->getPaymentMethod(),
-                $tg->trans('query.payment_invoice_title', $parameters, domain: 'subscribe'),
-                $tg->trans('query.payment_invoice_description', $parameters, domain: 'subscribe'),
+                $tg->t('payment_invoice_title', $parameters, 'subscribe'),
+                $tg->t('payment_invoice_description', $parameters, 'subscribe'),
                 $this->getSubscriptionPlanButton($subscriptionPlan, $tg)->getText(),
                 $subscriptionPlan->getName()->name,
                 [],
@@ -427,7 +396,7 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
             $parameters = [
                 'currency' => $currencyName,
             ];
-            $message = $tg->trans('reply.invalid_currency', $parameters, domain: 'subscribe');
+            $message = $tg->t('invalid_currency', $parameters, 'subscribe');
 
             $tg->reply($tg->failText($message));
 
@@ -441,10 +410,6 @@ class SubscribeTelegramBotConversation extends TelegramBotConversation
     {
         if ($this->state->paymentMethodStep() && $tg->matchInput($tg->prevButton()->getText())) {
             return $this->queryPaymentMethod($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryPaymentMethod($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {

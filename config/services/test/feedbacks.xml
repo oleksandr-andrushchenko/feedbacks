@@ -44,8 +44,5 @@
         </parameter>
 
         <parameter key="app.search.search_providers" type="collection"/>
-
-        <parameter key="app.lookup.search_term_type_step">true</parameter>
-        <parameter key="app.lookup.confirm_step">true</parameter>
     </parameters>
 </container>

@@ -1,5 +1,0 @@
-{% trans_default_domain 'feedbacks.tg.search_term_types' %}
-ℹ️ {{ 'items'|trans }}:
-{% for type in (types is defined ? types : constant('App\\Enum\\Feedback\\SearchTermType::base')) %}
-▫️ {{ type.name|trans({}, 'feedbacks.search_term_type_icon') }} {{ type.name|trans({}, 'feedbacks.search_term_type') }}
-{% endfor %}

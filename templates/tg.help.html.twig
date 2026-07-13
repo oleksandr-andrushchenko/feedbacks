@@ -1,6 +1,0 @@
-{% block title_icon %}ℹ️{% endblock %} {% block title %}{% endblock %}
-
-{% block query_icon %}‼️{% endblock %} {{ query|raw }}
-
-{% block description %}{% endblock %}
-{% if help_use_input is defined and help_use_input %}↘️ {{ 'help.use_input'|trans({}, 'feedbacks.tg') }}{% elseif help_use_keyboard is defined and help_use_keyboard %}↘️ {{ 'help.use_keyboard'|trans({}, 'feedbacks.tg') }}{% elseif help_use_media is defined and help_use_media %}↘️ {{ 'help.use_media'|trans({}, 'feedbacks.tg') }}{% endif %}

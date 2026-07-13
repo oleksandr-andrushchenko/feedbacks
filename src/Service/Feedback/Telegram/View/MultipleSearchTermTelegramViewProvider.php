@@ -91,20 +91,4 @@ class MultipleSearchTermTelegramViewProvider
 
         return new SearchTermsTransfer($sortSearchTermsItems);
     }
-
-    public function getPrimarySearchTermTelegramView(
-        SearchTermsTransfer $searchTerms,
-        bool $addSecrets = false,
-        bool $forceType = true,
-        string $locale = null
-    ): string
-    {
-        if (!$searchTerms->hasItems()) {
-            return '';
-        }
-
-        $term = $this->getSortedSearchTerms($searchTerms)->getFirstItem();
-
-        return $this->searchTermTelegramViewProvider->getSearchTermTelegramView($term, $addSecrets, $forceType, $locale);
-    }
 }

@@ -50,34 +50,21 @@ class ContactTelegramBotConversation extends TelegramBotConversation
         return $this->queryLeftMessageConfirm($tg);
     }
 
-    private function queryLeftMessageConfirm(TelegramBotAwareHelper $tg, bool $help = false): null
+    private function queryLeftMessageConfirm(TelegramBotAwareHelper $tg): null
     {
         $this->state->setStep(self::STEP_LEFT_MESSAGE_CONFIRM_QUERIED);
 
-        $message = $this->getLeftMessageConfirmQuery($tg, $help);
+        $message = $tg->t('left_message_confirm', [], 'contact');
+        $message = $tg->queryText($message);
+        $message .= $tg->queryTipText($tg->useText(false));
 
-        $buttons = [];
-        $buttons[] = [$tg->yesButton(), $tg->noButton()];
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
+        $buttons = [
+            $tg->yesButton(),
+            $tg->noButton(),
+            $tg->cancelButton(),
+        ];
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
-    }
-
-    private function getLeftMessageConfirmQuery(TelegramBotAwareHelper $tg, bool $help = false): string
-    {
-        $query = $tg->trans('query.left_message_confirm', domain: 'contact');
-        $query = $tg->queryText($query);
-
-        if ($help) {
-            $query = $tg->view('contact_left_message_confirm_help', [
-                'query' => $query,
-            ]);
-        } else {
-            $query .= $tg->queryTipText($tg->useText(false));
-        }
-
-        return $query;
     }
 
     private function gotLeftMessageConfirm(TelegramBotAwareHelper $tg, Entity $entity): null
@@ -86,10 +73,6 @@ class ContactTelegramBotConversation extends TelegramBotConversation
             $tg->stopConversation($entity);
 
             return $this->chooseActionTelegramChatSender->sendActions($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryLeftMessageConfirm($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {
@@ -111,30 +94,23 @@ class ContactTelegramBotConversation extends TelegramBotConversation
 
         $tg->stopConversation($entity);
 
-        $message = $tg->trans('reply.canceled', domain: 'contact');
+        $message = $tg->t('canceled', [], 'contact');
         $message = $tg->upsetText($message);
 
         return $this->chooseActionTelegramChatSender->sendActions($tg, text: $message, appendDefault: true);
     }
 
-    private function queryMessage(TelegramBotAwareHelper $tg, bool $help = false): ?string
+    private function queryMessage(TelegramBotAwareHelper $tg): ?string
     {
         $this->state->setStep(self::STEP_MESSAGE_QUERIED);
 
-        $message = $tg->trans('query.message', domain: 'contact');
+        $message = $tg->t('input_message', [], 'contact');
         $message = $tg->queryText($message);
+        $message .= $tg->queryTipText($tg->useText(true));
 
-        if ($help) {
-            $message = $tg->view('contact_message_help', [
-                'query' => $message,
-            ]);
-        } else {
-            $message .= $tg->queryTipText($tg->useText(true));
-        }
-
-        $buttons = [];
-        $buttons[] = $tg->helpButton();
-        $buttons[] = $tg->cancelButton();
+        $buttons = [
+            $tg->cancelButton(),
+        ];
 
         return $tg->reply($message, $tg->keyboard(...$buttons))->null();
     }
@@ -145,10 +121,6 @@ class ContactTelegramBotConversation extends TelegramBotConversation
             $tg->replyWrong(true);
 
             return $this->queryMessage($tg);
-        }
-
-        if ($tg->matchInput($tg->helpButton()->getText())) {
-            return $this->queryMessage($tg, true);
         }
 
         if ($tg->matchInput($tg->cancelButton()->getText())) {
@@ -167,7 +139,7 @@ class ContactTelegramBotConversation extends TelegramBotConversation
 
             $tg->stopConversation($entity);
 
-            $message = $tg->trans('reply.ok', domain: 'contact');
+            $message = $tg->t('ok', [], 'contact');
             $message = $tg->okText($message);
 
             return $this->chooseActionTelegramChatSender->sendActions($tg, $message);

@@ -1,5 +1,0 @@
-query:
-  confirm: Confirm bot restart?
-reply:
-  ok: Restart has been successfully made.
-  canceled: Restart dialog has been canceled.

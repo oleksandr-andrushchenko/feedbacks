@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional\Service\Feedback\Telegram\Bot\Conversation;
 
-use App\Model\Feedback\Telegram\Bot\LookupFeedbackTelegramBotConversationState;
-use App\Service\Feedback\Telegram\Bot\Conversation\LookupFeedbackTelegramBotConversation;
+use App\Model\Feedback\Telegram\Bot\SearchFeedbackTelegramBotConversationState;
+use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\FeedbackTelegramBotGroup;
 use App\Tests\Fixtures;
 use App\Tests\Functional\Service\Telegram\Bot\TelegramBotCommandFunctionalTestCase;
 use Generator;
 
-class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestCase
+class SearchFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctionalTestCase
 {
     /**
      * @dataProvider startDataProvider
@@ -20,7 +20,7 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         $this->bootDefaultFixtures();
 
         $this->typeText($input)
-            ->shouldSeeStateStep($this->getConversation(), LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
+            ->shouldSeeStateStep($this->getConversation(), SearchFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
             ->shouldSeeReply('input_details')
             ->shouldSeeButtons($this->cancelButton())
         ;
@@ -28,43 +28,26 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
 
     public function startDataProvider(): Generator
     {
-        yield 'button' => ['input' => $this->command('lookup')];
-        yield 'input' => ['input' => FeedbackTelegramBotGroup::LOOKUP];
+        yield 'button' => ['input' => $this->command('search')];
+        yield 'input' => ['input' => FeedbackTelegramBotGroup::SEARCH];
     }
 
-    public function testDetailsSuccessLooksUpAndStopsConversation(): void
+    public function testDetailsSuccessSearchesAndStopsConversation(): void
     {
         $this->bootDefaultFixtures();
 
         $conversation = $this->createConversation(
-            LookupFeedbackTelegramBotConversation::class,
-            (new LookupFeedbackTelegramBotConversationState())
-                ->setStep(LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
+            SearchFeedbackTelegramBotConversation::class,
+            (new SearchFeedbackTelegramBotConversationState())
+                ->setStep(SearchFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
         );
 
-        $this->typeText('find searches about instasd')
-            ->shouldSeeReply('on_search', 'empty_result', ...$this->chooseActionReplies())
+        $this->typeText('find feedback about instasd')
+            ->shouldSeeReply('will_notify', 'instasd', ...$this->chooseActionReplies())
             ->shouldSeeButtons(...$this->chooseActionButtons())
         ;
 
         $this->assertConversationInactive($conversation);
-    }
-
-    public function testDetailsWithoutSearchTermsKeepsConversationAtDetailsStep(): void
-    {
-        $this->bootDefaultFixtures();
-
-        $conversation = $this->createConversation(
-            LookupFeedbackTelegramBotConversation::class,
-            (new LookupFeedbackTelegramBotConversationState())
-                ->setStep(LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
-        );
-
-        $this->typeText('no_terms')
-            ->shouldSeeStateStep($conversation, LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
-            ->shouldSeeReply('add_more_details', 'input_details')
-            ->shouldSeeButtons($this->cancelButton())
-        ;
     }
 
     public function testDetailsExtractionFailureKeepsConversationAtDetailsStep(): void
@@ -72,13 +55,13 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         $this->bootDefaultFixtures();
 
         $conversation = $this->createConversation(
-            LookupFeedbackTelegramBotConversation::class,
-            (new LookupFeedbackTelegramBotConversationState())
-                ->setStep(LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
+            SearchFeedbackTelegramBotConversation::class,
+            (new SearchFeedbackTelegramBotConversationState())
+                ->setStep(SearchFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
         );
 
         $this->typeText('extract_fail')
-            ->shouldSeeStateStep($conversation, LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
+            ->shouldSeeStateStep($conversation, SearchFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
             ->shouldSeeReply('error', 'input_details')
             ->shouldSeeButtons($this->cancelButton())
         ;
@@ -89,9 +72,9 @@ class LookupFeedbackTelegramBotCommandFunctionalTest extends TelegramBotCommandF
         $this->bootDefaultFixtures();
 
         $conversation = $this->createConversation(
-            LookupFeedbackTelegramBotConversation::class,
-            (new LookupFeedbackTelegramBotConversationState())
-                ->setStep(LookupFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
+            SearchFeedbackTelegramBotConversation::class,
+            (new SearchFeedbackTelegramBotConversationState())
+                ->setStep(SearchFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED)
         );
 
         $this->typeText($this->cancelButton())

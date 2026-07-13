@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Validator\Feedback\Telegram\Bot;
 
 use App\Model\Feedback\Telegram\Bot\CreateFeedbackTelegramBotConversationState;
-use App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackV2TelegramBotConversation;
+use App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackTelegramBotConversation;
 use App\Service\Validator\ValidatorHelper;
 use App\Validator\Feedback\SearchTermTransferConstraint;
 use Symfony\Component\Validator\Constraint;
@@ -41,7 +41,7 @@ class CreateFeedbackTelegramBotConversationStateValidator extends ConstraintVali
             $this->context->getValidator()->validate($searchTerm, new SearchTermTransferConstraint());
         }
 
-        if ($value->getStep() >= CreateFeedbackV2TelegramBotConversation::STEP_DETAILS_QUERIED) {
+        if ($value->getStep() >= CreateFeedbackTelegramBotConversation::STEP_DETAILS_QUERIED) {
             if ($value->getRating() === null) {
                 $helper->addMessage($constraint->ratingNotBlankMessage);
             }

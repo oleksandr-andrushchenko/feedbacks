@@ -38,7 +38,7 @@ class RestartTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
                 new TelegramBotConversationState(RestartConversationTelegramBotConversation::STEP_CONFIRM_QUERIED)
             )
             ->shouldSeeReply(
-                'query.confirm',
+                'confirm',
             )
             ->shouldSeeButtons(
                 $this->yesButton(),
@@ -80,7 +80,7 @@ class RestartTelegramBotCommandFunctionalTest extends TelegramBotCommandFunction
 
         $this->typeText($this->yesButton())
             ->shouldSeeReply(
-                ...$this->okReplies(),
+                'ok',
             )
             ->shouldSeeButtons(
                 ...$this->chooseActionButtons(),

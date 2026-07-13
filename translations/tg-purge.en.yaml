@@ -1,0 +1,4 @@
+confirm: Confirm data purge?
+
+ok: Purge has been successfully made, now you can leave the bot.
+canceled: Purge dialog has been canceled.

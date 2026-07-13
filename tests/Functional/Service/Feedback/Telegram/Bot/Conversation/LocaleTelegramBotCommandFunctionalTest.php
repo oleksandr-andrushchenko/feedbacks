@@ -65,12 +65,11 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'input' => $this->getCountryProvider()->getCountryIconByCode('ua') . ' locale',
             'shouldSeeReplies' => [
                 ...$this->currentReplies($locale),
-                'query.change_confirm',
+                'change_confirm',
             ],
             'shouldSeeButtons' => [
                 $this->yesButton(),
                 $this->noButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => LocaleTelegramBotConversation::STEP_CHANGE_CONFIRM_QUERIED,
@@ -82,12 +81,11 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'input' => FeedbackTelegramBotGroup::LOCALE,
             'shouldSeeReplies' => [
                 ...$this->currentReplies($locale),
-                'query.change_confirm',
+                'change_confirm',
             ],
             'shouldSeeButtons' => [
                 $this->yesButton(),
                 $this->noButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => LocaleTelegramBotConversation::STEP_CHANGE_CONFIRM_QUERIED,
@@ -136,7 +134,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'localeCode' => 'ru',
             'input' => $this->yesButton(),
             'shouldSeeReplies' => [
-                'query.locale',
+                'locale',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -144,7 +142,6 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
                     $this->locale('ru', 'ru'),
                 ],
                 $this->otherButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => LocaleTelegramBotConversation::STEP_GUESS_LOCALE_QUERIED,
@@ -155,7 +152,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'localeCode' => 'en',
             'input' => $this->yesButton(),
             'shouldSeeReplies' => [
-                'query.locale',
+                'locale',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -163,7 +160,6 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
                     $this->locale('uk', 'ua'),
                     $this->locale('ru', 'ru'),
                 ],
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => LocaleTelegramBotConversation::STEP_LOCALE_QUERIED,
@@ -182,30 +178,13 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'shouldSeeStep' => null,
         ];
 
-        yield 'help' => [
-            'countryCode' => 'ua',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                ...$this->currentReplies($locale),
-                'query.change_confirm',
-            ],
-            'shouldSeeButtons' => [
-                $this->yesButton(),
-                $this->noButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => LocaleTelegramBotConversation::STEP_CHANGE_CONFIRM_QUERIED,
-        ];
-
         yield 'cancel' => [
             'countryCode' => 'ua',
-            'localeCode' => 'uk',
+            'localeCode' => $locale = 'uk',
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($locale),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -261,7 +240,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'localeCode' => 'ru',
             'input' => $this->locale($locale = 'uk', 'ua'),
             'shouldSeeReplies' => [
-                ...$this->okReplies(),
+                'ok',
                 ...$this->currentReplies($locale),
                 ...$this->chooseActionReplies(),
             ],
@@ -278,7 +257,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'localeCode' => $locale = 'ua',
             'input' => $this->otherButton(),
             'shouldSeeReplies' => [
-                'query.locale',
+                'locale',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -287,27 +266,9 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
                     $this->locale('ru', 'ru'),
                 ],
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => LocaleTelegramBotConversation::STEP_LOCALE_QUERIED,
-            'shouldSeeCountryCode' => $country,
-            'shouldSeeLocaleCode' => $locale,
-        ];
-
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                'title',
-                'query.locale',
-            ],
-            'shouldSeeButtons' => [
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => LocaleTelegramBotConversation::STEP_GUESS_LOCALE_QUERIED,
             'shouldSeeCountryCode' => $country,
             'shouldSeeLocaleCode' => $locale,
         ];
@@ -318,7 +279,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($locale),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -376,7 +337,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'localeCode' => 'ru',
             'input' => $this->locale($locale = 'uk', 'ua'),
             'shouldSeeReplies' => [
-                ...$this->okReplies(),
+                'ok',
                 ...$this->currentReplies($locale),
                 ...$this->chooseActionReplies(),
             ],
@@ -393,7 +354,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'localeCode' => $locale = 'ua',
             'input' => $this->prevButton(),
             'shouldSeeReplies' => [
-                'query.locale',
+                'locale',
             ],
             'shouldSeeButtons' => [
                 ...[
@@ -401,33 +362,9 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
                     $this->locale('ru', 'ru'),
                 ],
                 $this->otherButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => LocaleTelegramBotConversation::STEP_GUESS_LOCALE_QUERIED,
-            'shouldSeeCountryCode' => $country,
-            'shouldSeeLocaleCode' => $locale,
-        ];
-
-        yield 'help' => [
-            'countryCode' => $country = 'ua',
-            'localeCode' => $locale = 'uk',
-            'input' => $this->helpButton(),
-            'shouldSeeReplies' => [
-                'title',
-                'query.locale',
-            ],
-            'shouldSeeButtons' => [
-                ...[
-                    $this->locale('en', 'us'),
-                    $this->locale('uk', 'ua'),
-                    $this->locale('ru', 'ru'),
-                ],
-                $this->prevButton(),
-                $this->helpButton(),
-                $this->cancelButton(),
-            ],
-            'shouldSeeStep' => LocaleTelegramBotConversation::STEP_LOCALE_QUERIED,
             'shouldSeeCountryCode' => $country,
             'shouldSeeLocaleCode' => $locale,
         ];
@@ -438,7 +375,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
             'input' => $this->cancelButton(),
             'shouldSeeReplies' => [
                 ...$this->currentReplies($locale),
-                ...$this->cancelReplies(),
+                'canceled',
                 ...$this->chooseActionReplies(),
             ],
             'shouldSeeButtons' => [
@@ -507,7 +444,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
 
     private function otherButton(): string
     {
-        return '🌎 keyboard.other';
+        return '🌎 other';
     }
 
     protected function currentReplies(
@@ -515,7 +452,7 @@ class LocaleTelegramBotCommandFunctionalTest extends TelegramBotCommandFunctiona
     ): array
     {
         return [
-            'reply.current_locale',
+            'current_locale',
             $locale,
         ];
     }

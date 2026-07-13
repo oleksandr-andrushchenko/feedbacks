@@ -1,4 +1,4 @@
-create: Добавить отзыв
+create: Отзыв
 create_old_1: Добавить Отзыв
 create_old_2: Добавить отзыв
 search: Поиск
@@ -7,11 +7,14 @@ lookup: Кто искал
 lookup_old_1: Найти Запросы
 subscribe: Купить Премиум
 subscriptions: Мой Премиум
-country: Изменить Страну или Регион
+country: Локация
 country_old_1: Изменить Страну
 country_old_2: Моя Страна
-locale: Изменить Язык
+country_old_3: Изменить Страну или Регион
+locale: Язык
 locale_old_1: Мой Язык
+locale_old_2: Изменить Язык
+locale_old_3: Изменить язык
 limits: Ограничения
 limits_old_1: О Лимитах
 purge: Удалить Данные

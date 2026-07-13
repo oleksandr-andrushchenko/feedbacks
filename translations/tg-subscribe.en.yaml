@@ -1,0 +1,13 @@
+currency: Select a currency please.
+subscription_plan: Select a subscription plan please.
+payment_method: Select a payment method please.
+payment: To complete the operation - click the "%pay_button%" button and follow the instructions.
+pay_button: Pay %price%
+payment_invoice_title: Premium subscription "%plan%"
+payment_invoice_description: '%plan% without limits (by the number of requests) for the following commands: %limited_commands%. The subscription covers the following bots: %bots%'
+
+change_currency: Change currency
+
+already_have: "You have active premium subscription already:"
+invalid_currency: An error has occurred, "%currency%" currency is not acceptable right now, select another currency please.
+canceled: Getting premium dialog has been canceled.

@@ -1,5 +1,0 @@
-query:
-  confirm: Confirm data purge?
-reply:
-  ok: Purge has been successfully made, now you can leave the bot.
-  canceled: Purge dialog has been canceled.

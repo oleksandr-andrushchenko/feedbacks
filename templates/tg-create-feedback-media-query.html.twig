@@ -1,0 +1,16 @@
+{% trans_default_domain 'tg-create-feedback' %}
+<b>[{{ step_number }}/{{ total_steps }}] {{ 'upload_media'|trans }}</b>
+
+<i>ℹ️ {{ 'media_examples'|trans }}:
+▫️ 🤳 {{ 'user_photo'|trans }}
+▫️ 💬 {{ 'messaging_screenshot'|trans }}
+▫️ 👤 {{ 'account_screenshot'|trans }}
+▫️ 🎞️ {{ 'screen_recording'|trans }}
+▫️ 📦 {{ 'product_or_service_photo'|trans }}
+▫️ 📎 {{ 'other_evidence'|trans }}</i>
+
+{% if media_count %}
+<b>{{ 'already_added'|trans }}:</b> {{ 'media_count'|trans({'%count%':media_count}) }}
+
+{% endif %}
+<i>↘️ {{ 'use_upload_button'|trans }}</i>

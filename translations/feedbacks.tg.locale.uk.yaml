@@ -1,7 +1,0 @@
-query:
-  change_confirm: Бажаєте змінити налаштування?
-  locale: Виберіть Вашу мову.
-reply:
-  current_locale: Ваша поточна мова - %locale%.
-  canceled: Діалог вибору мови скасовано.
-  ok: Успішно оновлено.

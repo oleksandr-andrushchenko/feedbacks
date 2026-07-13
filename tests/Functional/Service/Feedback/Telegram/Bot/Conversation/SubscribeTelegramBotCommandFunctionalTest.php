@@ -77,15 +77,14 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             ],
             'input' => $this->command('subscribe'),
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
                     fn (FeedbackSubscriptionPlanName $plan) => $plan->name,
                     FeedbackSubscriptionPlanName::cases()
                 ),
-                'keyboard.change_currency',
-                $this->helpButton(),
+                'change_currency',
                 $this->cancelButton(),
             ],
         ];
@@ -97,15 +96,14 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             ],
             'input' => $this->command('subscribe'),
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
                     fn (FeedbackSubscriptionPlanName $plan) => $plan->name,
                     FeedbackSubscriptionPlanName::cases()
                 ),
-                'keyboard.change_currency',
-                $this->helpButton(),
+                'change_currency',
                 $this->cancelButton(),
             ],
         ];
@@ -116,15 +114,14 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             ],
             'input' => FeedbackTelegramBotGroup::SUBSCRIBE,
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
                     fn (FeedbackSubscriptionPlanName $plan) => $plan->name,
                     FeedbackSubscriptionPlanName::cases()
                 ),
-                'keyboard.change_currency',
-                $this->helpButton(),
+                'change_currency',
                 $this->cancelButton(),
             ],
         ];
@@ -136,15 +133,14 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             ],
             'input' => FeedbackTelegramBotGroup::SUBSCRIBE,
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
                     fn (FeedbackSubscriptionPlanName $plan) => $plan->name,
                     FeedbackSubscriptionPlanName::cases()
                 ),
-                'keyboard.change_currency',
-                $this->helpButton(),
+                'change_currency',
                 $this->cancelButton(),
             ],
         ];
@@ -205,15 +201,14 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => false,
             'input' => '🇺🇸 USD',
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
                     fn (FeedbackSubscriptionPlanName $plan) => $plan->name,
                     FeedbackSubscriptionPlanName::cases()
                 ),
-                'keyboard.change_currency',
-                $this->helpButton(),
+                'change_currency',
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => SubscribeTelegramBotConversation::STEP_SUBSCRIPTION_PLAN_QUERIED,
@@ -224,15 +219,14 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => true,
             'input' => '🇺🇸 USD',
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
                     fn (FeedbackSubscriptionPlanName $plan) => $plan->name,
                     FeedbackSubscriptionPlanName::cases()
                 ),
-                'keyboard.change_currency',
-                $this->helpButton(),
+                'change_currency',
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => SubscribeTelegramBotConversation::STEP_SUBSCRIPTION_PLAN_QUERIED,
@@ -243,7 +237,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => true,
             'input' => '🇺🇸 USD',
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
@@ -251,7 +245,6 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
                     FeedbackSubscriptionPlanName::cases()
                 ),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => SubscribeTelegramBotConversation::STEP_SUBSCRIPTION_PLAN_QUERIED,
@@ -262,7 +255,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => false,
             'input' => '🇺🇸 USD',
             'shouldSeeReply' => [
-                'query.subscription_plan',
+                'subscription_plan',
             ],
             'shouldSeeButtons' => [
                 ...array_map(
@@ -270,7 +263,6 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
                     FeedbackSubscriptionPlanName::cases()
                 ),
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => SubscribeTelegramBotConversation::STEP_SUBSCRIPTION_PLAN_QUERIED,
@@ -333,12 +325,11 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => true,
             'input' => 'one_year - $20,00',
             'shouldSeeReply' => [
-                'query.payment_method',
+                'payment_method',
             ],
             'shouldSeeButtons' => [
                 'payment_method.portmone',
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => SubscribeTelegramBotConversation::STEP_PAYMENT_METHOD_QUERIED,
@@ -349,12 +340,11 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => true,
             'input' => 'one_year - $20,00',
             'shouldSeeReply' => [
-                'query.payment_method',
+                'payment_method',
             ],
             'shouldSeeButtons' => [
                 'payment_method.portmone',
                 $this->prevButton(),
-                $this->helpButton(),
                 $this->cancelButton(),
             ],
             'shouldSeeStep' => SubscribeTelegramBotConversation::STEP_PAYMENT_METHOD_QUERIED,
@@ -428,7 +418,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => true,
             'input' => 'payment_method.portmone',
             'shouldSeeReply' => [
-                'query.payment',
+                'payment',
             ],
             'shouldSeeButtons' => [
                 ...$this->chooseActionButtons(),
@@ -441,7 +431,7 @@ class SubscribeTelegramBotCommandFunctionalTest extends TelegramBotCommandFuncti
             'paymentMethodStep' => true,
             'input' => 'payment_method.portmone',
             'shouldSeeReply' => [
-                'query.payment',
+                'payment',
             ],
             'shouldSeeButtons' => [
                 ...$this->chooseActionButtons(),

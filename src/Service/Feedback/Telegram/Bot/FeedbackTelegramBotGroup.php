@@ -16,12 +16,12 @@ use App\Service\Feedback\Telegram\Bot\Chat\ChooseActionTelegramChatSender;
 use App\Service\Feedback\Telegram\Bot\Chat\StartTelegramCommandHandler;
 use App\Service\Feedback\Telegram\Bot\Chat\SubscriptionsTelegramChatSender;
 use App\Service\Feedback\Telegram\Bot\Conversation\CountryTelegramBotConversation;
-use App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackV2TelegramBotConversation;
+use App\Service\Feedback\Telegram\Bot\Conversation\CreateFeedbackTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\Conversation\LocaleTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\Conversation\LookupFeedbackTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\Conversation\PurgeConversationTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\Conversation\RestartConversationTelegramBotConversation;
-use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackV2TelegramBotConversation;
+use App\Service\Feedback\Telegram\Bot\Conversation\SearchFeedbackTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\Conversation\SubscribeTelegramBotConversation;
 use App\Service\Feedback\Telegram\Bot\View\SubscriptionTelegramViewProvider;
 use App\Service\Telegram\Bot\Conversation\TelegramBotConversationFactory;
@@ -127,12 +127,12 @@ class FeedbackTelegramBotGroup implements TelegramBotGroupInterface
 
     public function create(TelegramBotAwareHelper $tg): null
     {
-        return $tg->stopCurrentConversation()->startConversation(CreateFeedbackV2TelegramBotConversation::class)->null();
+        return $tg->stopCurrentConversation()->startConversation(CreateFeedbackTelegramBotConversation::class)->null();
     }
 
     public function search(TelegramBotAwareHelper $tg): null
     {
-        return $tg->stopCurrentConversation()->startConversation(SearchFeedbackV2TelegramBotConversation::class)->null();
+        return $tg->stopCurrentConversation()->startConversation(SearchFeedbackTelegramBotConversation::class)->null();
     }
 
     public function lookup(TelegramBotAwareHelper $tg): null
