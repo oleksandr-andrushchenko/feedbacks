@@ -249,7 +249,7 @@ class FeedbackTelegramBotGroup implements TelegramBotGroupInterface
 
     public function fallback(TelegramBotAwareHelper $tg): null
     {
-        $t = $tg->getText()->getRawValue();
+        $t = $tg->getText()?->getRawValue();
 
         return match (true) {
             in_array($t, $this->chooseActionTelegramChatSender->getCreateButtonTexts($tg), true) => $this->create($tg),
